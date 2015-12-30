@@ -66,6 +66,7 @@ public class GreenComparatorTest {
       BufferedImage screen7 = ImageIO.read(new File("test/test_diggy_tired2.bmp"));
       BufferedImage screen8 = ImageIO.read(new File("test/test_diggy_tired3.bmp"));
       
+      
       Pixel p = _comparator.findImage(image, screen1, Color.WHITE);
       assertTrue(p != null);
       p = _comparator.findImage(image, screen2, Color.WHITE);
@@ -87,6 +88,45 @@ public class GreenComparatorTest {
       e.printStackTrace();
     }
     
+  }
+  
+  @Test
+  public void test3() {
+  	// TemplateMatcher matcher = new TemplateMatcher();
+  	//_comparator = new SimilarityImageComparator(0.04, 5000);
+  	
+  	try {
+  		BufferedImage image = ImageIO.read(new File("images/bluepants.bmp"));
+  		BufferedImage screen1 = ImageIO.read(new File("test/dat1.bmp"));
+  		BufferedImage screen2 = ImageIO.read(new File("test/dat2.bmp"));
+  		BufferedImage screen3 = ImageIO.read(new File("test/dat3.bmp"));
+  		BufferedImage screen4 = ImageIO.read(new File("test/dat4.bmp"));
+  		BufferedImage screen5 = ImageIO.read(new File("test/dat5.bmp"));
+  		BufferedImage screen6 = ImageIO.read(new File("test/dat6.bmp"));
+  		BufferedImage screen7 = ImageIO.read(new File("test/dat7.bmp"));
+  		BufferedImage screen8 = ImageIO.read(new File("test/dat8.bmp"));
+  		
+  		Pixel p = _comparator.findImage(image, screen1, Color.RED);
+  		assertTrue(p != null);
+  		p = _comparator.findImage(image, screen2, Color.RED);
+  		assertTrue(p != null);
+  		p = _comparator.findImage(image, screen3, Color.RED);
+  		assertTrue(p != null);
+  		p = _comparator.findImage(image, screen4, Color.RED);
+  		assertTrue(p != null);
+  		p = _comparator.findImage(image, screen5, Color.RED);
+  		assertTrue(p != null);
+  		p = _comparator.findImage(image, screen6, Color.RED);
+  		assertTrue(p != null);
+  		p = _comparator.findImage(image, screen7, Color.RED);
+  		assertTrue(p != null);
+  		p = _comparator.findImage(image, screen8, Color.RED);
+  		assertTrue(p != null);
+  	} catch (IOException e) {
+  		// TODO Auto-generated catch block
+  		e.printStackTrace();
+  	}
+  	
   }
   
 }

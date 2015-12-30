@@ -131,102 +131,103 @@ public class ScreenScanner {
 		int xx;
 		int yy;
 
-		_scanArea = new Rectangle(_tl.x+124, _tl.y + 78, getGameWidth() - 124 - 114, getGameHeight() - 78 - 82);
+		_scanArea = new Rectangle(_tl.x + 124, _tl.y + 78, getGameWidth() - 124 - 114, getGameHeight() - 78 - 82);
 
-//		int xxx = (getGameWidth() - 137) / 2;
-//		_leftNumbersArea = new Rectangle(_tl.x, _tl.y, xxx, 72);
-//		_rightNumbersArea = new Rectangle(_br.x - xxx, _tl.y, xxx, 72);
-//		
-//		_sailorsPos = scanOne("sailors.bmp", _rightNumbersArea, false);
-//		
-//
-//		_fishes = new Pixel[] { new Pixel(-94, 14), new Pixel(-169, -13), new Pixel(-223, -49), new Pixel(-282, -89),
-//		    new Pixel(-354, -120) };
-//
-//		_shipLocations = new Pixel[] { new Pixel(103, 83), new Pixel(103, 187), new Pixel(103, 278) };
-//		// _buildingLocations = new Pixel[] { new Pixel(54, -71), new Pixel(147,
-//		// -100), new Pixel(-50, -120) };
-//		_buildingLocations = new Pixel[] { new Pixel(147, -100) };
-//
-//		// label area
-//		_labelWidth = 380;
-//		xx = (getGameWidth() - _labelWidth) / 2;
-//		_labelArea = new Rectangle(_tl.x + xx, _tl.y + 71, _labelWidth, 66);
-//		_levelArea = new Rectangle(_tl.x + xx, _tl.y + 360, _labelWidth, 35);
-//
-//		// _popupArea = generateWindowedArea(324, 516);
-//		_popupArea = generateWindowedArea(328, 520);
-//		_popupAreaX = new Rectangle(_popupArea);
-//		_popupAreaX.x += (20 + _popupAreaX.width / 2);
-//		_popupAreaX.y -= 7;
-//		_popupAreaX.height = 60;
-//		_popupAreaX.width = 270 + _popupAreaX.width / 2;
-//
-//		_popupAreaB = new Rectangle(_popupArea);
-//		_popupAreaB.y = _popupAreaB.y + _popupAreaB.height - 125;
-//		_popupAreaB.height = 125;
-//
-//		_safePoint = new Pixel(_br.x - 15, _br.y - 15);
-//		_parkingPoint = new Pixel(_br);
-//
-//		getImageData("ROCK.bmp", _scanArea, 10, 44);
-//		getImageData("pin.bmp", _scanArea, 6, 6);
-//
-//		area = new Rectangle(_br.x - 110, _br.y - 75, 60, 40);
-//		_anchorButton = getImageData("anchor.bmp", area, 20, 7);
-//		_mapButton = getImageData("mapButton.bmp", area, 20, 7);
-//
-//		area = new Rectangle(_br.x - 30, _tl.y + 100, 30, getGameHeight() / 2 - 100);
-//		ImageData sb = getImageData("scoreBoard.bmp", area, 0, 17);
-//		sb.setDefaultArea(area);
-//
-//		try {
-//			Pixel sbp = scanPrecise(sb, null);
-//			if (sbp != null) {
-//				_zoomIn = new Pixel(sbp.x + 8, sbp.y + 108);
-//				_zoomOut = new Pixel(sbp.x + 8, sbp.y + 141);
-//				_fullScreen = new Pixel(sbp.x + 8, sbp.y + 179);
-//				LOGGER.info("left toolbar ok!");
-//			} else {
-//				_zoomIn = null;
-//				_zoomOut = null;
-//				_fullScreen = null;
-//				LOGGER.info("left toolbar NOT FOUND!");
-//			}
-//		} catch (AWTException e) {
-//			e.printStackTrace();
-//		} catch (RobotInterruptedException e) {
-//		}
-//
-//		// ATTENTION - Destinations are fixed in deserilizeDestinations()
-//
-//		// getImageData("dest/missing.bmp", _scanArea, 41, 45);
-//		getImageData("dest/setSail.bmp", _popupArea, 30, 6);
-//
-//		ImageData gear2 = getImageData("buildings/gears2.bmp", _popupArea, 0, 0);
-//		gear2.setColorToBypass(Color.BLACK);
-//		ImageData wa = getImageData("buildings/whiteArrow.bmp", _popupArea, 0, 0);
-//		wa.setColorToBypass(Color.BLACK);
-//
-//		getImageData("buildings/produce.bmp", _popupAreaB, 0, 0);
-//		getImageData("buildings/produce2.bmp", _popupAreaB, 0, 0);
-//		getImageData("buildings/produceGray.bmp", _popupAreaB, 0, 0);
-//		getImageData("buildings/x.bmp", _popupAreaX, 10, 10);
-//		getImageData("greenX.bmp", new Rectangle(_br.x - 28, _tl.y + 57, 22, 20), 9, 9);
-//
-//		/*
-//		 * _destinations.add(new Destination("Small Town", 5, getImageData("buildings/SmallTown.bmp"),getImageData("buildings/SmallTownTitle.bmp"))); _destinations.add(new Destination("Coastline", 15,
-//		 * getImageData("buildings/Coastline.bmp"),getImageData("buildings/coastlineTitle.bmp")));
-//		 */
-//
-//		/*
-//		 * _hooray = new ImageData("Hooray.bmp", area, _comparator, 23, 6);
-//		 * 
-//		 * getImageData("tags/zzz.bmp", _scanArea, 0, 7); getImageData("tags/coins.bmp", _scanArea, 0, 9); getImageData("tags/houses.bmp", _scanArea, 0, 9); getImageData("tags/fire.bmp", _scanArea, 0, 7);
-//		 * getImageData("tags/medical.bmp", _scanArea, 14, 9); getImageData("tags/greenDown.bmp", _scanArea, 18, -35); getImageData("buildings/Warehouse.bmp", _scanArea, 35, 0);
-//		 * 
-//		 * area = new Rectangle(_br.x - 264, _tl.y, 264, 35); getImageData("populationRed.bmp", area, 0, 0); getImageData("populationBlue.bmp", area, 0, 0);
-//		 */
+		// int xxx = (getGameWidth() - 137) / 2;
+		// _leftNumbersArea = new Rectangle(_tl.x, _tl.y, xxx, 72);
+		// _rightNumbersArea = new Rectangle(_br.x - xxx, _tl.y, xxx, 72);
+		//
+		// _sailorsPos = scanOne("sailors.bmp", _rightNumbersArea, false);
+		//
+		//
+		// _fishes = new Pixel[] { new Pixel(-94, 14), new Pixel(-169, -13), new Pixel(-223, -49), new Pixel(-282, -89),
+		// new Pixel(-354, -120) };
+		//
+		// _shipLocations = new Pixel[] { new Pixel(103, 83), new Pixel(103, 187), new Pixel(103, 278) };
+		// // _buildingLocations = new Pixel[] { new Pixel(54, -71), new Pixel(147,
+		// // -100), new Pixel(-50, -120) };
+		// _buildingLocations = new Pixel[] { new Pixel(147, -100) };
+		//
+		// // label area
+		// _labelWidth = 380;
+		// xx = (getGameWidth() - _labelWidth) / 2;
+		// _labelArea = new Rectangle(_tl.x + xx, _tl.y + 71, _labelWidth, 66);
+		// _levelArea = new Rectangle(_tl.x + xx, _tl.y + 360, _labelWidth, 35);
+		//
+		// // _popupArea = generateWindowedArea(324, 516);
+		// _popupArea = generateWindowedArea(328, 520);
+		// _popupAreaX = new Rectangle(_popupArea);
+		// _popupAreaX.x += (20 + _popupAreaX.width / 2);
+		// _popupAreaX.y -= 7;
+		// _popupAreaX.height = 60;
+		// _popupAreaX.width = 270 + _popupAreaX.width / 2;
+		//
+		// _popupAreaB = new Rectangle(_popupArea);
+		// _popupAreaB.y = _popupAreaB.y + _popupAreaB.height - 125;
+		// _popupAreaB.height = 125;
+		//
+		// _safePoint = new Pixel(_br.x - 15, _br.y - 15);
+		// _parkingPoint = new Pixel(_br);
+		//
+		// getImageData("ROCK.bmp", _scanArea, 10, 44);
+		// getImageData("pin.bmp", _scanArea, 6, 6);
+		//
+		// area = new Rectangle(_br.x - 110, _br.y - 75, 60, 40);
+		// _anchorButton = getImageData("anchor.bmp", area, 20, 7);
+		// _mapButton = getImageData("mapButton.bmp", area, 20, 7);
+		//
+		// area = new Rectangle(_br.x - 30, _tl.y + 100, 30, getGameHeight() / 2 - 100);
+		// ImageData sb = getImageData("scoreBoard.bmp", area, 0, 17);
+		// sb.setDefaultArea(area);
+		//
+		// try {
+		// Pixel sbp = scanPrecise(sb, null);
+		// if (sbp != null) {
+		// _zoomIn = new Pixel(sbp.x + 8, sbp.y + 108);
+		// _zoomOut = new Pixel(sbp.x + 8, sbp.y + 141);
+		// _fullScreen = new Pixel(sbp.x + 8, sbp.y + 179);
+		// LOGGER.info("left toolbar ok!");
+		// } else {
+		// _zoomIn = null;
+		// _zoomOut = null;
+		// _fullScreen = null;
+		// LOGGER.info("left toolbar NOT FOUND!");
+		// }
+		// } catch (AWTException e) {
+		// e.printStackTrace();
+		// } catch (RobotInterruptedException e) {
+		// }
+		//
+		// // ATTENTION - Destinations are fixed in deserilizeDestinations()
+		//
+		// // getImageData("dest/missing.bmp", _scanArea, 41, 45);
+		// getImageData("dest/setSail.bmp", _popupArea, 30, 6);
+		//
+		// ImageData gear2 = getImageData("buildings/gears2.bmp", _popupArea, 0, 0);
+		// gear2.setColorToBypass(Color.BLACK);
+		// ImageData wa = getImageData("buildings/whiteArrow.bmp", _popupArea, 0, 0);
+		// wa.setColorToBypass(Color.BLACK);
+		//
+		// getImageData("buildings/produce.bmp", _popupAreaB, 0, 0);
+		// getImageData("buildings/produce2.bmp", _popupAreaB, 0, 0);
+		// getImageData("buildings/produceGray.bmp", _popupAreaB, 0, 0);
+		// getImageData("buildings/x.bmp", _popupAreaX, 10, 10);
+		// getImageData("greenX.bmp", new Rectangle(_br.x - 28, _tl.y + 57, 22, 20), 9, 9);
+		//
+		// /*
+		// * _destinations.add(new Destination("Small Town", 5, getImageData("buildings/SmallTown.bmp"),getImageData("buildings/SmallTownTitle.bmp"))); _destinations.add(new Destination("Coastline", 15,
+		// * getImageData("buildings/Coastline.bmp"),getImageData("buildings/coastlineTitle.bmp")));
+		// */
+		//
+		// /*
+		// * _hooray = new ImageData("Hooray.bmp", area, _comparator, 23, 6);
+		// *
+		// * getImageData("tags/zzz.bmp", _scanArea, 0, 7); getImageData("tags/coins.bmp", _scanArea, 0, 9); getImageData("tags/houses.bmp", _scanArea, 0, 9); getImageData("tags/fire.bmp", _scanArea, 0,
+		// 7);
+		// * getImageData("tags/medical.bmp", _scanArea, 14, 9); getImageData("tags/greenDown.bmp", _scanArea, 18, -35); getImageData("buildings/Warehouse.bmp", _scanArea, 35, 0);
+		// *
+		// * area = new Rectangle(_br.x - 264, _tl.y, 264, 35); getImageData("populationRed.bmp", area, 0, 0); getImageData("populationBlue.bmp", area, 0, 0);
+		// */
 	}
 
 	public Pixel[] getBuildingLocations() {
@@ -294,27 +295,26 @@ public class ScreenScanner {
 			setKeyAreas();
 			return true;
 		} else {
-			boolean found = _gameLocator.locateGameArea(new ImageData("beta.bmp", null, _comparator, 0, 0),
-			    new ImageData("camp.bmp", null, _comparator, 25, 48), false);
+			boolean found = _gameLocator.locateGameArea(new ImageData("beta.bmp", null, _comparator, 0, 0), new ImageData(
+			    "camp.bmp", null, _comparator, 25, 48), false);
 			if (found) {
-			  _tl = _gameLocator.getTopLeft();
-			  _br = _gameLocator.getBottomRight();
-			  
-			  
-			  Rectangle area = new Rectangle(_br.x+25, _tl.y, screenSize.width - (_br.x + 25), getGameHeight() / 2);
-			  BufferedImage screen = new Robot().createScreenCapture(area);
-			  
-			  ImageData id = getImageData("gems.bmp");
-			  Pixel p = _comparator.findImage(id.getImage(), screen, id.getColorToBypass());
+				_tl = _gameLocator.getTopLeft();
+				_br = _gameLocator.getBottomRight();
+
+				Rectangle area = new Rectangle(_br.x + 25, _tl.y, screenSize.width - (_br.x + 25), getGameHeight() / 2);
+				BufferedImage screen = new Robot().createScreenCapture(area);
+
+				ImageData id = getImageData("gems.bmp");
+				Pixel p = _comparator.findImage(id.getImage(), screen, id.getColorToBypass());
 				if (p != null) {
-				  _br.x = _br.x + 25 + p.x + 41;
+					_br.x = _br.x + 25 + p.x + 41;
 				} else {
-				  LOGGER.warning("GEMS not found!");
-				  _br.x = screenSize.width - _tl.x - 1;
+					LOGGER.warning("GEMS not found!");
+					_br.x = screenSize.width - _tl.x - 1;
 				}
 				_br.y += 48;
 				LOGGER.fine("FINAL GAME COORDINATES: " + _tl + " - " + _br);
-				
+
 				setKeyAreas();
 				return true;
 			}
@@ -328,9 +328,9 @@ public class ScreenScanner {
 		_rock = null;
 		_optimized = false;
 		_tl = null;
-	  _br = null;
+		_br = null;
 	}
-	
+
 	public boolean checkAndAdjustRock() throws IOException, AWTException, RobotInterruptedException {
 		boolean needRecalc = true;
 		if (_rock == null) {
@@ -716,40 +716,37 @@ public class ScreenScanner {
 		return matches;
 	}
 
-	public Pixel scanPrecise(ImageData imageData, Rectangle area) throws AWTException,
-  RobotInterruptedException {
-	
-	if (area == null) {
-		area = imageData.getDefaultArea();
-	}
-	BufferedImage screen = new Robot().createScreenCapture(area);
-	//writeImage2(area, "scoreboardArea.bmp");
-	
-  FastBitmap fbID = new FastBitmap(imageData.getImage());
-  FastBitmap fbAREA = new FastBitmap(screen);
-  
-	// COLOR FILTERING
-	ColorFiltering colorFiltering = new ColorFiltering(new IntRange(255, 255), new IntRange(255, 255),
-	    new IntRange(255, 255));
-	colorFiltering.applyInPlace(fbID);
-	colorFiltering.applyInPlace(fbAREA);
-  
-	
-	
-	Pixel pixel = _matcher.findMatch(fbID.toBufferedImage(), fbAREA.toBufferedImage(), null);
-	LOGGER.fine("LOOKING FOR " + imageData.getName() + "  screen: " + area + " BYPASS: " + imageData.getColorToBypass());
-	
-	long start = System.currentTimeMillis();
-	if (pixel != null) {
-		pixel.x += (area.x + imageData.get_xOff());
-		pixel.y += (area.y + imageData.get_yOff());
-		LOGGER.fine("found : " + imageData.getName() + pixel + " " + (System.currentTimeMillis() - start));
-	}
-	return pixel;
+	public Pixel scanPrecise(ImageData imageData, Rectangle area) throws AWTException, RobotInterruptedException {
 
+		if (area == null) {
+			area = imageData.getDefaultArea();
+		}
+		BufferedImage screen = new Robot().createScreenCapture(area);
+		// writeImage2(area, "scoreboardArea.bmp");
+
+		FastBitmap fbID = new FastBitmap(imageData.getImage());
+		FastBitmap fbAREA = new FastBitmap(screen);
+
+		// COLOR FILTERING
+		ColorFiltering colorFiltering = new ColorFiltering(new IntRange(255, 255), new IntRange(255, 255), new IntRange(
+		    255, 255));
+		colorFiltering.applyInPlace(fbID);
+		colorFiltering.applyInPlace(fbAREA);
+
+		Pixel pixel = _matcher.findMatch(fbID.toBufferedImage(), fbAREA.toBufferedImage(), null);
+		LOGGER
+		    .fine("LOOKING FOR " + imageData.getName() + "  screen: " + area + " BYPASS: " + imageData.getColorToBypass());
+
+		long start = System.currentTimeMillis();
+		if (pixel != null) {
+			pixel.x += (area.x + imageData.get_xOff());
+			pixel.y += (area.y + imageData.get_yOff());
+			LOGGER.fine("found : " + imageData.getName() + pixel + " " + (System.currentTimeMillis() - start));
+		}
+		return pixel;
 
 	}
-	
+
 	public Pixel scanOne(ImageData imageData, Rectangle area, boolean click) throws AWTException,
 	    RobotInterruptedException {
 		if (area == null) {
@@ -757,8 +754,9 @@ public class ScreenScanner {
 		}
 		BufferedImage screen = new Robot().createScreenCapture(area);
 		Pixel pixel = _matcher.findMatch(imageData.getImage(), screen, imageData.getColorToBypass());
-		LOGGER.fine("LOOKING FOR " + imageData.getName() + "  screen: " + area + " BYPASS: " + imageData.getColorToBypass());
-		
+		LOGGER
+		    .fine("LOOKING FOR " + imageData.getName() + "  screen: " + area + " BYPASS: " + imageData.getColorToBypass());
+
 		long start = System.currentTimeMillis();
 		if (pixel != null) {
 			pixel.x += (area.x + imageData.get_xOff());
@@ -1031,7 +1029,33 @@ public class ScreenScanner {
 	}
 
 	public Pixel scanPrecise(String filename, Rectangle area) throws AWTException, IOException, RobotInterruptedException {
-	  return scanPrecise(getImageData(filename), area);
-  }
+		return scanPrecise(getImageData(filename), area);
+	}
+
+	public Pixel findDiggy(Rectangle area) throws IOException, AWTException, RobotInterruptedException {
+		Pixel p = scanOneFast("diggy2.bmp", area, false);
+		if (p != null) {
+			LOGGER.info("found diggy: " + p);
+			p.x -= 12;
+			p.y -= 45;
+		} else {
+			p = scanOneFast("diggy_tired.bmp", area, false);
+
+			if (p != null) {
+				LOGGER.info("found diggy tired: " + p);
+				p.x -= 11;
+				p.y -= 45;
+			} else {
+				p = scanOneFast("bluepants.bmp", area, false);
+				if (p != null) {
+					LOGGER.info("found diggy almost tired: " + p);
+					p.x -= 22;
+					p.y -= 47;
+				}
+			}
+		}
+
+		return p;
+	}
 
 }
