@@ -1,26 +1,25 @@
 package com.horowitz.daze;
 
 import java.awt.AWTException;
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.imageio.ImageIO;
-
+import Catalano.Core.IntPoint;
 import Catalano.Core.IntRange;
 import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.ColorFiltering;
+import Catalano.Imaging.Tools.Blob;
 
 import com.horowitz.commons.ImageComparator;
 import com.horowitz.commons.ImageData;
+import com.horowitz.commons.MotionDetector;
 import com.horowitz.commons.MouseRobot;
 import com.horowitz.commons.Pixel;
 import com.horowitz.commons.RobotInterruptedException;
@@ -41,12 +40,12 @@ public class SmartMazeRunner {
     super();
     _scanner = scanner;
     _mouse = _scanner.getMouse();
-    //_comparator = _scanner.getComparator();
+    // _comparator = _scanner.getComparator();
     _comparator = new SimilarityImageComparator(0.04, 15000);
     _comparator.setErrors(4);
     _matrix = new ArrayList<Position>();
     _searchSequence = new ArrayList<Position>();
-    setSearchSequence();
+    setSearchSequence2();
   }
 
   private void setSearchSequence() {
@@ -75,6 +74,32 @@ public class SmartMazeRunner {
     _searchSequence.add(new Position(2, 2));
     _searchSequence.add(new Position(-2, 1));
     _searchSequence.add(new Position(-2, 2));
+  }
+
+  private void setSearchSequence2() {
+    _searchSequence.add(new Position(0, -1));
+    _searchSequence.add(new Position(1, -1));
+    _searchSequence.add(new Position(1, 0));
+    _searchSequence.add(new Position(1, 1));
+    _searchSequence.add(new Position(0, 1));
+    _searchSequence.add(new Position(-1, 1));
+    _searchSequence.add(new Position(-1, 0));
+    _searchSequence.add(new Position(-1, -1));
+    _searchSequence.add(new Position(-1, -2));
+    _searchSequence.add(new Position(0, -2));
+    _searchSequence.add(new Position(1, -2));
+    _searchSequence.add(new Position(2, -2));
+    _searchSequence.add(new Position(2, -1));
+    _searchSequence.add(new Position(2, 0));
+    _searchSequence.add(new Position(2, 1));
+    _searchSequence.add(new Position(2, 2));
+    _searchSequence.add(new Position(1, 2));
+    _searchSequence.add(new Position(0, 2));
+    _searchSequence.add(new Position(-1, 2));
+    _searchSequence.add(new Position(-2, 2));
+    _searchSequence.add(new Position(-2, 1));
+    _searchSequence.add(new Position(-2, 0));
+    _searchSequence.add(new Position(-2, -2));
   }
 
   public void clearMatrix() {
@@ -115,7 +140,7 @@ public class SmartMazeRunner {
   }
 
   private Position findGreenRecursive(Position pos) throws IOException, AWTException, RobotInterruptedException {
-    Position newPos = lookForGreen(pos);
+    Position newPos = lookForGreen2(pos);
     if (newPos != null) {
       clickTheGreen(newPos);
       return newPos;
@@ -171,7 +196,7 @@ public class SmartMazeRunner {
       tries++;
       _mouse.click(newPos._coords.x + 30, newPos._coords.y + 30);
       _mouse.delay(500);
-    } while (lookForGreenHere(newPos._coords) != null && tries < 5);
+    } while (lookForGreenHere2(newPos._coords) != null && tries < 5);
 
     // ////// TODO check is loading -> new matrix
     Pixel p;
@@ -180,7 +205,7 @@ public class SmartMazeRunner {
       _mouse.delay(1500);
       p = lookForDiggyHere(newPos._coords);
     } while (p == null && tries < 5);
-    
+
     if (p != null) {
       int rowCorrective = 0;
       if (newPos._coords.x - p.x > 0)
@@ -204,7 +229,7 @@ public class SmartMazeRunner {
 
   private Position process(Position pos) throws IOException, AWTException, RobotInterruptedException {
 
-    Position newPos = lookForGreen(pos);
+    Position newPos = lookForGreen2(pos);
     if (newPos != null) {
       // click the green
       int tries = 0;
@@ -306,19 +331,50 @@ public class SmartMazeRunner {
     return null;
   }
 
+  private Position lookForGreen2(Position pos) throws RobotInterruptedException, IOException, AWTException {
+
+    for (Position position : _searchSequence) {
+      Pixel pp = new Pixel(pos._coords.x + position._row * 60, pos._coords.y + position._col * 60);
+      Pixel p = lookForGreenHere2(pp);
+      if (p != null) {
+        Position newPos = new Position(position._row, position._col, pos, Status.GREEN);
+        newPos._coords = pp;
+        return newPos;
+      } else {
+        _mouse.delay(150);
+      }
+    }
+    return null;
+  }
+
   private Pixel lookForDiggyHere(Pixel pp) throws IOException, RobotInterruptedException, AWTException {
     Rectangle area = new Rectangle(pp.x - 60, pp.y - 60, 180, 180);
     return _scanner.findDiggy(area);
   }
 
+  private Pixel lookForGreenHere2(Pixel pp) throws AWTException, RobotInterruptedException {
+    Rectangle area = new Rectangle(pp.x, pp.y, 60, 60);
+    BufferedImage image1 = new Robot().createScreenCapture(area);
+    _mouse.mouseMove(pp.x + 30, pp.y + 58);
+    _mouse.delay(300);
+    BufferedImage image2 = new Robot().createScreenCapture(area);
+    List<Blob> blobs = new MotionDetector().detect(image1, image2);
+    for (Blob blob : blobs) {
+      System.err.println(blob);
+    }
+    if (blobs.size() > 0)
+      return pp;
+    return null;
+  }
+
   private Pixel lookForGreenHere(Pixel pp) throws IOException, RobotInterruptedException, AWTException {
     ImageData greenID = _scanner.getImageData("green2.bmp");
-    Rectangle area = new Rectangle(pp.x-5, pp.y-5, 70, 70);
-
+    Rectangle area = new Rectangle(pp.x, pp.y, 60, 60);
+    BufferedImage image1 = new Robot().createScreenCapture(area);
     _mouse.mouseMove(pp.x + 30, pp.y + 58);
     _mouse.delay(300);
 
-    BufferedImage screen = new Robot().createScreenCapture(area);
+    BufferedImage screen = image1;
     _scanner.writeArea(area, "areaGreen.bmp");
     FastBitmap fb = new FastBitmap(screen);
     _greenColorFiltering.applyInPlace(fb);
