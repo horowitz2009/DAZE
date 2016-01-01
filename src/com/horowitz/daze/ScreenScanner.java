@@ -1058,4 +1058,9 @@ public class ScreenScanner {
 		return p;
 	}
 
+	public boolean isDiggyHere(Pixel p) throws IOException, AWTException, RobotInterruptedException {
+		Rectangle area = new Rectangle(p.x, p.y, 60, 60);
+		return findDiggy(area) != null;
+	}
+
 }

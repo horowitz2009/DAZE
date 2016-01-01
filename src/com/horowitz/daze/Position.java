@@ -1,10 +1,13 @@
 package com.horowitz.daze;
 
+import com.horowitz.commons.Pixel;
+
 public class Position {
   public int _row;
   public int _col;
   public Position _prev;
   public Status _state;
+  public Pixel _coords;
   
   public Position(int row, int col, Position prev, Status state) {
     super();
@@ -12,6 +15,7 @@ public class Position {
     _col = col;
     _prev = prev;
     _state = state;
+    _coords = null;
   }
 
   public Position(int row, int col, Position prev) {
@@ -42,6 +46,11 @@ public class Position {
     }
     
     
+  }
+
+
+	public boolean same(Position otherPos) {
+	  return this._row == otherPos._row && this._col == otherPos._col;
   }
 
   
