@@ -53,5 +53,30 @@ public class Position {
 	  return this._row == otherPos._row && this._col == otherPos._col;
   }
 
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + _col;
+    result = prime * result + _row;
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Position other = (Position) obj;
+    if (_col != other._col)
+      return false;
+    if (_row != other._row)
+      return false;
+    return true;
+  }
+
   
 }
