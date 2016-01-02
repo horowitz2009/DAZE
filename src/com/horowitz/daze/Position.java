@@ -77,6 +77,11 @@ public class Position {
       return false;
     return true;
   }
+  
+  @Override
+  public String toString() {
+    return _row + ", " + _col + " " + _coords;
+  }
 
   
 }
