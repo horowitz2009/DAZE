@@ -202,7 +202,7 @@ public class MainFrame extends JFrame {
 
     runSettingsListener();
 
-    _mazeRunner = new SmartMazeRunner(_scanner);
+    _mazeRunner = new ThoroughMazeRunner(_scanner);
 
   }
 
@@ -1335,7 +1335,7 @@ public class MainFrame extends JFrame {
 
   private Long _speedTime = null;
 
-  private SmartMazeRunner _mazeRunner;
+  private ThoroughMazeRunner _mazeRunner;
 
   private void setProtocol(String shipProtocolName) {
     // _shipProtocolManagerUI.setShipProtocol(shipProtocolName);

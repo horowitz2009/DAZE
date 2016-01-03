@@ -1039,18 +1039,24 @@ public class ScreenScanner {
 			p.x -= 12;
 			p.y -= 45;
 		} else {
-			p = scanOneFast("diggy_tired.bmp", area, false);
-
+			p = scanOneFast("diggy3.bmp", area, false);
 			if (p != null) {
-				LOGGER.info("found diggy tired: " + p);
-				p.x -= 11;
-				p.y -= 45;
+				LOGGER.info("found diggy happy: " + p);
 			} else {
-				p = scanOneFast("bluepants.bmp", area, false);
+
+				p = scanOneFast("diggy_tired.bmp", area, false);
+
 				if (p != null) {
-					LOGGER.info("found diggy almost tired: " + p);
-					p.x -= 22;
-					p.y -= 47;
+					LOGGER.info("found diggy tired: " + p);
+					p.x -= 11;
+					p.y -= 45;
+				} else {
+					p = scanOneFast("bluepants.bmp", area, false);
+					if (p != null) {
+						LOGGER.info("found diggy almost tired: " + p);
+						p.x -= 22;
+						p.y -= 47;
+					}
 				}
 			}
 		}
@@ -1058,7 +1064,7 @@ public class ScreenScanner {
 		return p;
 	}
 
-	public boolean isDiggyHere(Pixel p) throws IOException, AWTException, RobotInterruptedException {
+	public boolean isDiggyExactlyHere(Pixel p) throws IOException, AWTException, RobotInterruptedException {
 		Rectangle area = new Rectangle(p.x, p.y, 60, 60);
 		return findDiggy(area) != null;
 	}

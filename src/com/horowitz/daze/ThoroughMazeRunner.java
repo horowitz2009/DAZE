@@ -27,7 +27,7 @@ import com.horowitz.commons.Pixel;
 import com.horowitz.commons.RobotInterruptedException;
 import com.horowitz.commons.SimilarityImageComparator;
 
-public class SmartMazeRunner {
+public class ThoroughMazeRunner {
 
 	private final static Logger LOGGER = Logger.getLogger("MAIN");
 
@@ -43,7 +43,7 @@ public class SmartMazeRunner {
 	private ColorFiltering _greenColorFiltering = new ColorFiltering(new IntRange(70, 140), new IntRange(110, 255),
 	new IntRange(0, 65));
 
-	public SmartMazeRunner(ScreenScanner scanner) {
+	public ThoroughMazeRunner(ScreenScanner scanner) {
 		super();
 		_scanner = scanner;
 		_mouse = _scanner.getMouse();
@@ -108,10 +108,16 @@ public class SmartMazeRunner {
 				Position pos = start;
 				do {
 					Position newPos = findGreenRecursive(pos);
-					if (newPos != null)
+					if (newPos != null) {
+						LOGGER.info("NEW POSITION: " + newPos);
 						pos = newPos;
+					} else {
+						LOGGER.info("NULLLLLLLLLLLLLLLLLLLLL");
+					}
 					// TODO check popups, other conditions, etc.
+					LOGGER.info("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
 					_mouse.delay(1000);
+					
 				} while (true);
 			}
 
@@ -141,198 +147,191 @@ public class SmartMazeRunner {
 	}
 
 	private Position findGreenRecursive(Position pos) throws IOException, AWTException, RobotInterruptedException {
-		Position newPos = lookForGreen(pos);
-		if (newPos != null) {
-			newPos._row = pos._row + newPos._row;
-			newPos._col = pos._col + newPos._col;
-			newPos._prev = pos;
-			newPos = clickTheGreen(newPos);
-  		return newPos;
-
-			//addPos(newPos);
-			//return newPos;
-		}
-
 		if (canMove(pos, 1, 0)) {
-			LOGGER.info("1, 0");
-			//CLICK new CELL
-			newPos = new Position(pos._row + 1, pos._col + 0, pos, State.WALKABLE);
-			newPos._coords = new Pixel(pos._coords.x + 1 * 60, pos._coords.y + 0 * 60);
-			_mouse.click(newPos._coords.x + 30, newPos._coords.y + 30);
-			_mouse.delay(1000);
-			int tries = 0;
-			do {
-				_mouse.delay(1500);
-				tries++;
-			} while (!_scanner.isDiggyExactlyHere(newPos._coords) && tries < 2);
-
-			//CHECK DID DIGGY MOVED
-			if (_scanner.isDiggyExactlyHere(newPos._coords)) {
-				//YES. move on
-				addPos(newPos);
-				Position newPos2 = findGreenRecursive(newPos);
-				if (newPos2 != null)
-					return newPos2;
-				_matrix.remove(newPos);
-				_mouse.click(pos._coords.x + 30, pos._coords.y + 30);
-				_mouse.delay(1000);
-
-			} else {
-				//NO. IT'S AN OBSTACLE
-				newPos._state = State.OBSTACLE;
-				addPos(newPos);
-				tries = 0;
-				Pixel pd;
-				do {
-					_mouse.delay(1000);
-					tries++;
-				  pd = lookForDiggyAroundHere(newPos._coords);
-				} while (pd == null && tries < 3);
-				if (pd != null) {
-					//we found it
-					//newPos = new Position(pos._row + 1, pos._col + 0, pos, Status.WALKABLE);
-					//what should i do then?
-				}
-				
-			}
-			
-			//_matrix.remove(newPos);
+			ensureArea(pos, 1, 0);
+			Position doCell = doCell(pos, 1, 0);
+			if (doCell != null)
+				return doCell;
 		}
 
 		if (canMove(pos, 0, 1)) {
-			LOGGER.info("0, 1");
-			newPos = new Position(pos._row + 0, pos._col + 1, pos, State.WALKABLE);
-			newPos._coords = new Pixel(pos._coords.x + 0 * 60, pos._coords.y + 1 * 60);
-			_matrix.add(newPos);
-			_mouse.click(newPos._coords.x + 30, newPos._coords.y + 30);
-			_mouse.delay(1000);
-			int tries = 0;
-			do {
-				_mouse.delay(1500);
-				tries++;
-			} while (!_scanner.isDiggyExactlyHere(newPos._coords) && tries < 2);
-
-			if (_scanner.isDiggyExactlyHere(newPos._coords)) {
-				//good. move on
-				addPos(newPos);
-				Position newPos2 = findGreenRecursive(newPos);
-				if (newPos2 != null)
-					return newPos2;
-				_matrix.remove(newPos);
-				_mouse.click(pos._coords.x + 30, pos._coords.y + 30);
-				_mouse.delay(1000);
-			} else {
-				newPos._state = State.OBSTACLE;
-				addPos(newPos);
-				tries = 0;
-				Pixel pd;
-				do {
-					_mouse.delay(1000);
-					tries++;
-				  pd = lookForDiggyAroundHere(newPos._coords);
-				} while (pd == null && tries < 3);
-				if (pd != null) {
-					//we found it
-					//newPos = new Position(pos._row + 1, pos._col + 0, pos, Status.WALKABLE);
-					//what should i do then?
-				}
-				
-			}
-			
-			//_matrix.remove(newPos);
+			ensureArea(pos, 0, 1);
+			Position doCell = doCell(pos, 0, 1);
+			if (doCell != null)
+				return doCell;
 		}
-
+		
 		if (canMove(pos, 0, -1)) {
-			LOGGER.info("0, -1");
-			newPos = new Position(pos._row + 0, pos._col - 1, pos, State.WALKABLE);
-			newPos._coords = new Pixel(pos._coords.x + 0 * 60, pos._coords.y - 1 * 60);
-			_matrix.add(newPos);
-			_mouse.click(newPos._coords.x + 30, newPos._coords.y + 30);
-			_mouse.delay(1000);
-			int tries = 0;
-			do {
-				_mouse.delay(1500);
-				tries++;
-			} while (!_scanner.isDiggyExactlyHere(newPos._coords) && tries < 2);
-
-			if (_scanner.isDiggyExactlyHere(newPos._coords)) {
-				//good. move on
-				addPos(newPos);
-				Position newPos2 = findGreenRecursive(newPos);
-				if (newPos2 != null)
-					return newPos2;
-				_matrix.remove(newPos);
-				_mouse.click(pos._coords.x + 30, pos._coords.y + 30);
-				_mouse.delay(1000);
-				
-			} else {
-				newPos._state = State.OBSTACLE;
-				addPos(newPos);
-				tries = 0;
-				Pixel pd;
-				do {
-					_mouse.delay(1000);
-					tries++;
-				  pd = lookForDiggyAroundHere(newPos._coords);
-				} while (pd == null && tries < 3);
-				if (pd != null) {
-					//we found it
-					//newPos = new Position(pos._row + 1, pos._col + 0, pos, Status.WALKABLE);
-					//what should i do then?
-				}
-				
-			}
-			
-			//_matrix.remove(newPos);
+			ensureArea(pos, 0, -1);
+			Position doCell = doCell(pos, 0, -1);
+			if (doCell != null)
+				return doCell;
 		}
-
+		
 		if (canMove(pos, -1, 0)) {
-			LOGGER.info("-1, 0");
-			newPos = new Position(pos._row - 1, pos._col + 0, pos, State.WALKABLE);
-			newPos._coords = new Pixel(pos._coords.x - 1 * 60, pos._coords.y + 0 * 60);
-			_matrix.add(newPos);
-			_mouse.click(newPos._coords.x + 30, newPos._coords.y + 30);
-			_mouse.delay(1000);
-			int tries = 0;
-			do {
-				_mouse.delay(1500);
-				tries++;
-			} while (!_scanner.isDiggyExactlyHere(newPos._coords) && tries < 2);
-
-			if (_scanner.isDiggyExactlyHere(newPos._coords)) {
-				//good. move on
-				addPos(newPos);
-				Position newPos2 = findGreenRecursive(newPos);
-				if (newPos2 != null)
-					return newPos2;
-				_matrix.remove(newPos);
-				_mouse.click(pos._coords.x + 30, pos._coords.y + 30);
-				_mouse.delay(1000);
-
-			} else {
-				newPos._state = State.OBSTACLE;
-				addPos(newPos);
-				tries = 0;
-				Pixel pd;
-				do {
-					_mouse.delay(1000);
-					tries++;
-				  pd = lookForDiggyAroundHere(newPos._coords);
-				} while (pd == null && tries < 3);
-				if (pd != null) {
-					//we found it
-					//newPos = new Position(pos._row + 1, pos._col + 0, pos, Status.WALKABLE);
-					//what should i do then?
-				}
-				
-			}
-			
-			//_matrix.remove(newPos);
+			ensureArea(pos, -1, 0);
+			Position doCell = doCell(pos, -1, 0);
+			if (doCell != null)
+				return doCell;
 		}
 		
 		LOGGER.info("End " + pos);
 		return null;
 	}
+
+	private void ensureArea(Position pos, int rowOffset, int colOffset) throws RobotInterruptedException, IOException, AWTException {
+		int xx = pos._coords.x + rowOffset * 60;
+		int yy = pos._coords.y + colOffset * 60;
+		Rectangle area = _scanner.getScanArea();
+		int xCorrection = 0;
+		int yCorrection = 0;
+		int step = 60;
+		if (rowOffset > 0) {
+			//check east
+      int eastBorder = area.x + area.width;
+      if (xx + 60 > eastBorder) {
+      	xCorrection = - step; 
+      }
+		} else if (rowOffset < 0) {
+			//check west
+      int westBorder = area.x;
+      if (xx < westBorder) {
+      	xCorrection = step; 
+      }
+		}
+		
+		if (colOffset > 0) {
+			//check south
+			int southBorder = area.y + area.height;
+			if (yy + 60 > southBorder) {
+				yCorrection = - step; 
+			}
+		} else if (colOffset < 0) {
+			//check north
+			int northBorder = area.y;
+			if (yy < northBorder) {
+				yCorrection = step; 
+			}
+		}
+		
+		if (xCorrection != 0 || yCorrection != 0) {
+			_mouse.drag(pos._coords.x, pos._coords.y, pos._coords.x+xCorrection, pos._coords.y+yCorrection);
+			pos._coords.x += xCorrection; 
+			pos._coords.y += yCorrection;
+			
+			int totalXCorrection = xCorrection;
+			int totalYCorrection = yCorrection;
+
+			
+			Pixel p;
+			int tries = 0;
+			do {
+				_mouse.delay(1500);
+				p = lookForDiggyAroundHere(pos._coords, tries % 2 + 1);
+				tries++;
+			} while (p == null && tries < 3);
+
+			if (p != null) {
+				LOGGER.info("Found diggy in attempt " + tries);
+				
+				int rowCorrective = 0;
+				if (pos._coords.x - p.x > 50)
+					rowCorrective = -1;
+				else if (pos._coords.x - p.x < 50)
+					rowCorrective = 1;
+
+				int colCorrective = 0;
+				if (pos._coords.y - p.y > 50)
+					colCorrective = -1;
+				else if (pos._coords.y - p.y < 50)
+					colCorrective = 1;
+				
+				if (rowCorrective != 0 || colCorrective != 0) {
+					//need to move it
+					
+				}
+				pos._row += rowCorrective;
+				pos._col += colCorrective;
+				int secondXCorrection = pos._coords.x - p.x;
+				int secondYCorrection = pos._coords.y - p.y;
+				pos._coords = p;
+				totalXCorrection -= secondXCorrection;
+				totalYCorrection -= secondYCorrection;
+
+			} else {
+				LOGGER.info("UH OH! I Lost diggy...");
+				
+			}
+			LOGGER.info("===============================");
+			LOGGER.info("X correction: " + totalXCorrection);
+			LOGGER.info("Y correction: " + totalYCorrection);
+			LOGGER.info("===============================");
+			_mouse.delay(10000);
+			for (Position position : _matrix) {
+	      if (position._coords != null) {
+	      	position._coords.x += totalXCorrection;
+	      	position._coords.y += totalYCorrection;
+	      }
+      }
+			
+		}
+	  
+  }
+
+	private Position doCell(Position pos, int rowOffset, int colOffset) throws AWTException, RobotInterruptedException, IOException {
+	  LOGGER.info(rowOffset +", " + colOffset);
+	  //CLICK new CELL
+	  Position newPos = new Position(pos._row + rowOffset, pos._col + colOffset, pos, State.WALKABLE);
+	  newPos._coords = new Pixel(pos._coords.x + rowOffset * 60, pos._coords.y + colOffset * 60);
+	  Pixel p = lookForGreenHere(newPos._coords);
+	  if (p != null) {
+	  	_mouse.click(newPos._coords.x + 30, newPos._coords.y + 30);
+	  	_mouse.delay(5000);
+	  }
+	  
+	  //and click again
+	  _mouse.click(newPos._coords.x + 30, newPos._coords.y + 30);
+	  _mouse.delay(300);
+	  int tries = 0;
+	  do {
+	  	_mouse.delay(250);
+	  	tries++;
+	  } while (!_scanner.isDiggyExactlyHere(newPos._coords) && tries < 2);
+
+	  //CHECK DID DIGGY MOVED
+	  if (_scanner.isDiggyExactlyHere(newPos._coords)) {
+	  	//YES. move on
+	  	addPos(newPos);
+	  	Position newPos2 = findGreenRecursive(newPos);
+	  	if (newPos2 != null)
+	  		return newPos2;
+	  	//_matrix.remove(newPos);
+	  	_mouse.click(pos._coords.x + 30, pos._coords.y + 30);
+	  	_mouse.delay(1000);
+
+	  } else {
+	  	//NO. IT'S AN OBSTACLE
+	  	newPos._state = State.OBSTACLE;
+	  	addPos(newPos);
+//	  	tries = 0;
+//	  	Pixel pd;
+//	  	do {
+//	  		_mouse.delay(1000);
+//	  		tries++;
+//	  	  pd = lookForDiggyAroundHere(newPos._coords, tries % 2 + 1);
+//	  	} while (pd == null && tries < 3);
+//	  	if (pd != null) {
+//	  		//we found it
+//	  		//newPos = new Position(pos._row + 1, pos._col + 0, pos, Status.WALKABLE);
+//	  		//what should i do then?
+//	  	}
+//
+	  }
+	  
+	  //_matrix.remove(newPos);
+	  
+	  return null;
+  }
 
 	private Position lookForGreen(Position pos) throws RobotInterruptedException, IOException, AWTException {
 		LOGGER.info("looking for greens...");
@@ -366,7 +365,7 @@ public class SmartMazeRunner {
 		tries = 0;
 		do {
 			_mouse.delay(1500);
-			p = lookForDiggyAroundHere(newPos._coords);
+			p = lookForDiggyAroundHere(newPos._coords, tries % 2 + 1);
 			tries++;
 		} while (p == null && tries < 7);
 
@@ -415,8 +414,8 @@ public class SmartMazeRunner {
 		return canMove;
 	}
 
-	private Pixel lookForDiggyAroundHere(Pixel pp) throws IOException, RobotInterruptedException, AWTException {
-		Rectangle area = new Rectangle(pp.x - 60, pp.y - 60, 180, 180);
+	private Pixel lookForDiggyAroundHere(Pixel pp, int cellRange) throws IOException, RobotInterruptedException, AWTException {
+		Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange + 120 + 60, cellRange + 120 + 60);
 		Pixel res = _scanner.findDiggy(area);
 		LOGGER.info("Looking for diggy in " + pp + " " + res);
 		return res;
