@@ -457,6 +457,8 @@ public class MainFrame extends JFrame {
 
   private JToggleButton _pingToggle;
 
+	private JTextField _timeTF;
+
   private Container buildConsole() {
     final JTextArea outputConsole = new JTextArea(8, 14);
 
@@ -602,15 +604,23 @@ public class MainFrame extends JFrame {
             Thread t = new Thread(new Runnable() {
               public void run() {
                 // //addNewBuilding();
-                scanDiggyFromHere();
+                scanDiggyFromHere(true);
               }
             }, "HMM");
             t.start();
           }
         }
 
-        if (e.getKeyCode() == 88) {// X
-          // massClick(1, (int) (_scanner.getXOffset() * 1.6), true);
+        if (e.getKeyCode() == 120) {// F9
+          if (!isRunning("HMM")) {
+            Thread t = new Thread(new Runnable() {
+              public void run() {
+                // //addNewBuilding();
+                scanDiggyFromHere(false);
+              }
+            }, "HMM");
+            t.start();
+          }
         }
         if (e.getKeyCode() == 67) {// C
           // massClick(1, (int) (_scanner.getXOffset() * 3), true);
@@ -643,7 +653,7 @@ public class MainFrame extends JFrame {
 
         // LOGGER.info("key pressed: " + e.getExtendedKeyCode() + " >>> " +
         // e.getKeyCode());
-        e.consume();
+        //e.consume();
       }
       return false;
     }
@@ -759,6 +769,10 @@ public class MainFrame extends JFrame {
         }
       };
       mainToolbar1.add(action);
+    }
+    {
+    	_timeTF = new JTextField("5");
+    	mainToolbar1.add(_timeTF);
     }
 
     return mainToolbar1;
@@ -1636,7 +1650,8 @@ public class MainFrame extends JFrame {
     myThread.start();
   }
 
-  private void scanDiggyFromHere() {
-    _mazeRunner.doSomething();
+  private void scanDiggyFromHere(boolean clearMatrix) {
+  	int seconds = Integer.parseInt(_timeTF.getText());
+    _mazeRunner.doSomething(clearMatrix, seconds);
   }
 }

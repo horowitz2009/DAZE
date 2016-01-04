@@ -19,7 +19,7 @@ public class Catalano {
 		Catalano catalano = new Catalano();
 
 		try {
-			catalano.doSomething2();
+			catalano.extractGate();
 			System.err.println("DONE.");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -29,7 +29,7 @@ public class Catalano {
 	private ColorFiltering _greenColorFiltering = new ColorFiltering(new IntRange(70, 140), new IntRange(110, 255),
 	    new IntRange(0, 65));
 
-	public void doSomething1() throws IOException {
+	public void extractGreen() throws IOException {
 		BufferedImage image1 = ImageIO.read(new File("gate.bmp"));
 		FastBitmap fb1 = new FastBitmap(image1);
 
@@ -120,6 +120,44 @@ public class Catalano {
 		
 	}
 	
+	public void extractGate() throws IOException {
+		BufferedImage image1 = ImageIO.read(new File("gate101.bmp"));
+		FastBitmap fb1 = new FastBitmap(image1);
+		
+		BufferedImage image2 = ImageIO.read(new File("gate102.bmp"));
+		FastBitmap fb2 = new FastBitmap(image2);
+		
+		BufferedImage image3 = ImageIO.read(new File("gate103.bmp"));
+		FastBitmap fb3 = new FastBitmap(image3);
+		
+		_greenColorFiltering.applyInPlace(fb1);
+		fb1.saveAsBMP("gate101A.bmp");
+		
+		fb1 = new FastBitmap(image1);
+    _greenColorFiltering = new ColorFiltering(
+    		new IntRange(45, 80), 
+    		new IntRange(95, 155),
+		    new IntRange(0, 65));
+		_greenColorFiltering.applyInPlace(fb1);
+		fb1.saveAsBMP("gate101B.bmp");
+
+		if (true) {
+		
+		
+		
+		
+		ColorFiltering cf = _greenColorFiltering;
+		
+		applyFilterGate("gate101", 44, cf, Channel.G);
+		applyFilterGate("gate102", 44, cf, Channel.G);
+		applyFilterGate("gate103", 44, cf, Channel.G);
+		applyFilterGate("gate104", 44, cf, Channel.G);
+		applyFilterGate("gate105", 44, cf, Channel.G);
+		applyFilterGate("gate106", 44, cf, Channel.G);
+		applyFilterGate("gate107", 44, cf, Channel.G);
+		}
+	}
+	
 	private void tryGreen(String prefix, int t, int lowgreen) throws IOException {
 		BufferedImage image1 = ImageIO.read(new File(prefix + ".bmp"));
 		FastBitmap fb1 = new FastBitmap(image1);
@@ -174,8 +212,30 @@ public class Catalano {
 		fb1.saveAsBMP(prefix + t + ".bmp");
 		
 	}
+	private void applyFilterGate(String prefix, int t, ColorFiltering colorFiltering, Channel channel) throws IOException {
+		BufferedImage image1 = ImageIO.read(new File(prefix + ".bmp"));
+		FastBitmap fb1 = new FastBitmap(image1);
+//		if (channel != null) {
+//			ExtractRGBChannel extractChannel = new ExtractRGBChannel(channel);
+//			fb1 = extractChannel.Extract(fb1);
+//		}
+		
+		colorFiltering.applyInPlace(fb1);
+		
+		if (fb1.isRGB())
+			fb1.toGrayscale();
+		//fb1.saveAsBMP("temp.bmp");
+//		
+//		image1 = ImageIO.read(new File("temp.bmp"));
+//		fb1 = new FastBitmap(image1);
+		
+    Threshold thr = new Threshold(80);
+		thr.applyInPlace(fb1);
+		fb1.saveAsBMP(prefix + t + ".bmp");
+		
+	}
 	
-	public void doSomething2() throws IOException {
+	public void extractRed() throws IOException {
 			
 			int low = 116;
 			int high = 255;
