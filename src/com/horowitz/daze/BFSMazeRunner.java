@@ -27,7 +27,7 @@ import com.horowitz.commons.Pixel;
 import com.horowitz.commons.RobotInterruptedException;
 import com.horowitz.commons.SimilarityImageComparator;
 
-public class CopyOfThoroughMazeRunner {
+public class BFSMazeRunner {
 
 	private final static Logger LOGGER = Logger.getLogger("MAIN");
 
@@ -43,7 +43,7 @@ public class CopyOfThoroughMazeRunner {
 	private ColorFiltering _greenColorFiltering = new ColorFiltering(new IntRange(70, 140), new IntRange(110, 255),
 	new IntRange(0, 65));
 
-	public CopyOfThoroughMazeRunner(ScreenScanner scanner) {
+	public BFSMazeRunner(ScreenScanner scanner) {
 		super();
 		_scanner = scanner;
 		_mouse = _scanner.getMouse();
