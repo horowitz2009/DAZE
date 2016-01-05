@@ -293,7 +293,7 @@ public class ThoroughMazeRunner {
 			}
 			
 			_mouse.click(newPos._coords.x + 30, newPos._coords.y + 30);
-			_mouse.delay(1000);
+			_mouse.delay(1600);
 			if (checkPopup()) {
 				newPos._state = State.OBSTACLE;
 				addPos(newPos);
