@@ -92,5 +92,5 @@ public class Graph<T> {
 		// if vertex is unknown, not yet visited and not an obstacle or gate
 		return !_explored.contains(vertex) || (_explored.contains(vertex) && visitor.canBeVisited(vertex));
 	}
-
+	
 }
