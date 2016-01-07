@@ -87,7 +87,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.2";
+  private static String APP_TITLE = "Daze v0.4";
 
   private Settings _settings;
   private Stats _stats;
@@ -596,7 +596,7 @@ public class MainFrame extends JFrame {
 
     public boolean dispatchKeyEvent(KeyEvent e) {
       if (!e.isConsumed()) {
-        // LOGGER.info("pressed " + e.getKeyCode());
+        LOGGER.info("pressed " + e.getKeyCode());
         // e.consume();
         if (e.getKeyCode() == 119 || e.getKeyCode() == 65) {// F8 or a
           // LOGGER.info("pressed " + e.getKeyCode());
@@ -622,8 +622,17 @@ public class MainFrame extends JFrame {
             t.start();
           }
         }
-        if (e.getKeyCode() == 67) {// C
-          // massClick(1, (int) (_scanner.getXOffset() * 3), true);
+        
+        if (e.getKeyCode() == 121) {// C
+          if (!isRunning("HMM")) {
+            Thread t = new Thread(new Runnable() {
+              public void run() {
+                _mazeRunner.testPosition();
+              }
+            }, "HMM");
+            t.start();
+          }
+
         }
 
         if (e.getKeyCode() == 65 || e.getKeyCode() == 18) {// A or Alt
