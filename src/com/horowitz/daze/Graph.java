@@ -16,6 +16,7 @@ public class Graph<T> {
 		boolean visit(T vertex) throws Exception;
 
 		boolean canBeVisited(T neighbor);
+		List<T> prioritize(List<T> neighbors);
 	}
 
 	// Alternatively, use a Multimap:
@@ -31,7 +32,7 @@ public class Graph<T> {
 		srcNeighbors.add(dest);
 	}
 
-	public Iterable<T> getNeighbors(T vertex) {
+	public List<T> getNeighbors(T vertex) {
 		List<T> neighbors = this.edges.get(vertex);
 		if (neighbors == null) {
 			return Collections.emptyList();
@@ -53,7 +54,9 @@ public class Graph<T> {
 		boolean fine = visitor.visit(vertex);
 		visited.add(vertex);
 		if (fine) {
-			for (T neighbor : this.getNeighbors(vertex)) {
+			List<T> neighbors = this.getNeighbors(vertex);
+			List<T> prioritizedNeighbors = visitor.prioritize(neighbors);
+			for (T neighbor : prioritizedNeighbors) {
 				// if neighbor has not been visited then recurse
 				if (canBeVisited(neighbor, visitor)) {
 					preOrderTraversal(neighbor, visitor, visited);
@@ -75,7 +78,7 @@ public class Graph<T> {
 			boolean fine = visitor.visit(vertex);
 			if (fine) {
 				// Visit child first before grandchild
-				Iterable<T> neighbors = this.getNeighbors(vertex);
+				List<T> neighbors = this.getNeighbors(vertex);
 				// just try all neighbors (unknown, green, red???)
 				// sort them, so green go first
 				for (T neighbor : neighbors) {
