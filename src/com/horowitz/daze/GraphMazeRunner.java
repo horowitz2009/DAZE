@@ -301,10 +301,10 @@ public class GraphMazeRunner {
           Pixel start;
           Pixel end;
           if (xCorrection < 0) {
-            start = new Pixel(eastBorder - 10, _scanner.getGameHeight() / 2);
+            start = new Pixel(eastBorder - 10, _scanner.getTopLeft().y + _scanner.getGameHeight() / 2);
             end = new Pixel(start.x + (int) width, start.y);
           } else {
-            start = new Pixel(westBorder + 10, _scanner.getGameHeight() / 2);
+            start = new Pixel(westBorder + 10, _scanner.getTopLeft().y + _scanner.getGameHeight() / 2);
             end = new Pixel(start.x + (int) width, start.y);
           }
           for (int i = 0; i < n; ++i) {
@@ -330,10 +330,10 @@ public class GraphMazeRunner {
           Pixel start;
           Pixel end;
           if (yCorrection < 0) {
-            start = new Pixel(_scanner.getGameWidth() / 2, southBorder - 10);
+            start = new Pixel(_scanner.getTopLeft().x + _scanner.getGameWidth() / 2, southBorder - 10);
             end = new Pixel(start.x, start.y + (int) height);
           } else {
-            start = new Pixel(_scanner.getGameWidth() / 2, northBorder + 10);
+            start = new Pixel(_scanner.getTopLeft().x + _scanner.getGameWidth() / 2, northBorder + 10);
             end = new Pixel(start.x, start.y + (int) height);
           }
           for (int i = 0; i < n; ++i) {
