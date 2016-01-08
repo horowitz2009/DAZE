@@ -8,9 +8,14 @@ import java.awt.Robot;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import Catalano.Core.IntRange;
@@ -53,6 +58,7 @@ public class GraphMazeRunner {
           _mouse.delay(750);
           if (checkPopup()) {
             vertex._state = State.OBSTACLE;
+            _support.firePropertyChange("STATE_CHANGED", null, vertex);
             return false;
           } else if (checkNoEnergy()) {
             LOGGER.info("OUT OF ENERGY...");
@@ -76,6 +82,7 @@ public class GraphMazeRunner {
         // }
         if (vertex._state == State.START) {
           vertex._state = State.VISITED;
+          _support.firePropertyChange("STATE_CHANGED", null, vertex);
           checkNeighbor(_graph, vertex, 1, 0);
           checkNeighbor(_graph, vertex, 0, 1);
           checkNeighbor(_graph, vertex, 0, -1);
@@ -92,6 +99,7 @@ public class GraphMazeRunner {
             // so you can scan for neighbors. Let's see this!
             //
             vertex._state = State.VISITED;
+            _support.firePropertyChange("STATE_CHANGED", null, vertex);
 
             checkNeighbor(_graph, vertex, 1, 0);
             checkNeighbor(_graph, vertex, 0, 1);
@@ -100,6 +108,7 @@ public class GraphMazeRunner {
 
           } else {
             vertex._state = State.OBSTACLE;
+            _support.firePropertyChange("STATE_CHANGED", null, vertex);
             return false;
           }
         }
@@ -390,7 +399,7 @@ public class GraphMazeRunner {
     }
 
     private boolean isAlreadyChecked(Graph<Position> graph, Position neighbor) {
-      for (Position position : graph._explored) {
+      for (Position position : graph.getExplored()) {
         if (position.same(neighbor))
           return position._state == State.CHECKED || position._state == State.VISITED
               || position._state == State.OBSTACLE;
@@ -423,23 +432,26 @@ public class GraphMazeRunner {
         newPos._coords = new Pixel(_start._coords.x + newPos._row * 60, _start._coords.y + newPos._col * 60);
 
         if (graph.canBeVisited(newPos, this)) {
+          graph.addExplored(newPos);
           // ensureArea(newPos, rowOffset, colOffset);
           Position vertexCopy = new Position(vertex._row, vertex._col);
           ensureArea(vertexCopy, rowOffset, colOffset);
           newPos = new Position(vertex._row + rowOffset, vertex._col + colOffset);
           newPos._coords = new Pixel(_start._coords.x + newPos._row * 60, _start._coords.y + newPos._col * 60);
           newPos._state = State.CHECKED;
+          _support.firePropertyChange("POS_ADDED", null, newPos);
           Pixel p = lookForGreenHere(newPos._coords);
           if (p != null) {
             newPos._state = State.GREEN;
+            _support.firePropertyChange("STATE_CHANGED", null, newPos);
             if (isGate(p)) { // TODO not reliable! to be improved
               LOGGER.info("It is gate!!!");
               newPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
+              _support.firePropertyChange("STATE_CHANGED", null, newPos);
             }
           }
           graph.addEdge(vertex, newPos);
           // graph.addEdge(newPos, vertex);
-          graph.addExplored(newPos);
         }
       }
     }
@@ -447,11 +459,13 @@ public class GraphMazeRunner {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
+  private PropertyChangeSupport _support;
   private ScreenScanner _scanner;
   private MouseRobot _mouse;
   private ImageComparator _comparator;
 
   private List<Position> _searchSequence;
+  private Set<Position> _explored;
 
   private int _pauseTime;
 
@@ -470,8 +484,12 @@ public class GraphMazeRunner {
     // _comparator = _scanner.getComparator();
     _comparator = new SimilarityImageComparator(0.04, 15000);
     _comparator.setErrors(4);
+
+    _explored = new HashSet<Position>();
+
     _searchSequence = new ArrayList<Position>();
     setSearchSequence2();
+
   }
 
   private void setSearchSequence2() {
@@ -493,9 +511,21 @@ public class GraphMazeRunner {
   }
 
   public void clearMatrix() {
-    // _matrix.clear();
+    _explored.clear();
   }
 
+  public void clearMatrixPartially() {
+    
+    Iterator<Position> iterator = _explored.iterator();
+    while (iterator.hasNext()) {
+      Position position = (Position) iterator.next();
+      if (position._state != State.OBSTACLE) {
+        iterator.remove();
+        _support.firePropertyChange("POS_REMOVED", null, position);
+      }
+    }
+  }
+  
   public void testPosition() {
     Point position = _scanner.getMouse().getPosition();
     int xx = position.x - 120;
@@ -540,8 +570,11 @@ public class GraphMazeRunner {
 
   public void doSomething(boolean clearMatrix, int seconds) {
     _pauseTime = seconds;
-    if (clearMatrix)
+    if (clearMatrix) {
       clearMatrix();
+    } else {
+      clearMatrixPartially();
+    }
     Point position = _scanner.getMouse().getPosition();
     int xx = position.x - 120;
     if (xx < 0)
@@ -556,7 +589,7 @@ public class GraphMazeRunner {
       if (p != null) {
         final Position start = new Position(0, 0, null, State.START);
         start._coords = p;
-        final Graph<Position> graph = new Graph<>();
+        final Graph<Position> graph = new Graph<>(_explored);
 
         do {
           graph.preOrderTraversal(start, new Visitor(start, graph));
@@ -810,6 +843,22 @@ public class GraphMazeRunner {
     _searchSequence.add(new Position(2, 2));
     _searchSequence.add(new Position(-2, 1));
     _searchSequence.add(new Position(-2, 2));
+  }
+
+  public void addPropertyChangeListener(PropertyChangeListener arg0) {
+    _support.addPropertyChangeListener(arg0);
+  }
+
+  public void addPropertyChangeListener(String arg0, PropertyChangeListener arg1) {
+    _support.addPropertyChangeListener(arg0, arg1);
+  }
+
+  public void removePropertyChangeListener(PropertyChangeListener arg0) {
+    _support.removePropertyChangeListener(arg0);
+  }
+
+  public void removePropertyChangeListener(String arg0, PropertyChangeListener arg1) {
+    _support.removePropertyChangeListener(arg0, arg1);
   }
 
 }
