@@ -454,14 +454,14 @@ public class GraphMazeRunner {
         newPos._coords = new Pixel(_start._coords.x + newPos._row * 60, _start._coords.y + newPos._col * 60);
 
         if (graph.canBeVisited(newPos, this)) {
-          graph.addExplored(newPos);
+          
           // ensureArea(newPos, rowOffset, colOffset);
           Position vertexCopy = new Position(vertex._row, vertex._col);
           ensureArea(vertexCopy, rowOffset, colOffset);
           newPos = new Position(vertex._row + rowOffset, vertex._col + colOffset);
           newPos._coords = new Pixel(_start._coords.x + newPos._row * 60, _start._coords.y + newPos._col * 60);
           newPos._state = State.CHECKED;
-          _support.firePropertyChange("POS_ADDED", null, newPos);
+          
           Pixel p = lookForGreenHere(newPos._coords);
           if (p != null) {
             newPos._state = State.GREEN;
@@ -474,6 +474,8 @@ public class GraphMazeRunner {
           }
           graph.addEdge(vertex, newPos);
           // graph.addEdge(newPos, vertex);
+          graph.addExplored(newPos);
+          _support.firePropertyChange("POS_ADDED", null, newPos);
         }
       }
     }
@@ -493,6 +495,8 @@ public class GraphMazeRunner {
 
   public GraphMazeRunner(ScreenScanner scanner) {
     super();
+    
+    _support = new PropertyChangeSupport(this);
     _scanner = scanner;
     _mouse = _scanner.getMouse();
     _mouse.addPropertyChangeListener("DELAY", new PropertyChangeListener() {
@@ -534,6 +538,7 @@ public class GraphMazeRunner {
 
   public void clearMatrix() {
     _explored.clear();
+    _support.firePropertyChange("CLEARED", null, true);
   }
 
   public void clearMatrixPartially() {

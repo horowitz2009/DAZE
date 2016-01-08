@@ -5,6 +5,10 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -15,7 +19,7 @@ public class MazeCanvas extends JPanel {
 
   public MazeCanvas() {
     super();
-    _blockSize = 20;
+    _blockSize = 6;
   }
 
   @Override
@@ -27,12 +31,16 @@ public class MazeCanvas extends JPanel {
 
     _absCenter = new Point(w / 2 - _blockSize / 2, h / 2 - _blockSize / 2);
 
-    //g.drawArc(_absCenter.x, _absCenter.y, _blockSize, _blockSize, 0, 360);
+    // g.drawArc(_absCenter.x, _absCenter.y, _blockSize, _blockSize, 0, 360);
 
     g.setColor(Color.LIGHT_GRAY);
-    
-    drawSomething(g);
-    
+
+    // drawSomething(g);
+    //
+    for (Position position : _matrix) {
+      drawBlock(position, g);
+    }
+
     // for (int i = 0; i < w / blockSize; i++) {
     // for (int j = 0; j < h / blockSize; j++) {
     // g.drawRect(0 + i * blockSize, 0 + j * blockSize, blockSize, blockSize);
@@ -46,19 +54,21 @@ public class MazeCanvas extends JPanel {
   private Point _absCenter;
   private int _blockSize;
 
-  private void drawBlock(Position pos, Graphics g) {
-    g.setColor(Color.lightGray);
+  private void drawBlock(Position pos, Color color, Graphics g) {
+    Color oldColor = g.getColor();
+    g.setColor(color);
     int x1 = _absCenter.x + pos._row * _blockSize + 1;
     int y1 = _absCenter.y + pos._col * _blockSize + 1;
-//    int x2 = x1 + _blockSize - 2;
-//    int y2 = y1 + _blockSize - 2;
+    // int x2 = x1 + _blockSize - 2;
+    // int y2 = y1 + _blockSize - 2;
     g.fillRect(x1, y1, _blockSize - 1, _blockSize - 1);
-    g.setColor(Color.red);
-    //g.drawRect(_absCenter.x + pos._row * _blockSize, _absCenter.y + pos._col * _blockSize, _blockSize, _blockSize);
-//    g.drawLine(x1, y1, x2, y1);
-//    g.drawLine(x2, y1, x2, y2);
-//    g.drawLine(x2, y2, x1, y2);
-//    g.drawLine(x1, y2, x1, y1);
+    g.setColor(oldColor);
+    // g.drawRect(_absCenter.x + pos._row * _blockSize, _absCenter.y + pos._col
+    // * _blockSize, _blockSize, _blockSize);
+    // g.drawLine(x1, y1, x2, y1);
+    // g.drawLine(x2, y1, x2, y2);
+    // g.drawLine(x2, y2, x1, y2);
+    // g.drawLine(x1, y2, x1, y1);
   }
 
   @Override
@@ -86,13 +96,28 @@ public class MazeCanvas extends JPanel {
     super.paint(gc);
   }
 
+  private void drawBlock(Position pos, Graphics g) {
+    Color c = Color.white;
+    if (pos._state != null) {
+      if (pos._state == State.VISITED) {
+        c = Color.lightGray;
+      } else if (pos._state == State.OBSTACLE) {
+        c = Color.black;
+      }
+      if (pos._state == State.GREEN) {
+        c = Color.green;
+      } else if (pos._state == State.CHECKED) {
+        c = Color.gray;
+      }
+    }
+    drawBlock(pos, c, g);
+  }
+
   private void drawSomething(Graphics g) {
-    Position pos1 = new Position(0, 0);
-    
-    drawBlock(new Position(0,0), g);
-    drawBlock(new Position(0,1), g);
-    drawBlock(new Position(0,2), g);
-    drawBlock(new Position(1,2), g);
+    drawBlock(new Position(0, 0, State.UNKNOWN), g);
+    drawBlock(new Position(0, 1, State.CHECKED), g);
+    drawBlock(new Position(0, 2, State.VISITED), g);
+    drawBlock(new Position(1, 2, State.OBSTACLE), g);
   }
 
   public static void main(String[] args) {
@@ -105,6 +130,29 @@ public class MazeCanvas extends JPanel {
     frame.getContentPane().add(new MazeCanvas());
 
     frame.setVisible(true);
+  }
+
+  private Set<Position> _matrix = new HashSet<>();
+
+  public PropertyChangeListener createPropertyChangeListener() {
+    final PropertyChangeListener listener = new PropertyChangeListener() {
+
+      @Override
+      public void propertyChange(PropertyChangeEvent e) {
+        if (e.getPropertyName().equals("CLEARED")) {
+          _matrix.clear();
+        } else if (e.getPropertyName().equals("POS_REMOVED")) {
+          _matrix.remove(e.getNewValue());
+        } else {
+          Position pos = (Position) e.getNewValue();
+          _matrix.add(pos);
+        }
+
+        repaint();
+
+      }
+    };
+    return listener;
   }
 
 }

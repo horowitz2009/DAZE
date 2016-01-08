@@ -31,10 +31,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -47,7 +44,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import javax.print.attribute.standard.Destination;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
@@ -55,22 +51,16 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import Catalano.Core.IntRange;
-import Catalano.Imaging.FastBitmap;
-import Catalano.Imaging.Filters.ColorFiltering;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import com.horowitz.commons.DateUtils;
-import com.horowitz.commons.ImageData;
 import com.horowitz.commons.MouseRobot;
 import com.horowitz.commons.MyImageIO;
 import com.horowitz.commons.MyLogger;
@@ -87,7 +77,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.4";
+  private static String APP_TITLE = "Daze v0.5";
 
   private Settings _settings;
   private Stats _stats;
@@ -203,7 +193,7 @@ public class MainFrame extends JFrame {
     runSettingsListener();
 
     _mazeRunner = new GraphMazeRunner(_scanner);
-
+    _mazeRunner.addPropertyChangeListener(_mazeCanvas.createPropertyChangeListener());
   }
 
   private void setDefaultSettings() {
@@ -246,7 +236,7 @@ public class MainFrame extends JFrame {
 
     JPanel toolbars = new JPanel(new GridLayout(0, 1));
     toolbars.add(mainToolbar1);
-    toolbars.add(mainToolbar2);
+    // toolbars.add(mainToolbar2);
     // // for (JToolBar jToolBar : mainToolbars3) {
     // // toolbars.add(jToolBar);
     // // }
@@ -317,7 +307,11 @@ public class MainFrame extends JFrame {
     rootPanel.add(north, BorderLayout.NORTH);
 
     final JTextArea shipLog = new JTextArea(5, 10);
-    rootPanel.add(new JScrollPane(shipLog), BorderLayout.SOUTH);
+    _mazeCanvas = new MazeCanvas();
+    _mazeCanvas.setMinimumSize(new Dimension(400, 225));
+    _mazeCanvas.setPreferredSize(new Dimension(400, 225));
+
+    rootPanel.add(new JScrollPane(_mazeCanvas), BorderLayout.SOUTH);
 
     KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new MyKeyEventDispatcher());
   }
@@ -457,7 +451,11 @@ public class MainFrame extends JFrame {
 
   private JToggleButton _pingToggle;
 
-	private JTextField _timeTF;
+  private JTextField _timeTF;
+
+  private JTextField _regenTF;
+
+  private JTextField _tileTF;
 
   private Container buildConsole() {
     final JTextArea outputConsole = new JTextArea(8, 14);
@@ -596,7 +594,7 @@ public class MainFrame extends JFrame {
 
     public boolean dispatchKeyEvent(KeyEvent e) {
       if (!e.isConsumed()) {
-        LOGGER.info("pressed " + e.getKeyCode());
+        // LOGGER.info("pressed " + e.getKeyCode());
         // e.consume();
         if (e.getKeyCode() == 119 || e.getKeyCode() == 65) {// F8 or a
           // LOGGER.info("pressed " + e.getKeyCode());
@@ -622,7 +620,7 @@ public class MainFrame extends JFrame {
             t.start();
           }
         }
-        
+
         if (e.getKeyCode() == 121) {// C
           if (!isRunning("HMM")) {
             Thread t = new Thread(new Runnable() {
@@ -662,7 +660,7 @@ public class MainFrame extends JFrame {
 
         // LOGGER.info("key pressed: " + e.getExtendedKeyCode() + " >>> " +
         // e.getKeyCode());
-        //e.consume();
+        // e.consume();
       }
       return false;
     }
@@ -694,97 +692,95 @@ public class MainFrame extends JFrame {
       };
       mainToolbar1.add(action);
     }
-    // RUN MAGIC
+    // // RUN MAGIC
+    // {
+    // AbstractAction action = new AbstractAction("Run") {
+    // public void actionPerformed(ActionEvent e) {
+    // runMagic();
+    // }
+    //
+    // };
+    // mainToolbar1.add(action);
+    // }
+    // // STOP MAGIC
+    // {
+    // AbstractAction action = new AbstractAction("Stop") {
+    // public void actionPerformed(ActionEvent e) {
+    // Thread myThread = new Thread(new Runnable() {
+    //
+    // @Override
+    // public void run() {
+    // LOGGER.info("Stopping BB Gun");
+    // _stopAllThreads = true;
+    // }
+    // });
+    //
+    // myThread.start();
+    // }
+    // };
+    // mainToolbar1.add(action);
+    // }
+
     {
-      AbstractAction action = new AbstractAction("Run") {
-        public void actionPerformed(ActionEvent e) {
-          runMagic();
+      _regenTF = new JTextField("1560");
+      mainToolbar1.add(_regenTF);
+      _regenTF.getDocument().addDocumentListener(new DocumentListener() {
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+          recalcTime();
         }
 
-      };
-      mainToolbar1.add(action);
-    }
-    // STOP MAGIC
-    {
-      AbstractAction action = new AbstractAction("Stop") {
-        public void actionPerformed(ActionEvent e) {
-          Thread myThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-              LOGGER.info("Stopping BB Gun");
-              _stopAllThreads = true;
-            }
-          });
-
-          myThread.start();
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+          recalcTime();
         }
-      };
-      mainToolbar1.add(action);
-    }
 
-    // RECORD
-    {
-      AbstractAction action = new AbstractAction("R") {
-        public void actionPerformed(ActionEvent e) {
-          Thread myThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-              record();
-            }
-          });
-
-          myThread.start();
+        @Override
+        public void changedUpdate(DocumentEvent e) {
         }
-      };
-      mainToolbar1.add(action);
+      });
     }
-
-    // RESET BUILDINGS
     {
-      AbstractAction action = new AbstractAction("Reset") {
-        public void actionPerformed(ActionEvent e) {
-          Thread myThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-              // //clearBuildings();
-              // try {
-              // if (!_scanner.isOptimized()) {
-              // scan();
-              // }
-              //
-              // if (_scanner.isOptimized()) {
-              // _mouse.savePosition();
-              // locateIndustries();
-              // _mouse.restorePosition();
-              // } else {
-              // LOGGER.info("I need to know where the game is!");
-              // }
-              // } catch (RobotInterruptedException e) {
-              // LOGGER.log(Level.WARNING, e.getMessage());
-              // e.printStackTrace();
-              // } catch (IOException e) {
-              // LOGGER.log(Level.WARNING, e.getMessage());
-              // e.printStackTrace();
-              // } catch (AWTException e) {
-              // LOGGER.log(Level.WARNING, e.getMessage());
-              // e.printStackTrace();
-              // }
-            }
+      _tileTF = new JTextField("112");
+      mainToolbar1.add(_tileTF);
+      _tileTF.getDocument().addDocumentListener(new DocumentListener() {
 
-          });
-
-          myThread.start();
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+          recalcTime();
         }
-      };
-      mainToolbar1.add(action);
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+          recalcTime();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+        }
+      });
     }
     {
-    	_timeTF = new JTextField("5");
-    	mainToolbar1.add(_timeTF);
+      _timeTF = new JTextField("5");
+      mainToolbar1.add(_timeTF);
     }
 
     return mainToolbar1;
+  }
+
+  protected void recalcTime() {
+    String regenS = _regenTF.getText();
+    String tileS = _tileTF.getText();
+    try {
+      int regen = Integer.parseInt(regenS);
+      int tilePrice = Integer.parseInt(tileS);
+      double time = 3600 * tilePrice / regen;
+      _timeTF.setText("" + ((int) time));
+    } catch (NumberFormatException e) {
+      LOGGER.warning("ENTER NUMBERS!");
+    }
+
   }
 
   @SuppressWarnings("serial")
@@ -1360,6 +1356,8 @@ public class MainFrame extends JFrame {
 
   private GraphMazeRunner _mazeRunner;
 
+  private MazeCanvas _mazeCanvas;
+
   private void setProtocol(String shipProtocolName) {
     // _shipProtocolManagerUI.setShipProtocol(shipProtocolName);
   }
@@ -1545,7 +1543,7 @@ public class MainFrame extends JFrame {
         // new Service().purgeAll();
         boolean stop = false;
         do {
-          //LOGGER.info("......");
+          // LOGGER.info("......");
           try {
             _settings.loadSettings();
             reapplySettings();
@@ -1660,7 +1658,7 @@ public class MainFrame extends JFrame {
   }
 
   private void scanDiggyFromHere(boolean clearMatrix) {
-  	int seconds = Integer.parseInt(_timeTF.getText());
+    int seconds = Integer.parseInt(_timeTF.getText());
     _mazeRunner.doSomething(clearMatrix, seconds);
   }
 }
