@@ -1545,7 +1545,7 @@ public class MainFrame extends JFrame {
         // new Service().purgeAll();
         boolean stop = false;
         do {
-          LOGGER.info("......");
+          //LOGGER.info("......");
           try {
             _settings.loadSettings();
             reapplySettings();

@@ -46,6 +46,7 @@ public class GraphMazeRunner {
 
     @Override
     public boolean visit(Position vertex) throws Exception {
+      LOGGER.info("[" + vertex._row + ", " + vertex._col + "] " + vertex._state);
       try {
         ensureArea(vertex, 0, 0);
         if (vertex._state == State.GREEN) {
@@ -71,9 +72,9 @@ public class GraphMazeRunner {
 
         // check various popups (like achievements)
         // TOO SLOW
-        // if (checkPopups()) {
-        // _mouse.delay(250);
-        // }
+        if (checkPopups()) {
+          _mouse.delay(250);
+        }
         if (vertex._state == State.START) {
           vertex._state = State.VISITED;
           checkNeighbor(_graph, vertex, 1, 0);
@@ -84,6 +85,15 @@ public class GraphMazeRunner {
           BufferedImage preClick = captureBlock(vertex._coords);
           _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
           if (isWalkable(vertex, preClick)) {
+
+            // wait until diggy arrives
+            int tries = 0;
+            do {
+              _mouse.delay(200);
+              if (tries++ > 4)
+                LOGGER.info("waiting diggy to arrive " + tries);
+            } while (!_scanner.isDiggyExactlyHere(vertex._coords) && tries < 15);
+
             // tadaaaa
 
             // wait until diggy come
@@ -147,7 +157,7 @@ public class GraphMazeRunner {
         images.add(captureBlock(p));
       }
       long end = System.currentTimeMillis();
-      LOGGER.info("time: " + (start - end));
+      LOGGER.fine("time: " + (end - start));
 
       // BufferedImage filteredPreClick = filterArrows(preClick);
       // filterprec
@@ -167,7 +177,7 @@ public class GraphMazeRunner {
         if (walkable)
           break;
       }
-      LOGGER.info("walkable: " + walkable + " " + x);
+      LOGGER.fine("walkable: " + walkable + " " + x);
       return walkable;
     }
 
@@ -218,7 +228,7 @@ public class GraphMazeRunner {
 
       int xCorrection = 0;
       int yCorrection = 0;
-      int step = 180;
+      int step = 60;
       if (rowOffset == 0 && colOffset == 0) {
         // it's a vertex, not neighbor
 
@@ -231,7 +241,8 @@ public class GraphMazeRunner {
             xCorrection = westBorder - xx + step;
           }
         }
-
+        // if (xCorrection > 0)
+        // xCorrection = Math.min(60, xCorrection);
         // check south
         if (yy > southBorder) {
           yCorrection = southBorder - yy - step;// negative
@@ -241,6 +252,8 @@ public class GraphMazeRunner {
             yCorrection = northBorder - yy + step;
           }
         }
+        // if (yCorrection > 0)
+        // yCorrection = Math.min(60, yCorrection);
         // ////////////// ALL /////////////////
       } else {
 
@@ -272,7 +285,7 @@ public class GraphMazeRunner {
       if (xCorrection != 0 || yCorrection != 0) {
         if (xCorrection != 0) {
           // HORIZONTAL
-          double width = _scanner.getScanArea().getWidth() - 20;
+          double width = _scanner.getScanArea().getWidth();
           int n = (int) ((xCorrection) / width);
           double theRest = (xCorrection / width) - n;
           theRest *= width;
@@ -289,8 +302,13 @@ public class GraphMazeRunner {
             _mouse.drag(start.x, start.y, end.x, end.y);
             _mouse.delay(100);
           }
-          if ((int) theRest != 0) {
-            end = new Pixel(start.x + (int) theRest, start.y);
+          if (n != 0) {
+            if ((int) theRest != 0) {
+              end = new Pixel(start.x + (int) theRest, start.y);
+              _mouse.drag(start.x, start.y, end.x, end.y);
+            }
+          } else {
+            end = new Pixel(start.x + xCorrection, start.y);
             _mouse.drag(start.x, start.y, end.x, end.y);
           }
         }
@@ -313,8 +331,13 @@ public class GraphMazeRunner {
             _mouse.drag(start.x, start.y, end.x, end.y);
             _mouse.delay(100);
           }
-          if ((int) theRest != 0) {
-            end = new Pixel(start.x, start.y + (int) theRest);
+          if (n != 0) {
+            if ((int) theRest != 0) {
+              end = new Pixel(start.x, start.y + (int) theRest);
+              _mouse.drag(start.x, start.y, end.x, end.y);
+            }
+          } else {
+            end = new Pixel(start.x, start.y + yCorrection);
             _mouse.drag(start.x, start.y, end.x, end.y);
           }
         }
@@ -379,7 +402,6 @@ public class GraphMazeRunner {
         LOGGER.info("X correction: " + totalXCorrection);
         LOGGER.info("Y correction: " + totalYCorrection);
         LOGGER.info("===============================");
-        _mouse.delay(5000);
       }
 
     }

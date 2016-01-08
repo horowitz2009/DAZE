@@ -134,7 +134,7 @@ public class ScreenScanner {
 		_scanArea = new Rectangle(_tl.x + 124, _tl.y + 78, getGameWidth() - 124 - 114, getGameHeight() - 78 - 82);
 		
 		
-	    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2, _tl.y, 400, getGameWidth()/2 + 50);
+	    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144, _tl.y, 400-144, getGameWidth() / 2 + 50);
 
 
 		// int xxx = (getGameWidth() - 137) / 2;
