@@ -24,9 +24,10 @@ public class Catalano {
     Catalano catalano = new Catalano();
 
     try {
-      catalano.extractCommon("temp/arr/a", 6, 
-          new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240),
-          new IntRange(5, 85)), 70);
+      catalano.extractGate(9);
+//      catalano.extractCommon("temp/arr/a", 6, 
+//          new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240),
+//          new IntRange(5, 85)), 70);
       System.err.println("DONE.");
     } catch (IOException e) {
       e.printStackTrace();

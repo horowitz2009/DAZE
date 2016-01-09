@@ -94,8 +94,8 @@ public class MainFrame extends JFrame {
 
   private TemplateMatcher _matcher;
 
-  private JToggleButton _fishToggle;
-  private JToggleButton _shipsToggle;
+  private JToggleButton _popupsToggle;
+  private JToggleButton _gatesToggle;
 
   private JToggleButton _industriesToggle;
   // private JToggleButton _xpToggle;
@@ -153,7 +153,7 @@ public class MainFrame extends JFrame {
 
       // LOADING DATA
       _settings = Settings.createSettings("daze.properties");
-      if (!_settings.containsKey("strategy")) {
+      if (!_settings.containsKey("popups")) {
         setDefaultSettings();
       }
 
@@ -185,20 +185,23 @@ public class MainFrame extends JFrame {
       System.exit(1);
     }
 
+    _mazeRunner = new GraphMazeRunner(_scanner);
+
     initLayout();
+    
+    _mazeRunner.addPropertyChangeListener(_mazeCanvas.createPropertyChangeListener());
+    
     loadStats();
 
     reapplySettings();
 
     runSettingsListener();
 
-    _mazeRunner = new GraphMazeRunner(_scanner);
-    _mazeRunner.addPropertyChangeListener(_mazeCanvas.createPropertyChangeListener());
   }
 
   private void setDefaultSettings() {
-    // _settings.setProperty("fish", "true");
-    // _settings.setProperty("ships", "true");
+    _settings.setProperty("popups", "false");
+    _settings.setProperty("gates", "false");
     // _settings.setProperty("industries", "true");
     // _settings.setProperty("slow", "false");
     // _settings.setProperty("autoSailors", "false");
@@ -236,7 +239,7 @@ public class MainFrame extends JFrame {
 
     JPanel toolbars = new JPanel(new GridLayout(0, 1));
     toolbars.add(mainToolbar1);
-    // toolbars.add(mainToolbar2);
+    toolbars.add(mainToolbar2);
     // // for (JToolBar jToolBar : mainToolbars3) {
     // // toolbars.add(jToolBar);
     // // }
@@ -308,8 +311,8 @@ public class MainFrame extends JFrame {
 
     final JTextArea shipLog = new JTextArea(5, 10);
     _mazeCanvas = new MazeCanvas();
-    _mazeCanvas.setMinimumSize(new Dimension(400, 225));
-    _mazeCanvas.setPreferredSize(new Dimension(400, 225));
+    _mazeCanvas.setMinimumSize(new Dimension(800, 450));
+    _mazeCanvas.setPreferredSize(new Dimension(800, 450));
 
     rootPanel.add(new JScrollPane(_mazeCanvas), BorderLayout.SOUTH);
 
@@ -791,93 +794,94 @@ public class MainFrame extends JFrame {
     // SCAN
     {
       // SHIPS
-      _fishToggle = new JToggleButton("Fish");
+      _popupsToggle = new JToggleButton("Popups");
       // _fishToggle.setSelected(true);
-      _fishToggle.addItemListener(new ItemListener() {
+      _popupsToggle.addItemListener(new ItemListener() {
         @Override
         public void itemStateChanged(ItemEvent e) {
           boolean b = e.getStateChange() == ItemEvent.SELECTED;
-          _fishTask.setEnabled(b);
-          _settings.setProperty("fish", "" + b);
+          _mazeRunner.setPopups(b);
+          _settings.setProperty("popups", "" + b);
           _settings.saveSettingsSorted();
         }
       });
-      toolbar.add(_fishToggle);
+      toolbar.add(_popupsToggle);
 
       // SHIPS
-      _shipsToggle = new JToggleButton("Ships");
+      _gatesToggle = new JToggleButton("Gates");
       // _shipsToggle.setSelected(true);
-      _shipsToggle.addItemListener(new ItemListener() {
+      _gatesToggle.addItemListener(new ItemListener() {
         @Override
         public void itemStateChanged(ItemEvent e) {
           boolean b = e.getStateChange() == ItemEvent.SELECTED;
-          _shipsTask.setEnabled(b);
-          _settings.setProperty("ships", "" + b);
+          _mazeRunner.setGates(b);
+          _settings.setProperty("gates", "" + b);
           _settings.saveSettingsSorted();
         }
       });
-      toolbar.add(_shipsToggle);
+      toolbar.add(_gatesToggle);
 
-      // BUILDINGS
-      _industriesToggle = new JToggleButton("Industries");
-      // _industriesToggle.setSelected(true);
-      _industriesToggle.addItemListener(new ItemListener() {
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-          boolean b = e.getStateChange() == ItemEvent.SELECTED;
-          _buildingsTask.setEnabled(b);
-          _settings.setProperty("industries", "" + b);
-          _settings.saveSettingsSorted();
-
-        }
-      });
-      toolbar.add(_industriesToggle);
-
-      _autoRefreshToggle = new JToggleButton("AR");
-      _autoRefreshToggle.addItemListener(new ItemListener() {
-
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-          boolean b = e.getStateChange() == ItemEvent.SELECTED;
-          LOGGER.info("Auto Refresh mode: " + (b ? "on" : "off"));
-          _settings.setProperty("autoRefresh", "" + b);
-          _settings.saveSettingsSorted();
-        }
-      });
-      // _slowToggle.setSelected(false);
-      toolbar.add(_autoRefreshToggle);
-
-      _pingToggle = new JToggleButton("Ping");
-      // _autoSailorsToggle.setSelected(false);
-      _pingToggle.addItemListener(new ItemListener() {
-
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-          boolean b = e.getStateChange() == ItemEvent.SELECTED;
-          LOGGER.info("Ping: " + (b ? "on" : "off"));
-          _settings.setProperty("ping", "" + b);
-          _settings.saveSettingsSorted();
-
-        }
-      });
-
-      toolbar.add(_pingToggle);
-
-      // _xpToggle = new JToggleButton("XP");
-      // _xpToggle.setSelected(_mapManager.getMarketStrategy().equals("XP"));
-      // _xpToggle.addItemListener(new ItemListener() {
-      //
-      // @Override
-      // public void itemStateChanged(ItemEvent e) {
-      // boolean b = e.getStateChange() == ItemEvent.SELECTED;
-      // String strategy = b ? "XP" : "COINS";
-      // LOGGER.info("MARKET STRATEGY: " + strategy);
-      // _mapManager.setMarketStrategy(strategy);
-      // }
-      // });
-      // toolbar.add(_xpToggle);
+//      // BUILDINGS
+//      _industriesToggle = new JToggleButton("Industries");
+//      // _industriesToggle.setSelected(true);
+//      _industriesToggle.addItemListener(new ItemListener() {
+//        @Override
+//        public void itemStateChanged(ItemEvent e) {
+//          boolean b = e.getStateChange() == ItemEvent.SELECTED;
+//          _buildingsTask.setEnabled(b);
+//          _settings.setProperty("industries", "" + b);
+//          _settings.saveSettingsSorted();
+//
+//        }
+//      });
+//      toolbar.add(_industriesToggle);
+//
+//      _autoRefreshToggle = new JToggleButton("AR");
+//      _autoRefreshToggle.addItemListener(new ItemListener() {
+//
+//        @Override
+//        public void itemStateChanged(ItemEvent e) {
+//          boolean b = e.getStateChange() == ItemEvent.SELECTED;
+//          LOGGER.info("Auto Refresh mode: " + (b ? "on" : "off"));
+//          _settings.setProperty("autoRefresh", "" + b);
+//          _settings.saveSettingsSorted();
+//        }
+//      });
+//      // _slowToggle.setSelected(false);
+//      toolbar.add(_autoRefreshToggle);
+//
+//      _pingToggle = new JToggleButton("Ping");
+//      // _autoSailorsToggle.setSelected(false);
+//      _pingToggle.addItemListener(new ItemListener() {
+//
+//        @Override
+//        public void itemStateChanged(ItemEvent e) {
+//          boolean b = e.getStateChange() == ItemEvent.SELECTED;
+//          LOGGER.info("Ping: " + (b ? "on" : "off"));
+//          _settings.setProperty("ping", "" + b);
+//          _settings.saveSettingsSorted();
+//
+//        }
+//      });
+//
+//      toolbar.add(_pingToggle);
+//
+//      // _xpToggle = new JToggleButton("XP");
+//      // _xpToggle.setSelected(_mapManager.getMarketStrategy().equals("XP"));
+//      // _xpToggle.addItemListener(new ItemListener() {
+//      //
+//      // @Override
+//      // public void itemStateChanged(ItemEvent e) {
+//      // boolean b = e.getStateChange() == ItemEvent.SELECTED;
+//      // String strategy = b ? "XP" : "COINS";
+//      // LOGGER.info("MARKET STRATEGY: " + strategy);
+//      // _mapManager.setMarketStrategy(strategy);
+//      // }
+//      // });
+//      // toolbar.add(_xpToggle);
 
     }
+
     return toolbar;
   }
 
@@ -1448,30 +1452,30 @@ public class MainFrame extends JFrame {
 
     // toggles
 
-    boolean fish = "true".equalsIgnoreCase(_settings.getProperty("fish"));
-    if (fish != _fishToggle.isSelected()) {
-      _fishToggle.setSelected(fish);
+    boolean popups = "true".equalsIgnoreCase(_settings.getProperty("popups"));
+    if (popups != _popupsToggle.isSelected()) {
+      _popupsToggle.setSelected(popups);
     }
 
-    boolean ships = "true".equalsIgnoreCase(_settings.getProperty("ships"));
-    if (ships != _shipsToggle.isSelected()) {
-      _shipsToggle.setSelected(ships);
+    boolean gates = "true".equalsIgnoreCase(_settings.getProperty("gates"));
+    if (gates != _gatesToggle.isSelected()) {
+      _gatesToggle.setSelected(gates);
     }
 
-    boolean industries = "true".equalsIgnoreCase(_settings.getProperty("industries"));
-    if (industries != _industriesToggle.isSelected()) {
-      _industriesToggle.setSelected(industries);
-    }
-
-    boolean slow = "true".equalsIgnoreCase(_settings.getProperty("autoRefresh"));
-    if (slow != _autoRefreshToggle.isSelected()) {
-      _autoRefreshToggle.setSelected(slow);
-    }
-
-    boolean ping = "true".equalsIgnoreCase(_settings.getProperty("ping"));
-    if (ping != _pingToggle.isSelected()) {
-      _pingToggle.setSelected(ping);
-    }
+//    boolean industries = "true".equalsIgnoreCase(_settings.getProperty("industries"));
+//    if (industries != _industriesToggle.isSelected()) {
+//      _industriesToggle.setSelected(industries);
+//    }
+//
+//    boolean slow = "true".equalsIgnoreCase(_settings.getProperty("autoRefresh"));
+//    if (slow != _autoRefreshToggle.isSelected()) {
+//      _autoRefreshToggle.setSelected(slow);
+//    }
+//
+//    boolean ping = "true".equalsIgnoreCase(_settings.getProperty("ping"));
+//    if (ping != _pingToggle.isSelected()) {
+//      _pingToggle.setSelected(ping);
+//    }
 
   }
 

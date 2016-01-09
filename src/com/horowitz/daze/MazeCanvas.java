@@ -7,6 +7,7 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,8 +38,12 @@ public class MazeCanvas extends JPanel {
 
     // drawSomething(g);
     //
-    for (Position position : _matrix) {
+    for (Position position : Collections.synchronizedSet(_matrix)) {
       drawBlock(position, g);
+    }
+    
+    if (_diggy != null) {
+      drawDiggy(_diggy, g);
     }
 
     // for (int i = 0; i < w / blockSize; i++) {
@@ -96,18 +101,22 @@ public class MazeCanvas extends JPanel {
     super.paint(gc);
   }
 
+  private void drawDiggy(Position pos, Graphics g) {
+    drawBlock(pos, Color.yellow, g);
+  }
+
   private void drawBlock(Position pos, Graphics g) {
     Color c = Color.white;
     if (pos._state != null) {
       if (pos._state == State.VISITED) {
-        c = Color.lightGray;
+        c = Color.white;
       } else if (pos._state == State.OBSTACLE) {
         c = Color.black;
       }
       if (pos._state == State.GREEN) {
         c = Color.green;
       } else if (pos._state == State.CHECKED) {
-        c = Color.gray;
+        c = Color.lightGray;
       }
     }
     drawBlock(pos, c, g);
@@ -132,6 +141,8 @@ public class MazeCanvas extends JPanel {
     frame.setVisible(true);
   }
 
+  Position _diggy = null;
+
   private Set<Position> _matrix = new HashSet<>();
 
   public PropertyChangeListener createPropertyChangeListener() {
@@ -139,7 +150,9 @@ public class MazeCanvas extends JPanel {
 
       @Override
       public void propertyChange(PropertyChangeEvent e) {
-        if (e.getPropertyName().equals("CLEARED")) {
+        if (e.getPropertyName().equals("DIGGY")) {
+          _diggy = (Position) e.getNewValue();
+        } else if (e.getPropertyName().equals("CLEARED")) {
           _matrix.clear();
         } else if (e.getPropertyName().equals("POS_REMOVED")) {
           _matrix.remove(e.getNewValue());

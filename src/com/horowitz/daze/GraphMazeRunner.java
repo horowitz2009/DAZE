@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import Catalano.Core.IntRange;
@@ -35,6 +34,9 @@ import com.horowitz.commons.RobotInterruptedException;
 import com.horowitz.commons.SimilarityImageComparator;
 
 public class GraphMazeRunner {
+
+  private boolean _popups = false;
+  private boolean _gates = false;
 
   private final class Visitor implements Graph.Visitor<Position> {
     private final Position _start;
@@ -76,23 +78,21 @@ public class GraphMazeRunner {
           _mouse.delay(_pauseTime * 1000);
         }
 
-        // check various popups (like achievements)
-        // TOO SLOW
-        if (checkPopups()) {
+        if (_popups && checkPopups()) {
           _mouse.delay(250);
         }
+
         if (vertex._state == State.START) {
           vertex._state = State.VISITED;
           _support.firePropertyChange("STATE_CHANGED", null, vertex);
+          checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
           checkNeighbor(_graph, vertex, 1, 0);
           checkNeighbor(_graph, vertex, 0, 1);
-          checkNeighbor(_graph, vertex, 0, -1);
           checkNeighbor(_graph, vertex, -1, 0);
         } else {
           BufferedImage preClick = captureBlock(vertex._coords);
           _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
           if (isWalkable(vertex, preClick)) {
-
             // wait until diggy arrives
             int tries = 0;
             do {
@@ -111,15 +111,43 @@ public class GraphMazeRunner {
             vertex._state = State.VISITED;
             _support.firePropertyChange("STATE_CHANGED", null, vertex);
 
+            checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
             checkNeighbor(_graph, vertex, 1, 0);
             checkNeighbor(_graph, vertex, 0, 1);
-            checkNeighbor(_graph, vertex, 0, -1);
             checkNeighbor(_graph, vertex, -1, 0);
 
           } else {
+            if (_gates) {
+              LOGGER.info("CHECK LOADING...");
+              if (checkIsLoading()) {
+                LOGGER.info("LOADING...");
+                vertex._state = State.OBSTACLE;
+                _support.firePropertyChange("STATE_CHANGED", null, vertex);
+
+                // restore the
+                // try first diggy
+                _mouse.mouseMove(_scanner.getParkingPoint());
+                Pixel p = findDiggyBig(5);
+                if (p != null) {
+                  // good we can go back now
+                  _mouse.click(p.x + 30, p.y + 30);
+                  _mouse.delay(5000);
+                  _mouse.mouseMove(_scanner.getParkingPoint());
+                  p = findDiggyBig(15);
+                  if (p != null) {
+                    // excellent, we are back in the map
+                    vertex._coords = p;
+                    _start._coords = new Pixel(p.x - vertex._row * 60, p.y - vertex._col * 60);
+                  }
+
+                }
+                return false;
+              }
+            }
             vertex._state = State.OBSTACLE;
             _support.firePropertyChange("STATE_CHANGED", null, vertex);
             return false;
+
           }
         }
         // OLD WAY - SLOW!!!
@@ -152,6 +180,43 @@ public class GraphMazeRunner {
       return true;
     }
 
+    private Pixel findDiggyBig(int tries) throws RobotInterruptedException, IOException, AWTException {
+      Rectangle diggyArea = _scanner.getScanArea();
+      int t = 0;
+      Pixel p;
+      do {
+        _mouse.delay(100);
+        p = _scanner.findDiggy(diggyArea);
+      } while (p == null && t < tries);
+      return p;
+    }
+
+    private boolean checkIsLoading() throws IOException, AWTException, RobotInterruptedException {
+      _mouse.delay(133);
+      int tries = 0;
+      Pixel p;
+      BufferedImage logoFiltered = _scanner.getImageData("logo.bmp").getImage();
+
+      logoFiltered = filterLogo(logoFiltered, 1);
+      // List<BufferedImage> images = new ArrayList<>();
+      do {
+        Rectangle area = _scanner._logoArea;
+        BufferedImage areaFiltered = new Robot().createScreenCapture(area);
+        areaFiltered = filterLogo(areaFiltered, 2 + tries);
+
+        p = _scanner._matcher.findMatch(logoFiltered, areaFiltered, null);
+        // p = _comparator.findImage(logoFiltered, areaFiltered, null);
+
+        tries++;
+        if (p == null)
+          _mouse.delay(70);
+      } while (p == null && tries < 5);
+
+      if (p != null)
+        LOGGER.info("detected loading in attempt " + tries);
+      return p != null;
+    }
+
     private boolean isWalkable(Position vertex, BufferedImage preClick) throws AWTException, RobotInterruptedException {
       // int delay = 27;
       int number = 30;
@@ -161,8 +226,10 @@ public class GraphMazeRunner {
       _mouse.delay(30);
       for (int i = 0; i < number; i++) {
         // _mouse.delay(delay);
-        if (i == 4)
+        if (i == 4) {
           _mouse.click(p.x + 30, p.y + 30);
+          // LOGGER.info("click isWalkable");
+        }
         images.add(captureBlock(p));
       }
       long end = System.currentTimeMillis();
@@ -215,7 +282,7 @@ public class GraphMazeRunner {
         ok++;
       // LOGGER.info(x + " " + b1 + " " + b2 + " " + b3 + " " + b4);
 
-      return ok >= 2;
+      return ok >= 3;
     }
 
     @Override
@@ -229,6 +296,7 @@ public class GraphMazeRunner {
 
       int xx = _start._coords.x + (pos._row + rowOffset) * 60;
       int yy = _start._coords.y + (pos._col + colOffset) * 60;
+      // LOGGER.info("" + pos);
       Rectangle area = _scanner.getScanArea();
       int eastBorder = area.x + area.width;
       int westBorder = area.x;
@@ -237,64 +305,42 @@ public class GraphMazeRunner {
 
       int xCorrection = 0;
       int yCorrection = 0;
-      int step = 60;
       if (rowOffset == 0 && colOffset == 0) {
         // it's a vertex, not neighbor
 
+        // CHECKED FOR SMALL DISTANCES
         // check east
-        if (xx > eastBorder) {
-          xCorrection = eastBorder - xx - step;// negative
+        if (xx + 60 > eastBorder) {
+          xCorrection = eastBorder - (xx + 60);// negative
         } else {
           // check west
           if (xx < westBorder) {
-            xCorrection = westBorder - xx + step;
+            xCorrection = westBorder - xx;
           }
         }
         // if (xCorrection > 0)
         // xCorrection = Math.min(60, xCorrection);
+
+        // CHECKED FOR SMALL DISTANCES
         // check south
-        if (yy > southBorder) {
-          yCorrection = southBorder - yy - step;// negative
+        if (yy + 60 > southBorder) {
+          yCorrection = southBorder - (yy + 60);// negative
         } else {
           // check north
           if (yy < northBorder) {
-            yCorrection = northBorder - yy + step;
+            yCorrection = northBorder - yy;
           }
         }
         // if (yCorrection > 0)
         // yCorrection = Math.min(60, yCorrection);
         // ////////////// ALL /////////////////
-      } else {
-
-        if (rowOffset > 0) {
-          // check east
-          if (xx + 60 > eastBorder) {
-            xCorrection = -step;
-          }
-        } else if (rowOffset < 0) {
-          // check west
-          if (xx < westBorder) {
-            xCorrection = step;
-          }
-        }
-
-        if (colOffset > 0) {
-          // check south
-          if (yy + 60 > southBorder) {
-            yCorrection = -step;
-          }
-        } else if (colOffset < 0) {
-          // check north
-          if (yy < northBorder) {
-            yCorrection = step;
-          }
-        }
       }
 
+      // CHECKED
       if (xCorrection != 0 || yCorrection != 0) {
         if (xCorrection != 0) {
           // HORIZONTAL
-          double width = _scanner.getScanArea().getWidth();
+          double width = _scanner.getScanArea().getWidth() - 20;
           int n = (int) ((xCorrection) / width);
           double theRest = (xCorrection / width) - n;
           theRest *= width;
@@ -302,25 +348,27 @@ public class GraphMazeRunner {
           Pixel end;
           if (xCorrection < 0) {
             start = new Pixel(eastBorder - 10, _scanner.getTopLeft().y + _scanner.getGameHeight() / 2);
-            end = new Pixel(start.x + (int) width, start.y);
+            end = new Pixel(start.x - (int) width, start.y);
           } else {
             start = new Pixel(westBorder + 10, _scanner.getTopLeft().y + _scanner.getGameHeight() / 2);
             end = new Pixel(start.x + (int) width, start.y);
           }
           for (int i = 0; i < n; ++i) {
-            _mouse.drag(start.x, start.y, end.x, end.y);
+            _mouse.drag3(start.x, start.y, end.x, end.y);
             _mouse.delay(100);
           }
           if (n != 0) {
             if ((int) theRest != 0) {
               end = new Pixel(start.x + (int) theRest, start.y);
-              _mouse.drag(start.x, start.y, end.x, end.y);
+              _mouse.drag3(start.x, start.y, end.x, end.y);
             }
           } else {
             end = new Pixel(start.x + xCorrection, start.y);
-            _mouse.drag(start.x, start.y, end.x, end.y);
+            _mouse.drag3(start.x, start.y, end.x, end.y);
           }
         }
+
+        // CHECKED
         if (yCorrection != 0) {
           // VERTICAL
           double height = _scanner.getScanArea().getHeight() - 20;
@@ -330,24 +378,25 @@ public class GraphMazeRunner {
           Pixel start;
           Pixel end;
           if (yCorrection < 0) {
+            // start from south -> go north
             start = new Pixel(_scanner.getTopLeft().x + _scanner.getGameWidth() / 2, southBorder - 10);
-            end = new Pixel(start.x, start.y + (int) height);
+            end = new Pixel(start.x, start.y - (int) height);
           } else {
             start = new Pixel(_scanner.getTopLeft().x + _scanner.getGameWidth() / 2, northBorder + 10);
             end = new Pixel(start.x, start.y + (int) height);
           }
           for (int i = 0; i < n; ++i) {
-            _mouse.drag(start.x, start.y, end.x, end.y);
+            _mouse.drag3(start.x, start.y, end.x, end.y);
             _mouse.delay(100);
           }
           if (n != 0) {
             if ((int) theRest != 0) {
               end = new Pixel(start.x, start.y + (int) theRest);
-              _mouse.drag(start.x, start.y, end.x, end.y);
+              _mouse.drag3(start.x, start.y, end.x, end.y);
             }
           } else {
             end = new Pixel(start.x, start.y + yCorrection);
-            _mouse.drag(start.x, start.y, end.x, end.y);
+            _mouse.drag3(start.x, start.y, end.x, end.y);
           }
         }
         _start._coords.x += xCorrection;
@@ -357,56 +406,61 @@ public class GraphMazeRunner {
         int totalXCorrection = xCorrection;
         int totalYCorrection = yCorrection;
 
-        Pixel p;
-        int tries = 0;
-        do {
-          _mouse.delay(500);
-          p = lookForDiggyAroundHere(pos._coords, tries);
-          tries++;
-        } while (p == null && tries < 6);
+        /*
+                //WHERE IS DIGGY NOW?
+                //option 1: it is close
+                //option 2: it is not close, but still visible
+                //option 3: it is far outside the scanArea
+                Pixel p;
+                int tries = 0;
+                do {
+                  _mouse.delay(500);
+                  p = lookForDiggyAroundHere(pos._coords, tries);
+                  tries++;
+                } while (p == null && tries < 6);
 
-        if (p != null) {
-          LOGGER.info("Found diggy in attempt " + tries);
+                if (p != null) {
+                  LOGGER.info("Found diggy in attempt " + tries);
 
-          LOGGER.info("CURRENT POS: " + pos);
-          int rowCorrective = 0;
-          if (pos._coords.x - p.x > 0) {
-            LOGGER.info("mini X correction: " + (pos._coords.x - p.x));
+                  LOGGER.info("CURRENT POS: " + pos);
+                  int rowCorrective = 0;
+                  if (pos._coords.x - p.x > 0) {
+                    LOGGER.info("mini X correction: " + (pos._coords.x - p.x));
 
-            rowCorrective = -1 * getInt((pos._coords.x - p.x) / 60);
-          } else if (pos._coords.x - p.x < 50) {
-            LOGGER.info("mini X correction: " + (pos._coords.x - p.x));
-            rowCorrective = 1 * getInt((pos._coords.x - p.x) / 60);
-          }
-          int colCorrective = 0;
-          if (pos._coords.y - p.y > 50) {
-            LOGGER.info("mini Y correction: " + (pos._coords.y - p.y));
-            colCorrective = -1 * getInt((pos._coords.y - p.y) / 60);
-          } else if (pos._coords.y - p.y < 50) {
-            LOGGER.info("mini Y correction: " + (pos._coords.y - p.y));
-            colCorrective = 1 * getInt((pos._coords.y - p.y) / 60);
-          }
-          if (rowCorrective != 0 || colCorrective != 0) { // need to move it
-            LOGGER.info("DIGGY FOUND IN DIFFERENT POSITION!!!");
-            pos._row += rowCorrective;
-            pos._col += colCorrective;
-            LOGGER.info("" + pos);
-          }
-          int secondXCorrection = pos._coords.x - p.x;
-          int secondYCorrection = pos._coords.y - p.y;
-          pos._coords = p;
-          Pixel s = _start._coords;
-          s.x = p.x - pos._row * 60;
-          s.y = p.y - pos._col * 60;
+                    rowCorrective = -1 * getInt((pos._coords.x - p.x) / 60);
+                  } else if (pos._coords.x - p.x < 50) {
+                    LOGGER.info("mini X correction: " + (pos._coords.x - p.x));
+                    rowCorrective = 1 * getInt((pos._coords.x - p.x) / 60);
+                  }
+                  int colCorrective = 0;
+                  if (pos._coords.y - p.y > 50) {
+                    LOGGER.info("mini Y correction: " + (pos._coords.y - p.y));
+                    colCorrective = -1 * getInt((pos._coords.y - p.y) / 60);
+                  } else if (pos._coords.y - p.y < 50) {
+                    LOGGER.info("mini Y correction: " + (pos._coords.y - p.y));
+                    colCorrective = 1 * getInt((pos._coords.y - p.y) / 60);
+                  }
+                  if (rowCorrective != 0 || colCorrective != 0) { // need to move it
+                    LOGGER.info("DIGGY FOUND IN DIFFERENT POSITION!!!");
+                    pos._row += rowCorrective;
+                    pos._col += colCorrective;
+                    LOGGER.info("" + pos);
+                  }
+                  int secondXCorrection = pos._coords.x - p.x;
+                  int secondYCorrection = pos._coords.y - p.y;
+                  pos._coords = p;
+                  Pixel s = _start._coords;
+                  s.x = p.x - pos._row * 60;
+                  s.y = p.y - pos._col * 60;
 
-          totalXCorrection -= secondXCorrection;
-          totalYCorrection -= secondYCorrection;
+                  totalXCorrection -= secondXCorrection;
+                  totalYCorrection -= secondYCorrection;
 
-        } else {
-          LOGGER.info("UH OH! I Lost diggy...");
+                } else {
+                  LOGGER.info("UH OH! I Lost diggy...");
 
-        }
-
+                }
+        */
         LOGGER.info("===============================");
         LOGGER.info("X correction: " + totalXCorrection);
         LOGGER.info("Y correction: " + totalYCorrection);
@@ -449,33 +503,43 @@ public class GraphMazeRunner {
 
     private void checkNeighbor(final Graph<Position> graph, Position vertex, int rowOffset, int colOffset)
         throws RobotInterruptedException, IOException, AWTException {
-      Position newPos = new Position(vertex._row + rowOffset, vertex._col + colOffset);
-      if (!isAlreadyChecked(graph, newPos)) {
-        newPos._coords = new Pixel(_start._coords.x + newPos._row * 60, _start._coords.y + newPos._col * 60);
+      Position neighborPos = new Position(vertex._row + rowOffset, vertex._col + colOffset);
+      if (!isAlreadyChecked(graph, neighborPos)) {
+        neighborPos._coords = new Pixel(_start._coords.x + neighborPos._row * 60, _start._coords.y + neighborPos._col
+            * 60);
 
-        if (graph.canBeVisited(newPos, this)) {
-          
+        if (graph.canBeVisited(neighborPos, this)) {
+
           // ensureArea(newPos, rowOffset, colOffset);
-          Position vertexCopy = new Position(vertex._row, vertex._col);
-          ensureArea(vertexCopy, rowOffset, colOffset);
-          newPos = new Position(vertex._row + rowOffset, vertex._col + colOffset);
-          newPos._coords = new Pixel(_start._coords.x + newPos._row * 60, _start._coords.y + newPos._col * 60);
-          newPos._state = State.CHECKED;
-          
-          Pixel p = lookForGreenHere(newPos._coords);
+          // Position vertexCopy = new Position(vertex._row, vertex._col);
+          ensureArea(neighborPos, 0, 0);
+          // neighborPos = new Position(vertex._row + rowOffset, vertex._col +
+          // colOffset);
+          neighborPos._coords = new Pixel(_start._coords.x + neighborPos._row * 60, _start._coords.y + neighborPos._col
+              * 60);
+          neighborPos._state = State.CHECKED;
+
+          Pixel p = lookForGreenHere(neighborPos._coords);
           if (p != null) {
-            newPos._state = State.GREEN;
-            _support.firePropertyChange("STATE_CHANGED", null, newPos);
+            neighborPos._state = State.GREEN;
+            _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
             if (isGate(p)) { // TODO not reliable! to be improved
               LOGGER.info("It is gate!!!");
-              newPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
-              _support.firePropertyChange("STATE_CHANGED", null, newPos);
+              neighborPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
+              _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
             }
           }
-          graph.addEdge(vertex, newPos);
+
+          if (isGate(neighborPos._coords)) { // TODO not reliable! to be improved
+            LOGGER.info("It is gate!!!");
+            neighborPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
+            _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
+          }
+          
+          graph.addEdge(vertex, neighborPos);
           // graph.addEdge(newPos, vertex);
-          graph.addExplored(newPos);
-          _support.firePropertyChange("POS_ADDED", null, newPos);
+          graph.addExplored(neighborPos);
+          _support.firePropertyChange("POS_ADDED", null, neighborPos);
         }
       }
     }
@@ -495,7 +559,7 @@ public class GraphMazeRunner {
 
   public GraphMazeRunner(ScreenScanner scanner) {
     super();
-    
+
     _support = new PropertyChangeSupport(this);
     _scanner = scanner;
     _mouse = _scanner.getMouse();
@@ -542,7 +606,7 @@ public class GraphMazeRunner {
   }
 
   public void clearMatrixPartially() {
-    
+
     Iterator<Position> iterator = _explored.iterator();
     while (iterator.hasNext()) {
       Position position = (Position) iterator.next();
@@ -552,7 +616,7 @@ public class GraphMazeRunner {
       }
     }
   }
-  
+
   public void testPosition() {
     Point position = _scanner.getMouse().getPosition();
     int xx = position.x - 120;
@@ -622,6 +686,11 @@ public class GraphMazeRunner {
           graph.preOrderTraversal(start, new Visitor(start, graph));
           LOGGER.info("DONE! STARTING AGAIN in 5 seconds");
           _mouse.delay(5000);
+          // if (clearMatrix) {
+          // clearMatrix();
+          // } else {
+          // clearMatrixPartially();
+          // }
         } while (true);
       }
 
@@ -641,6 +710,8 @@ public class GraphMazeRunner {
     Pixel p = _scanner.scanOneFast("X.bmp", area, false);
     if (p != null) {
       _mouse.click(p.x + 16, p.y + 16);
+      LOGGER.info("click checkPopups");
+
       _mouse.delay(200);
     }
     LOGGER.info("time: " + (System.currentTimeMillis() - start));
@@ -659,6 +730,8 @@ public class GraphMazeRunner {
     Pixel p = _scanner.scanOneFast("X.bmp", area, false);
     if (p != null) {
       _mouse.click(p.x + 16, p.y + 16);
+      LOGGER.info("click checkPopup");
+
       _mouse.delay(200);
     }
     LOGGER.info("time: " + (System.currentTimeMillis() - start));
@@ -677,6 +750,7 @@ public class GraphMazeRunner {
     Pixel p = _scanner.scanOneFast("noEnergyPopup.bmp", area, false);
     if (p != null) {
       _mouse.click(p.x + 333, p.y - 35);
+      LOGGER.info("click checkNoEnergy");
       _mouse.delay(200);
     }
     LOGGER.info("time: " + (System.currentTimeMillis() - start));
@@ -684,13 +758,15 @@ public class GraphMazeRunner {
   }
 
   private boolean isGate(Pixel pp) throws RobotInterruptedException, AWTException, IOException {
-    _mouse.mouseMove(pp.x + 30, pp.y + 58);
-    _mouse.delay(100);
+//    
+//    _mouse.mouseMove(pp.x + 30, pp.y + 30);
+//    _mouse.delay(100);
     Rectangle area = new Rectangle(pp.x + 14, pp.y + 10, 17 + 10, 12 + 12);
     BufferedImage image2 = new Robot().createScreenCapture(area);
     image2 = filterGate(image2);
     ImageData id = _scanner.getImageData("gate.bmp");
     Pixel ppp = _comparator.findImage(id.getImage(), image2, id.getColorToBypass());
+
     return (ppp != null);
   }
 
@@ -717,7 +793,7 @@ public class GraphMazeRunner {
     // do {
     tries++;
     _mouse.click(newPos._coords.x + 30, newPos._coords.y + 30);
-    LOGGER.info("click...");
+    LOGGER.info("click clickTheGreen");
     _mouse.delay(500);
     // } while (lookForGreenHere2(newPos._coords) != null && tries < 5);
 
@@ -777,6 +853,15 @@ public class GraphMazeRunner {
     thr.applyInPlace(fb1);
     // colorFiltering.applyInPlace(fb1);
     // fb1.saveAsBMP("temp2.bmp");
+    return fb1.toBufferedImage();
+  }
+
+  private BufferedImage filterLogo(BufferedImage image, int i) {
+    FastBitmap fb1 = new FastBitmap(image);
+    fb1.toGrayscale();
+    Threshold thr = new Threshold(170);
+    thr.applyInPlace(fb1);
+    // fb1.saveAsPNG("logo"+i+".png");
     return fb1.toBufferedImage();
   }
 
@@ -886,6 +971,22 @@ public class GraphMazeRunner {
 
   public void removePropertyChangeListener(String arg0, PropertyChangeListener arg1) {
     _support.removePropertyChangeListener(arg0, arg1);
+  }
+
+  public boolean isPopups() {
+    return _popups;
+  }
+
+  public void setPopups(boolean popups) {
+    _popups = popups;
+  }
+
+  public boolean isGates() {
+    return _gates;
+  }
+
+  public void setGates(boolean gates) {
+    _gates = gates;
   }
 
 }
