@@ -77,7 +77,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.5";
+  private static String APP_TITLE = "Daze v0.6a";
 
   private Settings _settings;
   private Stats _stats;
@@ -188,9 +188,9 @@ public class MainFrame extends JFrame {
     _mazeRunner = new GraphMazeRunner(_scanner);
 
     initLayout();
-    
+
     _mazeRunner.addPropertyChangeListener(_mazeCanvas.createPropertyChangeListener());
-    
+
     loadStats();
 
     reapplySettings();
@@ -624,7 +624,7 @@ public class MainFrame extends JFrame {
           }
         }
 
-        if (e.getKeyCode() == 121) {// C
+        if (e.getKeyCode() == 121) {// F10
           if (!isRunning("HMM")) {
             Thread t = new Thread(new Runnable() {
               public void run() {
@@ -821,65 +821,78 @@ public class MainFrame extends JFrame {
       });
       toolbar.add(_gatesToggle);
 
-//      // BUILDINGS
-//      _industriesToggle = new JToggleButton("Industries");
-//      // _industriesToggle.setSelected(true);
-//      _industriesToggle.addItemListener(new ItemListener() {
-//        @Override
-//        public void itemStateChanged(ItemEvent e) {
-//          boolean b = e.getStateChange() == ItemEvent.SELECTED;
-//          _buildingsTask.setEnabled(b);
-//          _settings.setProperty("industries", "" + b);
-//          _settings.saveSettingsSorted();
-//
-//        }
-//      });
-//      toolbar.add(_industriesToggle);
-//
-//      _autoRefreshToggle = new JToggleButton("AR");
-//      _autoRefreshToggle.addItemListener(new ItemListener() {
-//
-//        @Override
-//        public void itemStateChanged(ItemEvent e) {
-//          boolean b = e.getStateChange() == ItemEvent.SELECTED;
-//          LOGGER.info("Auto Refresh mode: " + (b ? "on" : "off"));
-//          _settings.setProperty("autoRefresh", "" + b);
-//          _settings.saveSettingsSorted();
-//        }
-//      });
-//      // _slowToggle.setSelected(false);
-//      toolbar.add(_autoRefreshToggle);
-//
-//      _pingToggle = new JToggleButton("Ping");
-//      // _autoSailorsToggle.setSelected(false);
-//      _pingToggle.addItemListener(new ItemListener() {
-//
-//        @Override
-//        public void itemStateChanged(ItemEvent e) {
-//          boolean b = e.getStateChange() == ItemEvent.SELECTED;
-//          LOGGER.info("Ping: " + (b ? "on" : "off"));
-//          _settings.setProperty("ping", "" + b);
-//          _settings.saveSettingsSorted();
-//
-//        }
-//      });
-//
-//      toolbar.add(_pingToggle);
-//
-//      // _xpToggle = new JToggleButton("XP");
-//      // _xpToggle.setSelected(_mapManager.getMarketStrategy().equals("XP"));
-//      // _xpToggle.addItemListener(new ItemListener() {
-//      //
-//      // @Override
-//      // public void itemStateChanged(ItemEvent e) {
-//      // boolean b = e.getStateChange() == ItemEvent.SELECTED;
-//      // String strategy = b ? "XP" : "COINS";
-//      // LOGGER.info("MARKET STRATEGY: " + strategy);
-//      // _mapManager.setMarketStrategy(strategy);
-//      // }
-//      // });
-//      // toolbar.add(_xpToggle);
+      // // BUILDINGS
+      // _industriesToggle = new JToggleButton("Industries");
+      // // _industriesToggle.setSelected(true);
+      // _industriesToggle.addItemListener(new ItemListener() {
+      // @Override
+      // public void itemStateChanged(ItemEvent e) {
+      // boolean b = e.getStateChange() == ItemEvent.SELECTED;
+      // _buildingsTask.setEnabled(b);
+      // _settings.setProperty("industries", "" + b);
+      // _settings.saveSettingsSorted();
+      //
+      // }
+      // });
+      // toolbar.add(_industriesToggle);
+      //
+      // _autoRefreshToggle = new JToggleButton("AR");
+      // _autoRefreshToggle.addItemListener(new ItemListener() {
+      //
+      // @Override
+      // public void itemStateChanged(ItemEvent e) {
+      // boolean b = e.getStateChange() == ItemEvent.SELECTED;
+      // LOGGER.info("Auto Refresh mode: " + (b ? "on" : "off"));
+      // _settings.setProperty("autoRefresh", "" + b);
+      // _settings.saveSettingsSorted();
+      // }
+      // });
+      // // _slowToggle.setSelected(false);
+      // toolbar.add(_autoRefreshToggle);
+      //
+      // _pingToggle = new JToggleButton("Ping");
+      // // _autoSailorsToggle.setSelected(false);
+      // _pingToggle.addItemListener(new ItemListener() {
+      //
+      // @Override
+      // public void itemStateChanged(ItemEvent e) {
+      // boolean b = e.getStateChange() == ItemEvent.SELECTED;
+      // LOGGER.info("Ping: " + (b ? "on" : "off"));
+      // _settings.setProperty("ping", "" + b);
+      // _settings.saveSettingsSorted();
+      //
+      // }
+      // });
+      //
+      // toolbar.add(_pingToggle);
+      //
+      // // _xpToggle = new JToggleButton("XP");
+      // // _xpToggle.setSelected(_mapManager.getMarketStrategy().equals("XP"));
+      // // _xpToggle.addItemListener(new ItemListener() {
+      // //
+      // // @Override
+      // // public void itemStateChanged(ItemEvent e) {
+      // // boolean b = e.getStateChange() == ItemEvent.SELECTED;
+      // // String strategy = b ? "XP" : "COINS";
+      // // LOGGER.info("MARKET STRATEGY: " + strategy);
+      // // _mapManager.setMarketStrategy(strategy);
+      // // }
+      // // });
+      // // toolbar.add(_xpToggle);
 
+    }
+    {
+      final JLabel greens = new JLabel("0");
+      toolbar.add(greens);
+      _mazeRunner.addPropertyChangeListener("GREEN_CLICKED", new PropertyChangeListener() {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+          int n = Integer.parseInt(greens.getText());
+          n++;
+          greens.setText("" + n);
+        }
+      });
     }
 
     return toolbar;
@@ -1462,20 +1475,22 @@ public class MainFrame extends JFrame {
       _gatesToggle.setSelected(gates);
     }
 
-//    boolean industries = "true".equalsIgnoreCase(_settings.getProperty("industries"));
-//    if (industries != _industriesToggle.isSelected()) {
-//      _industriesToggle.setSelected(industries);
-//    }
-//
-//    boolean slow = "true".equalsIgnoreCase(_settings.getProperty("autoRefresh"));
-//    if (slow != _autoRefreshToggle.isSelected()) {
-//      _autoRefreshToggle.setSelected(slow);
-//    }
-//
-//    boolean ping = "true".equalsIgnoreCase(_settings.getProperty("ping"));
-//    if (ping != _pingToggle.isSelected()) {
-//      _pingToggle.setSelected(ping);
-//    }
+    // boolean industries =
+    // "true".equalsIgnoreCase(_settings.getProperty("industries"));
+    // if (industries != _industriesToggle.isSelected()) {
+    // _industriesToggle.setSelected(industries);
+    // }
+    //
+    // boolean slow =
+    // "true".equalsIgnoreCase(_settings.getProperty("autoRefresh"));
+    // if (slow != _autoRefreshToggle.isSelected()) {
+    // _autoRefreshToggle.setSelected(slow);
+    // }
+    //
+    // boolean ping = "true".equalsIgnoreCase(_settings.getProperty("ping"));
+    // if (ping != _pingToggle.isSelected()) {
+    // _pingToggle.setSelected(ping);
+    // }
 
   }
 

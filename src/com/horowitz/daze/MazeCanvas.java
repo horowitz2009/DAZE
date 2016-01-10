@@ -156,6 +156,8 @@ public class MazeCanvas extends JPanel {
           _matrix.clear();
         } else if (e.getPropertyName().equals("POS_REMOVED")) {
           _matrix.remove(e.getNewValue());
+        } else if (e.getPropertyName().equals("GREEN_CLICKED")) {
+          //DO NOTHING
         } else {
           Position pos = (Position) e.getNewValue();
           _matrix.add(pos);

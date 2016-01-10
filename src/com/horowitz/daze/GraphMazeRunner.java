@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,6 +18,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
+
+import Catalano.Core.IntPoint;
 import Catalano.Core.IntRange;
 import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.ColorFiltering;
@@ -58,10 +62,11 @@ public class GraphMazeRunner {
         ensureArea(vertex, 0, 0);
         if (vertex._state == State.GREEN) {
           _mouse.click(_start._coords.x + vertex._row * 60 + 30, _start._coords.y + vertex._col * 60 + 30);
+          _support.firePropertyChange("GREEN_CLICKED", null, vertex);
           _mouse.delay(750);
           if (checkPopup()) {
             vertex._state = State.OBSTACLE;
-            _support.firePropertyChange("STATE_CHANGED", null, vertex);
+            _support.firePropertyChange("STATE_CHANGED", State.GREEN, vertex);
             return false;
           } else if (checkNoEnergy()) {
             LOGGER.info("OUT OF ENERGY...");
@@ -84,7 +89,7 @@ public class GraphMazeRunner {
 
         if (vertex._state == State.START) {
           vertex._state = State.VISITED;
-          _support.firePropertyChange("STATE_CHANGED", null, vertex);
+          _support.firePropertyChange("STATE_CHANGED", State.START, vertex);
           checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
           checkNeighbor(_graph, vertex, 1, 0);
           checkNeighbor(_graph, vertex, 0, 1);
@@ -218,14 +223,14 @@ public class GraphMazeRunner {
     }
 
     private boolean isWalkable(Position vertex, BufferedImage preClick) throws AWTException, RobotInterruptedException {
-      // int delay = 27;
-      int number = 30;
+      int number = 25;
       Pixel p = vertex._coords;
       List<BufferedImage> images = new ArrayList<>();
+      images.add(preClick);
       long start = System.currentTimeMillis();
       _mouse.delay(30);
       for (int i = 0; i < number; i++) {
-        // _mouse.delay(delay);
+        // _mouse.delay(25);
         if (i == 4) {
           _mouse.click(p.x + 30, p.y + 30);
           // LOGGER.info("click isWalkable");
@@ -233,28 +238,31 @@ public class GraphMazeRunner {
         images.add(captureBlock(p));
       }
       long end = System.currentTimeMillis();
-      LOGGER.fine("time: " + (end - start));
+      LOGGER.info("isWalkable time: " + (end - start));
 
-      // BufferedImage filteredPreClick = filterArrows(preClick);
-      // filterprec
-      boolean walkable = false;
-      int x = 7;
-      int i = 0;
-      for (BufferedImage image : images) {
-        // new FastBitmap(image).saveAsBMP("temp/AAAAAA-"+ vertex._row + "-" +
-        // vertex._col + " " + ++i + ".bmp");
-        BufferedImage filtered = filterArrows(image);
-        // new FastBitmap(filtered).saveAsBMP("temp/AAAAAAF-"+ vertex._row + "-"
-        // + vertex._col + " " + ++i + ".bmp");
-        x = 8;
-        do {
-          walkable = tryPixel(filtered, ++x);
-        } while (x < 12 && !walkable);
-        if (walkable)
-          break;
+      for (int i = 1; i < images.size(); i++) {
+        BufferedImage image = images.get(i);
+        List<Blob> blobs = new MotionDetector().detect(images.get(i - 1), image);
+        for (Blob blob : blobs) {
+          FastBitmap fb2 = new FastBitmap(image);
+
+          int cnt = 0;
+          for (IntPoint point : blob.getPoints()) {
+            if (fb2.getRed(point) == 151 && fb2.getGreen(point) == 235 && fb2.getBlue(point) == 81)
+              cnt++;
+            if (cnt > 3) {
+              // BINGOOO
+              // fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" +
+              // blob.getCenter().x + "_" + System.currentTimeMillis()
+              // + ".png");
+              return true;
+            }
+          }
+
+        }
+
       }
-      LOGGER.fine("walkable: " + walkable + " " + x);
-      return walkable;
+      return false;
     }
 
     private boolean tryPixel(BufferedImage filtered, int x) {
@@ -523,19 +531,20 @@ public class GraphMazeRunner {
           if (p != null) {
             neighborPos._state = State.GREEN;
             _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
-            if (isGate(p)) { // TODO not reliable! to be improved
-              LOGGER.info("It is gate!!!");
-              neighborPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
-              _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
-            }
+            // if (isGate(p)) { // TODO not reliable! to be improved
+            // LOGGER.info("It is gate!!!");
+            // neighborPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
+            // _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
+            // }
           }
 
-          if (isGate(neighborPos._coords)) { // TODO not reliable! to be improved
+          if (isGate(neighborPos._coords)) { // TODO not reliable! to be
+                                             // improved
             LOGGER.info("It is gate!!!");
             neighborPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
             _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
           }
-          
+
           graph.addEdge(vertex, neighborPos);
           // graph.addEdge(newPos, vertex);
           graph.addExplored(neighborPos);
@@ -648,9 +657,67 @@ public class GraphMazeRunner {
         long end = System.currentTimeMillis();
         LOGGER.info("time: " + (start - end));
         int i = 0;
-        for (BufferedImage image : images) {
-          new FastBitmap(image).saveAsBMP("AA" + ++i + ".bmp");
+        // for (BufferedImage image : images) {
+        // new FastBitmap(image).saveAsBMP("AA" + ++i + ".bmp");
+        // }
+
+        for (i = 1; i < images.size(); i++) {
+          BufferedImage imagePrev = images.get(i - 1);
+          BufferedImage image = images.get(i);
+          List<Blob> blobs = new MotionDetector().detect(imagePrev, image);
+          for (Blob blob : blobs) {
+            FastBitmap fb2 = new FastBitmap(image);
+
+            // fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" +
+            // blob.getCenter().x + "_" + System.currentTimeMillis()
+            // + ".png");
+
+            // ArrayList<IntPoint> lst = blob.getPoints();
+            // lst = PointsCloud.GetBoundingRectangle(lst);
+            //
+            //
+            // int height = Math.abs(lst.get(0).x - lst.get(1).x);
+            // int width = Math.abs(lst.get(0).y - lst.get(1).y);
+
+            // IntRectangle bb = blob.getBoundingBox();
+            // Crop crop = new Crop(bb.x, bb.y, bb.width, bb.height);
+            // Crop crop = new Crop(lst.get(0).x - 2, lst.get(0).y - 2, width +
+            // 5, height + 4);
+            // crop.ApplyInPlace(fb2);
+
+            int cnt = 0;
+            for (IntPoint point : blob.getPoints()) {
+              if (fb2.getRed(point) == 151 && fb2.getGreen(point) == 235 && fb2.getBlue(point) == 81)
+                cnt++;
+              if (cnt > 3) {
+                // BINGOOO
+                fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_"
+                    + System.currentTimeMillis() + ".png");
+                break;
+              }
+            }
+
+            // try {
+            // BufferedImage subimage =
+            // image.getSubimage(blob.getBoundingBox().x,
+            // blob.getBoundingBox().y,
+            // blob.getBoundingBox().width, blob.getBoundingBox().height);
+            //
+            // _scanner.writeImage(subimage,
+            // "BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_" +
+            // System.currentTimeMillis() + ".png");
+            // } catch (Throwable t) {
+            // t.printStackTrace();
+            // System.out.println(blob);
+            // }
+          }
+
+          if (blobs.size() > 0) {
+            // we have motion
+
+          }
         }
+
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -758,9 +825,9 @@ public class GraphMazeRunner {
   }
 
   private boolean isGate(Pixel pp) throws RobotInterruptedException, AWTException, IOException {
-//    
-//    _mouse.mouseMove(pp.x + 30, pp.y + 30);
-//    _mouse.delay(100);
+    //
+    // _mouse.mouseMove(pp.x + 30, pp.y + 30);
+    // _mouse.delay(100);
     Rectangle area = new Rectangle(pp.x + 14, pp.y + 10, 17 + 10, 12 + 12);
     BufferedImage image2 = new Robot().createScreenCapture(area);
     image2 = filterGate(image2);
@@ -880,6 +947,26 @@ public class GraphMazeRunner {
     Threshold thr = new Threshold(70);// was 80
     thr.applyInPlace(fb1);
     return fb1.toBufferedImage();
+  }
+
+  public static void main(String[] args) {
+    try {
+      BufferedImage image = ImageIO.read(new File("temp/mud.bmp"));
+      FastBitmap fb1 = new FastBitmap(image);
+
+      ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240), new IntRange(5,
+          85));
+      colorFiltering.applyInPlace(fb1);
+
+      if (fb1.isRGB())
+        fb1.toGrayscale();
+      fb1.saveAsBMP("mudGR.bmp");
+      Threshold thr = new Threshold(70);
+      thr.applyInPlace(fb1);
+      fb1.saveAsBMP("mudTHR.bmp");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   private BufferedImage filterArrows(BufferedImage image) {
