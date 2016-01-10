@@ -88,6 +88,8 @@ public class ScreenScanner {
 
   private Pixel _sailorsPos;
 
+  private Rectangle _buttonArea;
+
   public Pixel[] getShipLocations() {
     return _shipLocations;
   }
@@ -140,8 +142,12 @@ public class ScreenScanner {
     _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
 
     _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144, _tl.y, 400 - 144, getGameWidth() / 2 + 50);
+    
+    xx = (getGameWidth() - 200) / 2;
+    _buttonArea = new Rectangle(_tl.x + xx, _br.y - (70 + 87), xx, 87);
 
     getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
+    getImageData("claim.bmp", _buttonArea, 36, 13);
     
     _safePoint = new Pixel(_br.x - 15, _br.y - 15);
     _parkingPoint = new Pixel(_br);

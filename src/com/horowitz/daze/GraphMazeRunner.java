@@ -104,7 +104,7 @@ public class GraphMazeRunner {
               _mouse.delay(200);
               if (tries++ > 4)
                 LOGGER.info("waiting diggy to arrive " + tries);
-            } while (!_scanner.isDiggyExactlyHere(vertex._coords) && tries < 15);
+            } while (!_scanner.isDiggyExactlyHere(vertex._coords) && tries < 30);
 
             // tadaaaa
 
@@ -223,7 +223,7 @@ public class GraphMazeRunner {
     }
 
     private boolean isWalkable(Position vertex, BufferedImage preClick) throws AWTException, RobotInterruptedException {
-      int number = 25;
+      int number = 20;
       Pixel p = vertex._coords;
       List<BufferedImage> images = new ArrayList<>();
       images.add(preClick);
@@ -780,6 +780,8 @@ public class GraphMazeRunner {
       LOGGER.info("click checkPopups");
 
       _mouse.delay(200);
+    } else {
+      p = _scanner.scanOneFast("claim.bmp", null, true);
     }
     LOGGER.info("time: " + (System.currentTimeMillis() - start));
     return p != null;
