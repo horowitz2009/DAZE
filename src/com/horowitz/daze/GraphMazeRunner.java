@@ -24,10 +24,13 @@ import Catalano.Core.IntPoint;
 import Catalano.Core.IntRange;
 import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.ColorFiltering;
+import Catalano.Imaging.Filters.Crop;
 import Catalano.Imaging.Filters.ExtractRGBChannel;
 import Catalano.Imaging.Filters.ExtractRGBChannel.Channel;
 import Catalano.Imaging.Filters.Threshold;
 import Catalano.Imaging.Tools.Blob;
+import Catalano.Imaging.Tools.BlobDetection;
+import Catalano.Math.Geometry.PointsCloud;
 
 import com.horowitz.commons.ImageComparator;
 import com.horowitz.commons.ImageData;
@@ -72,6 +75,7 @@ public class GraphMazeRunner {
             }
           }
 
+          vertex._state = State.CHECKED;
           _support.firePropertyChange("GREEN_CLICKED", null, vertex);
           _mouse.delay(750);
           if (checkPopup()) {
@@ -91,9 +95,6 @@ public class GraphMazeRunner {
           }
           LOGGER.info("Sleep " + _pauseTime + " seconds");
           _mouse.delay(_pauseTime * 1000);
-        } else {
-          //check is green again
-          //how?
         }
 
         if (_popups && checkPopups()) {
@@ -108,18 +109,27 @@ public class GraphMazeRunner {
           checkNeighbor(_graph, vertex, 0, 1);
           checkNeighbor(_graph, vertex, -1, 0);
         } else {
+
+          // _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
+          // _mouse.delay(6000);
+
           BufferedImage preClick = captureBlock(vertex._coords);
           _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
           if (isWalkable(vertex, preClick) && (isSlow() && isWalkable(vertex, preClick))) {
             // wait until diggy arrives
             int tries = 0;
+            boolean diggyHere = false;
             do {
               _mouse.delay(250);
               if (tries++ > 5 && tries % 4 == 0)
                 LOGGER.info("waiting diggy to arrive " + tries);
-            } while (!_scanner.isDiggyExactlyHere(vertex._coords) && tries < 30);
+              diggyHere = _scanner.isDiggyExactlyHere(vertex._coords);
+            } while (!diggyHere && tries < 30);
 
-            vertex._state = State.VISITED;
+            if (diggyHere)
+              vertex._state = State.VISITED;
+            else
+              vertex._state = State.CHECKED;
 
             // TODO Do something about errors
 
@@ -130,11 +140,6 @@ public class GraphMazeRunner {
             // }
             // tadaaaa
 
-            // wait until diggy come
-            // should I wait? no. Diggy will walk around obstacles and
-            // collectibles
-            // so you can scan for neighbors. Let's see this!
-            //
             _support.firePropertyChange("STATE_CHANGED", null, vertex);
 
             checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
@@ -159,26 +164,6 @@ public class GraphMazeRunner {
 
           }
         }
-        // OLD WAY - SLOW!!!
-        // int tries = 0;
-        // boolean isDiggyHere = false;
-        // do {
-        // _mouse.delay(250);
-        // tries++;
-        // isDiggyHere = _scanner.isDiggyExactlyHere(vertex._coords);
-        // } while (!isDiggyHere && tries < 5);
-        //
-        // if (isDiggyHere) {
-        // vertex._state = State.VISITED;
-        // // scan the neighbors now //////
-        //
-        //
-        // // /////////////////////////////
-        // } else {
-        // vertex._state = State.OBSTACLE;
-        // return false;
-        // }
-        //
       } catch (IOException | AWTException e1) {
         e1.printStackTrace();
         return false;
@@ -262,11 +247,11 @@ public class GraphMazeRunner {
         images.add(captureBlock(p));
       }
       long end = System.currentTimeMillis();
-      LOGGER.info("isWalkable time: " + (end - start));
+      
 
-      for (int i = 1; i < images.size(); i++) {
+      for (int i = 2; i < images.size(); i++) {
         BufferedImage image = images.get(i);
-        List<Blob> blobs = new MotionDetector().detect(images.get(i - 1), image);
+        List<Blob> blobs = new MotionDetector().detect(images.get(i - 2), image, -1);
         for (Blob blob : blobs) {
           FastBitmap fb2 = new FastBitmap(image);
 
@@ -279,6 +264,7 @@ public class GraphMazeRunner {
               // fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" +
               // blob.getCenter().x + "_" + System.currentTimeMillis()
               // + ".png");
+              LOGGER.info("isWalkable: true " + (end - start));
               return true;
             }
           }
@@ -286,6 +272,7 @@ public class GraphMazeRunner {
         }
 
       }
+      LOGGER.info("isWalkable: FALSE " + (end - start));
       return false;
     }
 
@@ -489,8 +476,7 @@ public class GraphMazeRunner {
           ensureArea(neighborPos, 0, 0);
           neighborPos._state = State.CHECKED;
 
-          Pixel p = lookForGreenHere(neighborPos._coords);
-          if (p != null) {
+          if (lookForGreenHere(neighborPos._coords)) {
             neighborPos._state = State.GREEN;
             _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
             // if (isGate(p)) { // TODO not reliable! to be improved
@@ -626,7 +612,7 @@ public class GraphMazeRunner {
         for (i = 1; i < images.size(); i++) {
           BufferedImage imagePrev = images.get(i - 1);
           BufferedImage image = images.get(i);
-          List<Blob> blobs = new MotionDetector().detect(imagePrev, image);
+          List<Blob> blobs = new MotionDetector().detect(imagePrev, image, 4);
           for (Blob blob : blobs) {
             FastBitmap fb2 = new FastBitmap(image);
 
@@ -817,8 +803,7 @@ public class GraphMazeRunner {
     LOGGER.info("looking for greens...");
     for (Position position : _searchSequence) {
       Pixel pp = new Pixel(pos._coords.x + position._row * 60, pos._coords.y + position._col * 60);
-      Pixel p = lookForGreenHere(pp);
-      if (p != null) {
+      if (lookForGreenHere(pp)) {
         Position newPos = new Position(position._row, position._col, pos, State.GREEN);
         newPos._coords = pp;
         LOGGER.info("Found one..." + newPos);
@@ -959,38 +944,38 @@ public class GraphMazeRunner {
     return fb1.toBufferedImage();
   }
 
-  private Pixel lookForGreenHere(Pixel pp) throws AWTException, RobotInterruptedException, IOException {
+  private boolean lookForGreenHere(Pixel pp) throws AWTException, RobotInterruptedException, IOException {
     // 10px more from all sides
     Rectangle area = new Rectangle(pp.x - 10, pp.y - 10, 60 + 20, 60 + 20);
     BufferedImage image1 = new Robot().createScreenCapture(area);
     _mouse.mouseMove(pp.x + 30, pp.y + 30);
-    _mouse.delay(200 + (isSlow() ? 300: 0));
+    _mouse.delay(100 + (isSlow() ? 100 : 0));
     BufferedImage image2 = new Robot().createScreenCapture(area);
-    List<Blob> blobs = new MotionDetector().detect(image1, image2);
-    // FastBitmap fb2 = new FastBitmap(image2);
-    // for (Blob blob : blobs) {
-    // //fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x +
-    // "_" + System.currentTimeMillis()+".png");
-    // try {
-    // BufferedImage subimage = image2.getSubimage(blob.getBoundingBox().x,
-    // blob.getBoundingBox().y, blob.getBoundingBox().width,
-    // blob.getBoundingBox().height);
-    //
-    // _scanner.writeImage(subimage, "BLOB_" + blob.getCenter().y + "_" +
-    // blob.getCenter().x + "_" + System.currentTimeMillis()+".png");
-    // } catch (Throwable t) {
-    // System.out.println(blob);
-    // }
-    // }
+    List<Blob> blobs = new MotionDetector().detect(image1, image2, 5 * 50);
+
+//    for (Blob blob : blobs) {
+//      FastBitmap fb2 = new FastBitmap(image2);
+//
+//      Crop crop = new Crop(blob.getBoundingBox().x, blob.getBoundingBox().y, blob.getBoundingBox().width,
+//          blob.getBoundingBox().height);
+//      crop.ApplyInPlace(fb2);
+//      fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_" + System.currentTimeMillis() + ".png");
+//    }
     if (blobs.size() > 0) {
-      // we have movement, but let's see is it green
-      image2 = filterGreen(image2.getSubimage(0, 0, 25, 25));
-      ImageData id = _scanner.getImageData("greenTL.bmp");
-      Pixel ppp = _comparator.findImage(id.getImage(), image2, id.getColorToBypass());
-      if (ppp != null)
-        return pp;
+      for (Blob blob : blobs) {
+        if (blob.getHeight() > 55 && blob.getWidth() > 55)
+          return true;
+      }
+
+      // // we have movement, but let's see is it green
+      // image2 = filterGreen(image2.getSubimage(0, 0, 25, 25));
+      // ImageData id = _scanner.getImageData("greenTL.bmp");
+      // Pixel ppp = _comparator.findImage(id.getImage(), image2,
+      // id.getColorToBypass());
+      // if (ppp != null)
+      // return pp;
     }
-    return null;
+    return false;
   }
 
   private void setSearchSequence() {

@@ -370,8 +370,8 @@ public class MainFrame extends JFrame {
 
     final JTextArea shipLog = new JTextArea(5, 10);
     _mazeCanvas = new MazeCanvas();
-    _mazeCanvas.setMinimumSize(new Dimension(800, 450));
-    _mazeCanvas.setPreferredSize(new Dimension(800, 450));
+    _mazeCanvas.setMinimumSize(new Dimension(600, 350));
+    _mazeCanvas.setPreferredSize(new Dimension(600, 350));
 
     rootPanel.add(new JScrollPane(_mazeCanvas), BorderLayout.SOUTH);
 

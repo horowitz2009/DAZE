@@ -418,7 +418,7 @@ public class BFSMazeRunner {
 		_mouse.mouseMove(pp.x + 30, pp.y + 58);
 		_mouse.delay(100);
 		BufferedImage image2 = new Robot().createScreenCapture(area);
-		List<Blob> blobs = new MotionDetector().detect(image1, image2);
+		List<Blob> blobs = new MotionDetector().detect(image1, image2, 4);
 		// FastBitmap fb2 = new FastBitmap(image2);
 		// for (Blob blob : blobs) {
 		// //fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_" + System.currentTimeMillis()+".png");

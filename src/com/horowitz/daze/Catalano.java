@@ -24,7 +24,8 @@ public class Catalano {
     Catalano catalano = new Catalano();
 
     try {
-      catalano.extractGate(9);
+      //catalano.extractGate(9);
+      catalano.extractGreen();
 //      catalano.extractCommon("temp/arr/a", 6, 
 //          new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240),
 //          new IntRange(5, 85)), 70);
@@ -38,22 +39,22 @@ public class Catalano {
       new IntRange(0, 115));
 
   public void extractGreen() throws IOException {
-    BufferedImage image1 = ImageIO.read(new File("gate.bmp"));
+    BufferedImage image1 = ImageIO.read(new File("temp/gate.bmp"));
     FastBitmap fb1 = new FastBitmap(image1);
 
-    BufferedImage image2 = ImageIO.read(new File("nogreen.bmp"));
+    BufferedImage image2 = ImageIO.read(new File("temp/nogreen.bmp"));
     FastBitmap fb2 = new FastBitmap(image2);
 
-    BufferedImage image3 = ImageIO.read(new File("red.bmp"));
+    BufferedImage image3 = ImageIO.read(new File("temp/red.bmp"));
     FastBitmap fb3 = new FastBitmap(image3);
 
     {
       ExtractRGBChannel extractRGBChannel = new ExtractRGBChannel(Channel.G);
       FastBitmap extractFB = extractRGBChannel.Extract(fb1);
-      extractFB.saveAsBMP("gateGreen.bmp");
+      extractFB.saveAsBMP("temp/gateGreen.bmp");
 
       FastBitmap extractFB2 = extractRGBChannel.Extract(fb2);
-      extractFB2.saveAsBMP("nogreenGreen.bmp");
+      extractFB2.saveAsBMP("temp/nogreenGreen.bmp");
 
       FastBitmap extractFB3 = extractRGBChannel.Extract(fb3);
       extractFB3.saveAsBMP("redGreen.bmp");
@@ -61,21 +62,21 @@ public class Catalano {
     {
       ExtractRGBChannel extractRGBChannel = new ExtractRGBChannel(Channel.R);
       FastBitmap extractFB = extractRGBChannel.Extract(fb1);
-      extractFB.saveAsBMP("gateRed.bmp");
+      extractFB.saveAsBMP("temp/gateRed.bmp");
 
       FastBitmap extractFB2 = extractRGBChannel.Extract(fb2);
-      extractFB2.saveAsBMP("nogreenRed.bmp");
+      extractFB2.saveAsBMP("temp/nogreenRed.bmp");
 
       FastBitmap extractFB3 = extractRGBChannel.Extract(fb3);
-      extractFB3.saveAsBMP("redRed.bmp");
+      extractFB3.saveAsBMP("temp/redRed.bmp");
     }
 
     _greenColorFiltering.applyInPlace(fb1);
 
-    fb1.saveAsBMP("gateFiltered.bmp");
+    fb1.saveAsBMP("temp/gateFiltered.bmp");
     ExtractRGBChannel extractGreen = new ExtractRGBChannel(Channel.G);
     FastBitmap extractFB = extractGreen.Extract(fb1);
-    extractFB.saveAsBMP("gateG2.bmp");
+    extractFB.saveAsBMP("temp/gateG2.bmp");
     System.out.println("done");
 
     _greenColorFiltering = new ColorFiltering(new IntRange(70, 140), new IntRange(110, 255), new IntRange(0, 65));
@@ -89,35 +90,36 @@ public class Catalano {
     int high = 255;
     ColorFiltering cf = new ColorFiltering(new IntRange(low, high), new IntRange(low, high), new IntRange(low, high));
 
-    applyFilter("gate", 11, cf, Channel.G);
-    applyFilter("gateG", 11, cf, Channel.G);
-    applyFilter("gateR", 11, cf, Channel.G);
-    applyFilter("gold", 11, cf, Channel.G);
-    applyFilter("goldG", 11, cf, Channel.G);
-    applyFilter("goldR", 11, cf, Channel.G);
-    applyFilter("pink", 11, cf, Channel.G);
-    applyFilter("pinkG", 11, cf, Channel.G);
-    applyFilter("pinkR", 11, cf, Channel.G);
-
-    applyFilter("bell", 11, cf, Channel.G);
-    applyFilter("bellG", 11, cf, Channel.G);
-    applyFilter("bellR", 11, cf, Channel.G);
-
-    applyFilter("hay", 11, cf, Channel.G);
-    applyFilter("hayG", 11, cf, Channel.G);
-    applyFilter("hayR", 11, cf, Channel.G);
-
-    applyFilter("rack", 11, cf, Channel.G);
-    applyFilter("rackG", 11, cf, Channel.G);
-    applyFilter("rackR", 11, cf, Channel.G);
-
-    applyFilter("bluegift", 11, cf, Channel.G);
-    applyFilter("bluegiftG", 11, cf, Channel.G);
-    applyFilter("bluegiftR", 11, cf, Channel.G);
-
-    applyFilter("redgift", 11, cf, Channel.G);
-    applyFilter("redgiftG", 11, cf, Channel.G);
-    applyFilter("redgiftR", 11, cf, Channel.G);
+//    applyFilter("temp/gate", 11, cf, Channel.G);
+//    applyFilter("temp/gateG2", 11, cf, Channel.G);
+//    applyFilter("temp/gateR", 11, cf, Channel.G);
+//    applyFilter("temp/gold", 11, cf, Channel.G);
+//    applyFilter("temp/goldG", 11, cf, Channel.G);
+//    applyFilter("temp/goldR", 11, cf, Channel.G);
+//    applyFilter("temp/pink", 11, cf, Channel.G);
+//    applyFilter("temp/pinkG", 11, cf, Channel.G);
+//    applyFilter("temp/pinkR", 11, cf, Channel.G);
+//
+//    applyFilter("temp/bell", 11, cf, Channel.G);
+//    applyFilter("temp/bellG", 11, cf, Channel.G);
+    applyFilter("temp/coinG", 11, cf, Channel.G);
+//    applyFilter("temp/bellR", 11, cf, Channel.G);
+//
+//    applyFilter("temp/hay", 11, cf, Channel.G);
+//    applyFilter("temp/hayG", 11, cf, Channel.G);
+//    applyFilter("temp/hayR", 11, cf, Channel.G);
+//
+//    applyFilter("temp/rack", 11, cf, Channel.G);
+//    applyFilter("temp/rackG", 11, cf, Channel.G);
+//    applyFilter("temp/rackR", 11, cf, Channel.G);
+//
+//    applyFilter("temp/bluegift", 11, cf, Channel.G);
+//    applyFilter("temp/bluegiftG", 11, cf, Channel.G);
+//    applyFilter("temp/bluegiftR", 11, cf, Channel.G);
+//
+//    applyFilter("temp/redgift", 11, cf, Channel.G);
+//    applyFilter("temp/redgiftG", 11, cf, Channel.G);
+//    applyFilter("temp/redgiftR", 11, cf, Channel.G);
 
   }
 
