@@ -77,7 +77,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.7";
+  private static String APP_TITLE = "Daze v0.8";
 
   private Settings _settings;
   private Stats _stats;
@@ -102,7 +102,7 @@ public class MainFrame extends JFrame {
 
   private List<Task> _tasks;
 
-  private Task _fishTask;
+  private Task _mazeTask;
 
   private Task _shipsTask;
 
@@ -163,19 +163,15 @@ public class MainFrame extends JFrame {
       _matcher = _scanner.getMatcher();
       _mouse = _scanner.getMouse();
 
+      _mazeRunner = new GraphMazeRunner(_scanner);
+      
       _tasks = new ArrayList<Task>();
 
-      // SCAN TASK - scanning and fixing game could be something out of tasks
-      // list
-      // _scanTask = new Task("Scan", 1);
-      // _tasks.add(_scanTask);
-
       // FISHING TASK
-      _fishTask = new Task("Fish", 1);
-      // FishingProtocol fishingProtocol = new FishingProtocol(_scanner,
-      // _mouse);
-      // _fishTask.setProtocol(fishingProtocol);
-      _tasks.add(_fishTask);
+      _mazeTask = new Task("Maze Runner", 1);
+      _mazeProtocol = new MazeProtocol(_scanner, _mouse, _mazeRunner);
+      _mazeTask.setProtocol(_mazeProtocol);
+      _tasks.add(_mazeTask);
 
       _stopAllThreads = false;
 
@@ -185,11 +181,73 @@ public class MainFrame extends JFrame {
       System.exit(1);
     }
 
-    _mazeRunner = new GraphMazeRunner(_scanner);
 
     initLayout();
 
+    // WIRING listeners
+    _popupsToggle.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(ItemEvent e) {
+        boolean b = e.getStateChange() == ItemEvent.SELECTED;
+        _mazeRunner.setPopups(b);
+        _settings.setProperty("popups", "" + b);
+        _settings.saveSettingsSorted();
+      }
+    });
+    _gatesToggle.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(ItemEvent e) {
+        boolean b = e.getStateChange() == ItemEvent.SELECTED;
+        _mazeRunner.setGates(b);
+        _settings.setProperty("gates", "" + b);
+        _settings.saveSettingsSorted();
+      }
+    });
+    _slowToggle.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(ItemEvent e) {
+        boolean b = e.getStateChange() == ItemEvent.SELECTED;
+        _mazeRunner.setSlow(b);
+        _settings.setProperty("slow", "" + b);
+        _settings.saveSettingsSorted();
+      }
+    });
+    
+
     _mazeRunner.addPropertyChangeListener(_mazeCanvas.createPropertyChangeListener());
+    
+    _timeTF.getDocument().addDocumentListener(new DocumentListener() {
+
+      @Override
+      public void removeUpdate(DocumentEvent e) {
+        int pauseTime = 5;
+        try {
+          pauseTime = Integer.parseInt(_timeTF.getText());
+        } catch (NumberFormatException e1) {
+          LOGGER.info("Not a number! Set time to 5sec...");
+          pauseTime = 5;
+        }
+        _mazeRunner.setPauseTime(pauseTime);
+      }
+
+      @Override
+      public void insertUpdate(DocumentEvent e) {
+        int pauseTime = 5;
+        try {
+          pauseTime = Integer.parseInt(_timeTF.getText());
+        } catch (NumberFormatException e1) {
+          LOGGER.info("Not a number! Set time to 5sec...");
+          pauseTime = 5;
+        }
+        _mazeRunner.setPauseTime(pauseTime);
+      }
+
+      @Override
+      public void changedUpdate(DocumentEvent e) {
+      }
+    });
+
+    // ///////////////////////
 
     loadStats();
 
@@ -202,6 +260,7 @@ public class MainFrame extends JFrame {
   private void setDefaultSettings() {
     _settings.setProperty("popups", "false");
     _settings.setProperty("gates", "false");
+    _settings.setProperty("slow", "false");
     // _settings.setProperty("industries", "true");
     // _settings.setProperty("slow", "false");
     // _settings.setProperty("autoSailors", "false");
@@ -460,6 +519,8 @@ public class MainFrame extends JFrame {
 
   private JTextField _tileTF;
 
+  private JToggleButton _slowToggle;
+
   private Container buildConsole() {
     final JTextArea outputConsole = new JTextArea(8, 14);
 
@@ -695,16 +756,16 @@ public class MainFrame extends JFrame {
       };
       mainToolbar1.add(action);
     }
-    // // RUN MAGIC
-    // {
-    // AbstractAction action = new AbstractAction("Run") {
-    // public void actionPerformed(ActionEvent e) {
-    // runMagic();
-    // }
-    //
-    // };
-    // mainToolbar1.add(action);
-    // }
+    // RUN MAGIC
+    {
+      AbstractAction action = new AbstractAction("Run") {
+        public void actionPerformed(ActionEvent e) {
+          runMagic();
+        }
+
+      };
+      mainToolbar1.add(action);
+    }
     // // STOP MAGIC
     // {
     // AbstractAction action = new AbstractAction("Stop") {
@@ -725,7 +786,7 @@ public class MainFrame extends JFrame {
     // }
 
     {
-      _regenTF = new JTextField("1560");
+      _regenTF = new JTextField("2335");
       mainToolbar1.add(_regenTF);
       _regenTF.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -745,7 +806,7 @@ public class MainFrame extends JFrame {
       });
     }
     {
-      _tileTF = new JTextField("112");
+      _tileTF = new JTextField("100");
       mainToolbar1.add(_tileTF);
       _tileTF.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -796,31 +857,14 @@ public class MainFrame extends JFrame {
       // SHIPS
       _popupsToggle = new JToggleButton("Popups");
       // _fishToggle.setSelected(true);
-      _popupsToggle.addItemListener(new ItemListener() {
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-          boolean b = e.getStateChange() == ItemEvent.SELECTED;
-          _mazeRunner.setPopups(b);
-          _settings.setProperty("popups", "" + b);
-          _settings.saveSettingsSorted();
-        }
-      });
       toolbar.add(_popupsToggle);
 
       // SHIPS
       _gatesToggle = new JToggleButton("Gates");
       // _shipsToggle.setSelected(true);
-      _gatesToggle.addItemListener(new ItemListener() {
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-          boolean b = e.getStateChange() == ItemEvent.SELECTED;
-          _mazeRunner.setGates(b);
-          _settings.setProperty("gates", "" + b);
-          _settings.saveSettingsSorted();
-        }
-      });
       toolbar.add(_gatesToggle);
 
+      
       // // BUILDINGS
       // _industriesToggle = new JToggleButton("Industries");
       // // _industriesToggle.setSelected(true);
@@ -836,50 +880,39 @@ public class MainFrame extends JFrame {
       // });
       // toolbar.add(_industriesToggle);
       //
-      // _autoRefreshToggle = new JToggleButton("AR");
-      // _autoRefreshToggle.addItemListener(new ItemListener() {
-      //
-      // @Override
-      // public void itemStateChanged(ItemEvent e) {
-      // boolean b = e.getStateChange() == ItemEvent.SELECTED;
-      // LOGGER.info("Auto Refresh mode: " + (b ? "on" : "off"));
-      // _settings.setProperty("autoRefresh", "" + b);
-      // _settings.saveSettingsSorted();
-      // }
-      // });
-      // // _slowToggle.setSelected(false);
-      // toolbar.add(_autoRefreshToggle);
-      //
-      // _pingToggle = new JToggleButton("Ping");
-      // // _autoSailorsToggle.setSelected(false);
-      // _pingToggle.addItemListener(new ItemListener() {
-      //
-      // @Override
-      // public void itemStateChanged(ItemEvent e) {
-      // boolean b = e.getStateChange() == ItemEvent.SELECTED;
-      // LOGGER.info("Ping: " + (b ? "on" : "off"));
-      // _settings.setProperty("ping", "" + b);
-      // _settings.saveSettingsSorted();
-      //
-      // }
-      // });
-      //
-      // toolbar.add(_pingToggle);
-      //
-      // // _xpToggle = new JToggleButton("XP");
-      // // _xpToggle.setSelected(_mapManager.getMarketStrategy().equals("XP"));
-      // // _xpToggle.addItemListener(new ItemListener() {
-      // //
-      // // @Override
-      // // public void itemStateChanged(ItemEvent e) {
-      // // boolean b = e.getStateChange() == ItemEvent.SELECTED;
-      // // String strategy = b ? "XP" : "COINS";
-      // // LOGGER.info("MARKET STRATEGY: " + strategy);
-      // // _mapManager.setMarketStrategy(strategy);
-      // // }
-      // // });
-      // // toolbar.add(_xpToggle);
+      _autoRefreshToggle = new JToggleButton("AR");
+      _autoRefreshToggle.addItemListener(new ItemListener() {
 
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+          boolean b = e.getStateChange() == ItemEvent.SELECTED;
+          LOGGER.info("Auto Refresh mode: " + (b ? "on" : "off"));
+          _settings.setProperty("autoRefresh", "" + b);
+          _settings.saveSettingsSorted();
+        }
+      });
+      // _slowToggle.setSelected(false);
+      toolbar.add(_autoRefreshToggle);
+
+      _pingToggle = new JToggleButton("Ping");
+      // _autoSailorsToggle.setSelected(false);
+      _pingToggle.addItemListener(new ItemListener() {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+          boolean b = e.getStateChange() == ItemEvent.SELECTED;
+          LOGGER.info("Ping: " + (b ? "on" : "off"));
+          _settings.setProperty("ping", "" + b);
+          _settings.saveSettingsSorted();
+
+        }
+      });
+
+      toolbar.add(_pingToggle);
+      
+      _slowToggle = new JToggleButton("Slow");
+      // _shipsToggle.setSelected(true);
+      toolbar.add(_slowToggle);
     }
     {
       final JLabel greens = new JLabel("0");
@@ -1228,12 +1261,6 @@ public class MainFrame extends JFrame {
 
     try {
       long start = System.currentTimeMillis();
-      // initial recalc
-      // recalcPositions(false, 2);
-      for (Task task : _tasks) {
-        if (task.isEnabled())
-          task.update();
-      }
 
       _mouse.saveCurrentPosition();
       long fstart = System.currentTimeMillis();
@@ -1241,8 +1268,8 @@ public class MainFrame extends JFrame {
         long mandatoryRefresh = _settings.getInt("autoRefresh.mandatoryRefresh", 45) * 60 * 1000;
         long now = System.currentTimeMillis();
         _mouse.checkUserMovement();
-        // 1. SCAN
-        handlePopups(false);
+        // // 1. SCAN
+        // handlePopups(false);
 
         // REFRESH
         LOGGER.info("refresh ? " + _autoRefreshToggle.isSelected() + " - " + mandatoryRefresh + " < " + (now - fstart));
@@ -1258,10 +1285,10 @@ public class MainFrame extends JFrame {
           fstart = System.currentTimeMillis();
         }
 
-        _mouse.checkUserMovement();
-        if (_pingToggle.isSelected()) {
-          ping();
-        }
+        // _mouse.checkUserMovement();
+        // if (_pingToggle.isSelected()) {
+        // ping();
+        // }
 
         _mouse.checkUserMovement();
 
@@ -1292,7 +1319,7 @@ public class MainFrame extends JFrame {
       } while (!_stopAllThreads);
 
     } catch (RobotInterruptedException e) {
-      LOGGER.info("interrupted");
+      LOGGER.info("INTERRUPTED!");
       setTitle(APP_TITLE);
       // e.printStackTrace();
     }
@@ -1374,6 +1401,8 @@ public class MainFrame extends JFrame {
   private GraphMazeRunner _mazeRunner;
 
   private MazeCanvas _mazeCanvas;
+
+  private MazeProtocol _mazeProtocol;
 
   private void setProtocol(String shipProtocolName) {
     // _shipProtocolManagerUI.setShipProtocol(shipProtocolName);
@@ -1481,11 +1510,10 @@ public class MainFrame extends JFrame {
     // _industriesToggle.setSelected(industries);
     // }
     //
-    // boolean slow =
-    // "true".equalsIgnoreCase(_settings.getProperty("autoRefresh"));
-    // if (slow != _autoRefreshToggle.isSelected()) {
-    // _autoRefreshToggle.setSelected(slow);
-    // }
+    boolean slow = "true".equalsIgnoreCase(_settings.getProperty("slow"));
+    if (slow != _slowToggle.isSelected()) {
+      _slowToggle.setSelected(slow);
+    }
     //
     // boolean ping = "true".equalsIgnoreCase(_settings.getProperty("ping"));
     // if (ping != _pingToggle.isSelected()) {
@@ -1500,15 +1528,19 @@ public class MainFrame extends JFrame {
     int tries = 10;
     boolean stillRunning = true;
     for (int i = 0; i < tries && stillRunning; ++i) {
+      _mouse.mouseMove(_scanner.getSafePoint());
       stillRunning = isRunning("MAGIC");
       if (stillRunning) {
         LOGGER.info("Magic still working...");
         try {
-          Thread.sleep(2000);
+          for(int j = 0; j < 150; j++) {
+            _mouse.mouseMove(_scanner.getSafePoint());
+            Thread.sleep(100);
+          }
         } catch (InterruptedException e) {
         }
       } else {
-        LOGGER.info("INSOMNIA STOPPED");
+        LOGGER.info("MAGIC STOPPED");
         setTitle(APP_TITLE);
       }
     }
@@ -1656,6 +1688,7 @@ public class MainFrame extends JFrame {
       @Override
       public void run() {
         LOGGER.info("Let's get rolling...");
+
         if (!_scanner.isOptimized()) {
           try {
             scan();

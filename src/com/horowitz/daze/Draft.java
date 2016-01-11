@@ -51,7 +51,7 @@ public class Draft extends JFrame {
           if (hmm)
             System.err.println("BAMMMM");
           System.err.println("DONE.");
-        } catch (Exception | RobotInterruptedException e) {
+        } catch (Exception e) {
           e.printStackTrace();
         }
       }

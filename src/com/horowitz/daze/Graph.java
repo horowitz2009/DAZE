@@ -34,6 +34,7 @@ public class Graph<T> {
   // http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/collect/Multimap.html
   private Map<T, List<T>> edges = new HashMap<T, List<T>>();
   private Set<T> _explored;
+  private boolean _interrupt = false;
 
   public void addEdge(T src, T dest) {
     List<T> srcNeighbors = this.edges.get(src);
@@ -61,15 +62,17 @@ public class Graph<T> {
   }
 
   private void preOrderTraversal(T vertex, Visitor<T> visitor, Set<T> visited) throws Exception {
-    boolean fine = visitor.visit(vertex);
-    visited.add(vertex);
-    if (fine) {
-      List<T> neighbors = this.getNeighbors(vertex);
-      List<T> prioritizedNeighbors = visitor.prioritize(neighbors);
-      for (T neighbor : prioritizedNeighbors) {
-        // if neighbor has not been visited then recurse
-        if (canBeVisited(neighbor, visitor)) {
-          preOrderTraversal(neighbor, visitor, visited);
+    if (!_interrupt) {
+      boolean fine = visitor.visit(vertex);
+      visited.add(vertex);
+      if (fine) {
+        List<T> neighbors = this.getNeighbors(vertex);
+        List<T> prioritizedNeighbors = visitor.prioritize(neighbors);
+        for (T neighbor : prioritizedNeighbors) {
+          // if neighbor has not been visited then recurse
+          if (canBeVisited(neighbor, visitor)) {
+            preOrderTraversal(neighbor, visitor, visited);
+          }
         }
       }
     }
@@ -114,6 +117,10 @@ public class Graph<T> {
 
   public void setExplored(Set<T> explored) {
     _explored = explored;
+  }
+  
+  public void interrupt() {
+    _interrupt = true;
   }
 
 }

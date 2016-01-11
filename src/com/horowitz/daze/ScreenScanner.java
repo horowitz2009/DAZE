@@ -90,6 +90,14 @@ public class ScreenScanner {
 
   private Rectangle _buttonArea;
 
+  private Pixel _menuBR;
+
+  public Rectangle _lastLocationButtonArea;
+
+  public Rectangle _mapButtonArea;
+
+  public Rectangle _campButtonArea;
+
   public Pixel[] getShipLocations() {
     return _shipLocations;
   }
@@ -128,7 +136,6 @@ public class ScreenScanner {
 
   private void setKeyAreas() throws IOException, AWTException, RobotInterruptedException {
 
-    
     _optimized = true;
 
     Rectangle area;
@@ -142,16 +149,23 @@ public class ScreenScanner {
     _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
 
     _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144, _tl.y, 400 - 144, getGameWidth() / 2 + 50);
-    
+
     xx = (getGameWidth() - 200) / 2;
     _buttonArea = new Rectangle(_tl.x + xx, _br.y - (70 + 87), xx, 87);
 
     getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
     getImageData("claim.bmp", _buttonArea, 36, 13);
-    
+
     _safePoint = new Pixel(_br.x - 15, _br.y - 15);
     _parkingPoint = new Pixel(_br);
     
+    
+    _lastLocationButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 38, 60, 36);
+    _mapButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 75, 60, 36);
+    _campButtonArea = new Rectangle(_menuBR.x - 169, _menuBR.y - 75, 60, 36);
+    
+    getImageData("greenArrow.bmp", _lastLocationButtonArea, 17, 22);
+
     // int xxx = (getGameWidth() - 137) / 2;
     // _leftNumbersArea = new Rectangle(_tl.x, _tl.y, xxx, 72);
     // _rightNumbersArea = new Rectangle(_br.x - xxx, _tl.y, xxx, 72);
@@ -334,7 +348,7 @@ public class ScreenScanner {
       if (found) {
         _tl = _gameLocator.getTopLeft();
         _br = _gameLocator.getBottomRight();
-
+        _menuBR = new Pixel(_br.x + 30, _br.y + 48);
         Rectangle area = new Rectangle(_br.x + 25, _tl.y, screenSize.width - (_br.x + 25), getGameHeight() / 2);
         BufferedImage screen = new Robot().createScreenCapture(area);
 
@@ -1101,6 +1115,30 @@ public class ScreenScanner {
   public boolean isDiggyExactlyHere(Pixel p) throws IOException, AWTException, RobotInterruptedException {
     Rectangle area = new Rectangle(p.x, p.y, 60, 60);
     return findDiggy(area) != null;
+  }
+
+  public boolean isPixelInArea(Pixel p, Rectangle area) {
+    return (p.x >= area.x && p.x <= (area.x + area.getWidth()) && p.y >= area.y && p.y <= (area.y + area.getHeight()));
+  }
+
+  /**
+   * Scanning for Diggy in specified by cellRange area. If cellRange is 0, it
+   * scans only in the cell with pp in top left corner.
+   * 
+   * @param pp
+   * @param cellRange
+   * @return
+   * @throws IOException
+   * @throws RobotInterruptedException
+   * @throws AWTException
+   */
+  public Pixel lookForDiggyAroundHere(Pixel pp, int cellRange) throws IOException, RobotInterruptedException,
+      AWTException {
+    Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 * 2 + 60,
+        cellRange * 60 * 2 + 60);
+    Pixel res = findDiggy(area);
+    LOGGER.info("Looking for diggy in " + pp + " " + res);
+    return res;
   }
 
 }

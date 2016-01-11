@@ -63,7 +63,7 @@ public class Task implements Cloneable, Serializable {
 		_protocol = protocol;
 	}
 
-	public void update() {
+	public void update() throws RobotInterruptedException {
 		if (_protocol != null)
 			_protocol.update();
 	}
