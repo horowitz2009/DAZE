@@ -65,7 +65,19 @@ public class GraphMazeRunner {
       try {
         ensureArea(vertex, 0, 0);
         if (vertex._state == State.GREEN) {
-          _mouse.click(_start._coords.x + vertex._row * 60 + 30, _start._coords.y + vertex._col * 60 + 30);
+          //is diggy around
+          //YES, click then
+          //NO, we have to wait until he comes
+          Pixel coords = new Pixel(_start._coords.x + vertex._row * 60, _start._coords.y + vertex._col * 60);
+          Pixel p;
+          int tries = 0;
+          do {
+            p = _scanner.lookForDiggyAroundHere(coords, 1);
+            if (p == null)
+              _mouse.delay(200);
+          } while (p == null && tries < 30);
+          
+          _mouse.click(coords.x + 30, coords.y + 30);
 
           if (_gates) {
             LOGGER.info("CHECK LOADING2...");
@@ -75,9 +87,8 @@ public class GraphMazeRunner {
             }
           }
 
-          vertex._state = State.CHECKED;
-          _support.firePropertyChange("GREEN_CLICKED", null, vertex);
-          _mouse.delay(750);
+          _mouse.delay(500);
+          
           if (checkPopup()) {
             vertex._state = State.OBSTACLE;
             _support.firePropertyChange("STATE_CHANGED", State.GREEN, vertex);
@@ -90,12 +101,15 @@ public class GraphMazeRunner {
               _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
               _mouse.delay(1000);
             } while (checkNoEnergy());
+            //TODO when OCR is introduced, check if the tile is too expensive, then leave it and move on
           } else {
             _mouse.delay(1000);
           }
           LOGGER.info("Sleep " + _pauseTime + " seconds");
           _mouse.delay(_pauseTime * 1000);
         }
+        vertex._state = State.CHECKED;
+        _support.firePropertyChange("GREEN_CLICKED", null, vertex);
 
         if (_popups && checkPopups()) {
           _mouse.delay(250);
@@ -103,7 +117,8 @@ public class GraphMazeRunner {
 
         if (vertex._state == State.START) {
           vertex._state = State.VISITED;
-          _support.firePropertyChange("STATE_CHANGED", State.START, vertex);
+          _support.firePropertyChange("DIGGY", State.START, vertex);
+          //_support.firePropertyChange("STATE_CHANGED", State.START, vertex);
           checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
           checkNeighbor(_graph, vertex, 1, 0);
           checkNeighbor(_graph, vertex, 0, 1);
@@ -115,7 +130,7 @@ public class GraphMazeRunner {
 
           BufferedImage preClick = captureBlock(vertex._coords);
           _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
-          if (isWalkable(vertex, preClick) && (isSlow() && isWalkable(vertex, preClick))) {
+          if (isWalkable(vertex, preClick) || (isSlow() && isWalkable(vertex, preClick))) {
             // wait until diggy arrives
             int tries = 0;
             boolean diggyHere = false;
@@ -141,6 +156,7 @@ public class GraphMazeRunner {
             // tadaaaa
 
             _support.firePropertyChange("STATE_CHANGED", null, vertex);
+            _support.firePropertyChange("DIGGY", null, vertex);
 
             checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
             checkNeighbor(_graph, vertex, 1, 0);
@@ -512,7 +528,7 @@ public class GraphMazeRunner {
   private List<Position> _searchSequence;
   private Set<Position> _explored;
 
-  private int _pauseTime;
+  private int _pauseTime = 5;
 
   public GraphMazeRunner(ScreenScanner scanner) {
     super();

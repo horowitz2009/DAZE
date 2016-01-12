@@ -20,7 +20,7 @@ public class MazeCanvas extends JPanel {
 
   public MazeCanvas() {
     super();
-    _blockSize = 6;
+    _blockSize = 15;
   }
 
   @Override
@@ -41,7 +41,7 @@ public class MazeCanvas extends JPanel {
     for (Position position : Collections.synchronizedSet(_matrix)) {
       drawBlock(position, g);
     }
-    
+
     if (_diggy != null) {
       drawDiggy(_diggy, g);
     }
@@ -102,7 +102,23 @@ public class MazeCanvas extends JPanel {
   }
 
   private void drawDiggy(Position pos, Graphics g) {
-    drawBlock(pos, Color.yellow, g);
+    // drawBlock(pos, Color.orange, g);
+    Color oldColor = g.getColor();
+    g.setColor(Color.yellow);
+    int x1 = _absCenter.x + pos._row * _blockSize + 1;
+    int y1 = _absCenter.y + pos._col * _blockSize + 1;
+    // int x2 = x1 + _blockSize - 2;
+    // int y2 = y1 + _blockSize - 2;
+    g.fillOval(x1, y1, _blockSize - 2, _blockSize - 2);
+
+    g.setColor(Color.red);
+    g.drawArc(x1, y1, _blockSize - 2, _blockSize - 2, 0, 360);
+
+    g.setColor(new Color(221, 113, 0));
+    g.drawArc(x1 + 1, y1 + 1, _blockSize - 4, _blockSize - 4, 0, 360);
+    
+    g.setColor(oldColor);
+
   }
 
   private void drawBlock(Position pos, Graphics g) {
@@ -122,25 +138,6 @@ public class MazeCanvas extends JPanel {
     drawBlock(pos, c, g);
   }
 
-  private void drawSomething(Graphics g) {
-    drawBlock(new Position(0, 0, State.UNKNOWN), g);
-    drawBlock(new Position(0, 1, State.CHECKED), g);
-    drawBlock(new Position(0, 2, State.VISITED), g);
-    drawBlock(new Position(1, 2, State.OBSTACLE), g);
-  }
-
-  public static void main(String[] args) {
-    JFrame frame = new JFrame("Canvas Test");
-
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
-    frame.setBounds(200, 200, ss.width / 4, ss.height / 4);
-
-    frame.getContentPane().add(new MazeCanvas());
-
-    frame.setVisible(true);
-  }
-
   Position _diggy = null;
 
   private Set<Position> _matrix = new HashSet<>();
@@ -157,7 +154,7 @@ public class MazeCanvas extends JPanel {
         } else if (e.getPropertyName().equals("POS_REMOVED")) {
           _matrix.remove(e.getNewValue());
         } else if (e.getPropertyName().equals("GREEN_CLICKED")) {
-          //DO NOTHING
+          // DO NOTHING
         } else {
           Position pos = (Position) e.getNewValue();
           _matrix.add(pos);
