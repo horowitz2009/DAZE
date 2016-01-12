@@ -75,7 +75,7 @@ public class GraphMazeRunner {
             p = _scanner.lookForDiggyAroundHere(coords, 1);
             if (p == null)
               _mouse.delay(200);
-          } while (p == null && tries < 30);
+          } while (p == null && ++tries < 7);
           
           _mouse.click(coords.x + 30, coords.y + 30);
 
@@ -86,8 +86,11 @@ public class GraphMazeRunner {
               return false;
             }
           }
-
-          _mouse.delay(500);
+          if (p == null) {
+            LOGGER.info("Diggy not near. Will wait a bit more...");
+            _mouse.delay(20000);
+          } else
+            _mouse.delay(500);
           
           if (checkPopup()) {
             vertex._state = State.OBSTACLE;
@@ -105,11 +108,13 @@ public class GraphMazeRunner {
           } else {
             _mouse.delay(1000);
           }
+          vertex._state = State.CHECKED;
+          _support.firePropertyChange("GREEN_CLICKED", null, vertex);
+          
+          
           LOGGER.info("Sleep " + _pauseTime + " seconds");
           _mouse.delay(_pauseTime * 1000);
         }
-        vertex._state = State.CHECKED;
-        _support.firePropertyChange("GREEN_CLICKED", null, vertex);
 
         if (_popups && checkPopups()) {
           _mouse.delay(250);

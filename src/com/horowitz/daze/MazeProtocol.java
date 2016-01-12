@@ -88,7 +88,18 @@ public class MazeProtocol implements GameProtocol {
         // good, we have diggy. we can start...
         _mazeRunner.traverse(p);
       } else {
-        LOGGER.warning("COULDN'T FIND DIGGY...");
+        _failures++;
+        LOGGER.warning("COULDN'T FIND DIGGY... " + _failures);
+        if (_failures >= 10) {
+          _failures = 0;
+          p = _scanner.scanOne("greenArrow.bmp", _scanner._campButtonArea, false);
+          if (p != null) {
+            LOGGER.info("Go to camp, then go back to last location");
+            _mouse.click(p);
+            LOGGER.info("Wait 12s...");
+            _mouse.delay(12000);
+          }
+        }
       }
 
     } catch (Exception e) {
@@ -99,4 +110,5 @@ public class MazeProtocol implements GameProtocol {
     }
   }
 
+  private int _failures = 0;
 }

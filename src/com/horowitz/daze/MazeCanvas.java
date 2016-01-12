@@ -1,17 +1,14 @@
 package com.horowitz.daze;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class MazeCanvas extends JPanel {
@@ -20,7 +17,7 @@ public class MazeCanvas extends JPanel {
 
   public MazeCanvas() {
     super();
-    _blockSize = 15;
+    _blockSize = 6;
   }
 
   @Override

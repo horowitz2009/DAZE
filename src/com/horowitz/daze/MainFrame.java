@@ -77,7 +77,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.9";
+  private static String APP_TITLE = "Daze v0.9c";
 
   private Settings _settings;
   private Stats _stats;
@@ -113,6 +113,8 @@ public class MainFrame extends JFrame {
   private JToggleButton _autoRefreshToggle;
 
   private OCRB _ocr;
+
+  protected long _lastTimeActivity = 0;
 
   public static void main(String[] args) {
 
@@ -244,6 +246,14 @@ public class MainFrame extends JFrame {
 
       @Override
       public void changedUpdate(DocumentEvent e) {
+      }
+    });
+    
+    _mazeRunner.addPropertyChangeListener(new PropertyChangeListener() {
+      
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        _lastTimeActivity = System.currentTimeMillis();
       }
     });
 
@@ -587,7 +597,7 @@ public class MainFrame extends JFrame {
         }
       } else {
         LOGGER.info("CAN'T FIND THE ROCK!!!");
-        handlePopups(false);
+        handlePopups();
         if (attempt <= 2)
           recalcPositions(false, ++attempt);
         else
@@ -1253,6 +1263,7 @@ public class MainFrame extends JFrame {
     setupLogger();
     init();
   }
+  
 
   private void doMagic() {
     assert _scanner.isOptimized();
@@ -1261,7 +1272,7 @@ public class MainFrame extends JFrame {
 
     try {
       long start = System.currentTimeMillis();
-
+      
       _mouse.saveCurrentPosition();
       long fstart = System.currentTimeMillis();
       do {
@@ -1269,8 +1280,22 @@ public class MainFrame extends JFrame {
         long now = System.currentTimeMillis();
         _mouse.checkUserMovement();
         // // 1. SCAN
-        // handlePopups(false);
+        handlePopups();
 
+        //STUCK PREVENTION - 10min inactivity -> refresh
+        if (_lastTimeActivity != 0 && now - _lastTimeActivity > 10 * 60 * 1000 ) { 
+          LOGGER.info("refresh due to inactivity...");
+          try {
+            refresh(false);
+          } catch (AWTException e) {
+            LOGGER.info("FAILED TO refresh: " + e.getMessage());
+          } catch (IOException e) {
+            LOGGER.info("FAILED TO refresh: " + e.getMessage());
+          }
+          fstart = System.currentTimeMillis();
+        }
+        
+        
         // REFRESH
         LOGGER.info("refresh ? " + _autoRefreshToggle.isSelected() + " - " + mandatoryRefresh + " < " + (now - fstart));
         if (_autoRefreshToggle.isSelected() && mandatoryRefresh > 0 && now - fstart >= mandatoryRefresh) {
@@ -1349,11 +1374,14 @@ public class MainFrame extends JFrame {
         Thread.sleep(15000);
       } catch (InterruptedException e) {
       }
-      _scanner.reset();
+      //_scanner.reset();
 
       boolean done = false;
       for (int i = 0; i < 17 && !done; i++) {
         LOGGER.info("after refresh recovery try " + (i + 1));
+        
+        handlePopups();
+        
         // LOCATE THE GAME
         if (_scanner.locateGameArea(false)) {
           LOGGER.info("Game located successfully!");
@@ -1408,7 +1436,7 @@ public class MainFrame extends JFrame {
     // _shipProtocolManagerUI.setShipProtocol(shipProtocolName);
   }
 
-  private void handlePopups(boolean fast) throws RobotInterruptedException {
+  private void handlePopups() throws RobotInterruptedException {
     try {
       LOGGER.info("Popups...");
       boolean found = false;
@@ -1417,71 +1445,16 @@ public class MainFrame extends JFrame {
         _mouse.click(_scanner.getSafePoint());
         _mouse.delay(300);
       }
-      found = _scanner.scanOneFast("anchor.bmp", null, true) != null;
-
-      if (found)
-        return;
-      // reload
+      
       long start = System.currentTimeMillis();
-      long now, t1 = 0, t2 = 0, t3, t4;
-      if (!fast) {
-        Rectangle area = _scanner.generateWindowedArea(412, 550);
-        p = _scanner.scanOneFast("reload.bmp", area, false);
-        now = System.currentTimeMillis();
-
-        t1 = now - start;
-        t2 = now;
-        if (p == null) {
-          p = _scanner.scanOneFast("reload2.bmp", area, false);
-          now = System.currentTimeMillis();
-          t2 = now - t2;
-        }
-
-        found = p != null;
-        if (found) {
-          // check is this 'logged twice' message
-          Pixel pp = _scanner.scanOne("accountLoggedTwice.bmp", area, false);
-          if (pp != null) {
-            LOGGER.info("Logged somewhere else. I'm done here!");
-            _stopAllThreads = true;
-            throw new RobotInterruptedException();
-          } else {
-            _mouse.click(p);
-          }
-
-          LOGGER.info("Game crashed. Reloading...");
-          _mouse.delay(15000);
-          boolean recovered = false;
-          for (int i = 0; i < 15; i++) {
-            scan();
-            if (_scanner.isOptimized()) {
-              recovered = true;
-              break;
-            }
-            _mouse.delay(3000);
-          }
-          if (!recovered) {
-            LOGGER.info("===========================");
-            LOGGER.info("Game failed to recover!!!");
-            LOGGER.info("===========================");
-            return;
-          }
-        }
+      Rectangle area = _scanner._popupAreaX;
+      p = _scanner.scanOneFast("X.bmp", area, false);
+      if (p != null) {
+        _mouse.click(p.x + 16, p.y + 16);
+        _mouse.delay(200);
+      } else {
+        p = _scanner.scanOneFast("claim.bmp", null, true);
       }
-
-      t3 = now = System.currentTimeMillis();
-      found = _scanner.scanOneFast("buildings/x.bmp", null, true) != null;
-      now = System.currentTimeMillis();
-      t3 = now - t3;
-      _mouse.delay(150);
-      t4 = now = System.currentTimeMillis();
-      found = _scanner.scanOneFast("anchor.bmp", null, true) != null;
-      now = System.currentTimeMillis();
-      t4 = now - t4;
-      if (found)
-        _mouse.delay(450);
-      now = System.currentTimeMillis();
-      LOGGER.info("[" + t1 + ",  " + t2 + ",  " + t3 + ",  " + t4 + "], TOTAL: " + (now - start) + " - " + found);
     } catch (IOException e) {
       e.printStackTrace();
     } catch (AWTException e) {
