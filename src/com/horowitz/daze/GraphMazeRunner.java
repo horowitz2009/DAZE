@@ -69,13 +69,13 @@ public class GraphMazeRunner {
           //YES, click then
           //NO, we have to wait until he comes
           Pixel coords = new Pixel(_start._coords.x + vertex._row * 60, _start._coords.y + vertex._col * 60);
-          Pixel p;
-          int tries = 0;
-          do {
-            p = _scanner.lookForDiggyAroundHere(coords, 1);
-            if (p == null)
-              _mouse.delay(200);
-          } while (p == null && ++tries < 7);
+//          Pixel p;
+//          int tries = 0;
+//          do {
+//            p = _scanner.lookForDiggyAroundHere(coords, 1);
+//            if (p == null)
+//              _mouse.delay(200);
+//          } while (p == null && ++tries < 7);
           
           _mouse.click(coords.x + 30, coords.y + 30);
 
@@ -86,10 +86,10 @@ public class GraphMazeRunner {
               return false;
             }
           }
-          if (p == null) {
-            LOGGER.info("Diggy not near. Will wait a bit more...");
-            _mouse.delay(20000);
-          } else
+//          if (p == null) {
+//            LOGGER.info("Diggy not near. Will wait a bit more...");
+//            _mouse.delay(20000);
+//          } else
             _mouse.delay(500);
           
           if (checkPopup()) {
@@ -108,14 +108,14 @@ public class GraphMazeRunner {
           } else {
             _mouse.delay(1000);
           }
-          vertex._state = State.CHECKED;
+          vertex._state = State.VISITED;
           _support.firePropertyChange("GREEN_CLICKED", null, vertex);
           
           
           LOGGER.info("Sleep " + _pauseTime + " seconds");
           _mouse.delay(_pauseTime * 1000);
         }
-
+        
         if (_popups && checkPopups()) {
           _mouse.delay(250);
         }
@@ -146,10 +146,10 @@ public class GraphMazeRunner {
               diggyHere = _scanner.isDiggyExactlyHere(vertex._coords);
             } while (!diggyHere && tries < 30);
 
-            if (diggyHere)
-              vertex._state = State.VISITED;
-            else
-              vertex._state = State.CHECKED;
+//            if (diggyHere)
+            vertex._state = State.VISITED;
+//            else
+//              vertex._state = State.CHECKED;
 
             // TODO Do something about errors
 

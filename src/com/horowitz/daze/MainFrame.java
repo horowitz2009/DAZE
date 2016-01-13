@@ -31,7 +31,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -166,7 +169,7 @@ public class MainFrame extends JFrame {
       _mouse = _scanner.getMouse();
 
       _mazeRunner = new GraphMazeRunner(_scanner);
-      
+
       _tasks = new ArrayList<Task>();
 
       // FISHING TASK
@@ -182,7 +185,6 @@ public class MainFrame extends JFrame {
       e1.printStackTrace();
       System.exit(1);
     }
-
 
     initLayout();
 
@@ -214,10 +216,9 @@ public class MainFrame extends JFrame {
         _settings.saveSettingsSorted();
       }
     });
-    
 
     _mazeRunner.addPropertyChangeListener(_mazeCanvas.createPropertyChangeListener());
-    
+
     _timeTF.getDocument().addDocumentListener(new DocumentListener() {
 
       @Override
@@ -248,12 +249,17 @@ public class MainFrame extends JFrame {
       public void changedUpdate(DocumentEvent e) {
       }
     });
-    
+
     _mazeRunner.addPropertyChangeListener(new PropertyChangeListener() {
-      
+
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
-        _lastTimeActivity = System.currentTimeMillis();
+        long now = System.currentTimeMillis();
+        DateFormat sdf = DateFormat.getDateTimeInstance();
+        String ds = sdf.format(Calendar.getInstance().getTime());
+        _labels.get("LTA").setText(ds);
+
+        _lastTimeActivity = now;
       }
     });
 
@@ -318,7 +324,7 @@ public class MainFrame extends JFrame {
 
     Box north = Box.createVerticalBox();
     north.add(toolbars);
-    // north.add(createStatsPanel());
+    north.add(createStatsPanel());
     if (_testMode) {
 
       JToolBar testToolbar = createTestToolbar();
@@ -405,110 +411,34 @@ public class MainFrame extends JFrame {
     gbc2.insets = new Insets(2, 4, 2, 2);
     gbc2.anchor = GridBagConstraints.EAST;
 
-    // S
-    panel.add(new JLabel("S:"), gbc);
+    // T
+    panel.add(new JLabel("Tiles:"), gbc);
     l = new JLabel(" ");
-    _labels.put("S", l);
+    _labels.put("T", l);
     panel.add(l, gbc2);
 
-    // C
+    // IA
     gbc.gridy++;
     gbc2.gridy++;
-    panel.add(new JLabel("C:"), gbc);
+    panel.add(new JLabel("Inactivities:"), gbc);
     l = new JLabel(" ");
-    _labels.put("C", l);
+    _labels.put("IA", l);
     panel.add(l, gbc2);
 
-    // G
+    // MR
     gbc.gridy++;
     gbc2.gridy++;
-    panel.add(new JLabel("G:"), gbc);
+    panel.add(new JLabel("Mandatory Refreshes:"), gbc);
     l = new JLabel(" ");
-    _labels.put("G", l);
+    _labels.put("MR", l);
     panel.add(l, gbc2);
 
-    // RV
+    // LTA
     gbc.gridy++;
     gbc2.gridy++;
-    panel.add(new JLabel("RV:"), gbc);
+    panel.add(new JLabel("Last Time Activity:"), gbc);
     l = new JLabel(" ");
-    _labels.put("RV", l);
-    panel.add(l, gbc2);
-
-    gbc.insets = new Insets(2, 12, 2, 2);
-    gbc.gridx = 3;
-    gbc2.gridx = 4;
-    gbc.gridy = 0;
-    gbc2.gridy = 0;
-
-    // CP
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("CP:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("CP", l);
-    panel.add(l, gbc2);
-
-    // MC
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("MC:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("MC", l);
-    panel.add(l, gbc2);
-
-    // MX
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("MX:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("MX", l);
-    panel.add(l, gbc2);
-
-    // JK
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("JK:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("JK", l);
-    panel.add(l, gbc2);
-
-    gbc.insets = new Insets(2, 12, 2, 2);
-    gbc.gridx = 5;
-    gbc2.gridx = 6;
-    gbc.gridy = 0;
-    gbc2.gridy = 0;
-
-    // BS
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("BS:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("BS", l);
-    panel.add(l, gbc2);
-
-    // RB
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("R:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("R", l);
-    panel.add(l, gbc2);
-
-    // NH
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("N:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("N", l);
-    panel.add(l, gbc2);
-
-    // IM
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("IM:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("IM", l);
+    _labels.put("LTA", l);
     panel.add(l, gbc2);
 
     // FAKE
@@ -874,7 +804,6 @@ public class MainFrame extends JFrame {
       // _shipsToggle.setSelected(true);
       toolbar.add(_gatesToggle);
 
-      
       // // BUILDINGS
       // _industriesToggle = new JToggleButton("Industries");
       // // _industriesToggle.setSelected(true);
@@ -919,7 +848,7 @@ public class MainFrame extends JFrame {
       });
 
       toolbar.add(_pingToggle);
-      
+
       _slowToggle = new JToggleButton("Slow");
       // _shipsToggle.setSelected(true);
       toolbar.add(_slowToggle);
@@ -1263,7 +1192,6 @@ public class MainFrame extends JFrame {
     setupLogger();
     init();
   }
-  
 
   private void doMagic() {
     assert _scanner.isOptimized();
@@ -1272,7 +1200,7 @@ public class MainFrame extends JFrame {
 
     try {
       long start = System.currentTimeMillis();
-      
+
       _mouse.saveCurrentPosition();
       long fstart = System.currentTimeMillis();
       do {
@@ -1282,8 +1210,11 @@ public class MainFrame extends JFrame {
         // // 1. SCAN
         handlePopups();
 
-        //STUCK PREVENTION - 10min inactivity -> refresh
-        if (_lastTimeActivity != 0 && now - _lastTimeActivity > 10 * 60 * 1000 ) { 
+        // STUCK PREVENTION - 10min inactivity -> refresh
+        LOGGER.info("LTA: " + (now - _lastTimeActivity) + " > " + (10 * 60 * 1000) + "? "
+            + (_lastTimeActivity != 0 && now - _lastTimeActivity > 10 * 60 * 1000));
+
+        if (_lastTimeActivity != 0 && now - _lastTimeActivity > 10 * 60 * 1000) {
           LOGGER.info("refresh due to inactivity...");
           try {
             refresh(false);
@@ -1294,10 +1225,9 @@ public class MainFrame extends JFrame {
           }
           fstart = System.currentTimeMillis();
         }
-        
-        
+
         // REFRESH
-        LOGGER.info("refresh ? " + _autoRefreshToggle.isSelected() + " - " + mandatoryRefresh + " < " + (now - fstart));
+        //LOGGER.info("refresh ? " + _autoRefreshToggle.isSelected() + " - " + mandatoryRefresh + " < " + (now - fstart));
         if (_autoRefreshToggle.isSelected() && mandatoryRefresh > 0 && now - fstart >= mandatoryRefresh) {
           LOGGER.info("refresh time...");
           try {
@@ -1374,14 +1304,14 @@ public class MainFrame extends JFrame {
         Thread.sleep(15000);
       } catch (InterruptedException e) {
       }
-      //_scanner.reset();
+      // _scanner.reset();
 
       boolean done = false;
       for (int i = 0; i < 17 && !done; i++) {
         LOGGER.info("after refresh recovery try " + (i + 1));
-        
+
         handlePopups();
-        
+
         // LOCATE THE GAME
         if (_scanner.locateGameArea(false)) {
           LOGGER.info("Game located successfully!");
@@ -1445,7 +1375,7 @@ public class MainFrame extends JFrame {
         _mouse.click(_scanner.getSafePoint());
         _mouse.delay(300);
       }
-      
+
       long start = System.currentTimeMillis();
       Rectangle area = _scanner._popupAreaX;
       p = _scanner.scanOneFast("X.bmp", area, false);
@@ -1506,7 +1436,7 @@ public class MainFrame extends JFrame {
       if (stillRunning) {
         LOGGER.info("Magic still working...");
         try {
-          for(int j = 0; j < 150; j++) {
+          for (int j = 0; j < 150; j++) {
             _mouse.mouseMove(_scanner.getSafePoint());
             Thread.sleep(100);
           }
