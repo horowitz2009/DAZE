@@ -1197,6 +1197,7 @@ public class MainFrame extends JFrame {
     assert _scanner.isOptimized();
     setTitle(APP_TITLE + " RUNNING");
     _stopAllThreads = false;
+    _lastTimeActivity = 0;
 
     try {
       long start = System.currentTimeMillis();

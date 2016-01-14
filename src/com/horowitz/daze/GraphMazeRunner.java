@@ -61,23 +61,29 @@ public class GraphMazeRunner {
 
     @Override
     public boolean visit(Position vertex) throws Exception {
+
       LOGGER.info("[" + vertex._row + ", " + vertex._col + "] " + vertex._state);
       try {
         ensureArea(vertex, 0, 0);
         if (vertex._state == State.GREEN) {
-          //is diggy around
-          //YES, click then
-          //NO, we have to wait until he comes
+          // //////////////////////
           Pixel coords = new Pixel(_start._coords.x + vertex._row * 60, _start._coords.y + vertex._col * 60);
-//          Pixel p;
-//          int tries = 0;
-//          do {
-//            p = _scanner.lookForDiggyAroundHere(coords, 1);
-//            if (p == null)
-//              _mouse.delay(200);
-//          } while (p == null && ++tries < 7);
-          
+
+          // is diggy around
+          // YES, click then
+          // NO, we have to wait until he comes
+          Pixel p;
+          int tries = 0;
+          do {
+            p = _scanner.lookForDiggyAroundHere(coords, 1);
+            if (p == null)
+              _mouse.delay(200);
+          } while (p == null && ++tries < 7);
+
+          // THE CLICK
           _mouse.click(coords.x + 30, coords.y + 30);
+          // _mouse.click(_start._coords.x + vertex._row * 60 + 30,
+          // _start._coords.y + vertex._col * 60 + 30);
 
           if (_gates) {
             LOGGER.info("CHECK LOADING2...");
@@ -86,12 +92,18 @@ public class GraphMazeRunner {
               return false;
             }
           }
-//          if (p == null) {
-//            LOGGER.info("Diggy not near. Will wait a bit more...");
-//            _mouse.delay(20000);
-//          } else
-            _mouse.delay(500);
-          
+
+          vertex._state = State.VISITED;
+          _support.firePropertyChange("GREEN_CLICKED", null, vertex);
+          _mouse.delay(750);
+          // ////////////////////
+
+          // if (p == null) {
+          // LOGGER.info("Diggy not near. Will wait a bit more...");
+          // _mouse.delay(20000);
+          // } else
+          //_mouse.delay(500);
+
           if (checkPopup()) {
             vertex._state = State.OBSTACLE;
             _support.firePropertyChange("STATE_CHANGED", State.GREEN, vertex);
@@ -104,18 +116,18 @@ public class GraphMazeRunner {
               _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
               _mouse.delay(1000);
             } while (checkNoEnergy());
-            //TODO when OCR is introduced, check if the tile is too expensive, then leave it and move on
+            // TODO when OCR is introduced, check if the tile is too expensive,
+            // then leave it and move on
           } else {
             _mouse.delay(1000);
           }
-          vertex._state = State.VISITED;
-          _support.firePropertyChange("GREEN_CLICKED", null, vertex);
-          
-          
+//          vertex._state = State.VISITED;
+//          _support.firePropertyChange("GREEN_CLICKED", null, vertex);
+//
           LOGGER.info("Sleep " + _pauseTime + " seconds");
           _mouse.delay(_pauseTime * 1000);
         }
-        
+
         if (_popups && checkPopups()) {
           _mouse.delay(250);
         }
@@ -123,7 +135,7 @@ public class GraphMazeRunner {
         if (vertex._state == State.START) {
           vertex._state = State.VISITED;
           _support.firePropertyChange("DIGGY", State.START, vertex);
-          //_support.firePropertyChange("STATE_CHANGED", State.START, vertex);
+          // _support.firePropertyChange("STATE_CHANGED", State.START, vertex);
           checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
           checkNeighbor(_graph, vertex, 1, 0);
           checkNeighbor(_graph, vertex, 0, 1);
@@ -146,10 +158,10 @@ public class GraphMazeRunner {
               diggyHere = _scanner.isDiggyExactlyHere(vertex._coords);
             } while (!diggyHere && tries < 30);
 
-//            if (diggyHere)
+            // if (diggyHere)
             vertex._state = State.VISITED;
-//            else
-//              vertex._state = State.CHECKED;
+            // else
+            // vertex._state = State.CHECKED;
 
             // TODO Do something about errors
 
@@ -268,7 +280,6 @@ public class GraphMazeRunner {
         images.add(captureBlock(p));
       }
       long end = System.currentTimeMillis();
-      
 
       for (int i = 2; i < images.size(); i++) {
         BufferedImage image = images.get(i);
@@ -970,18 +981,20 @@ public class GraphMazeRunner {
     Rectangle area = new Rectangle(pp.x - 10, pp.y - 10, 60 + 20, 60 + 20);
     BufferedImage image1 = new Robot().createScreenCapture(area);
     _mouse.mouseMove(pp.x + 30, pp.y + 30);
-    _mouse.delay(100 + (isSlow() ? 100 : 0));
+    _mouse.delay(100 + (isSlow() ? 600 : 0));
     BufferedImage image2 = new Robot().createScreenCapture(area);
     List<Blob> blobs = new MotionDetector().detect(image1, image2, 5 * 50);
 
-//    for (Blob blob : blobs) {
-//      FastBitmap fb2 = new FastBitmap(image2);
-//
-//      Crop crop = new Crop(blob.getBoundingBox().x, blob.getBoundingBox().y, blob.getBoundingBox().width,
-//          blob.getBoundingBox().height);
-//      crop.ApplyInPlace(fb2);
-//      fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_" + System.currentTimeMillis() + ".png");
-//    }
+    // for (Blob blob : blobs) {
+    // FastBitmap fb2 = new FastBitmap(image2);
+    //
+    // Crop crop = new Crop(blob.getBoundingBox().x, blob.getBoundingBox().y,
+    // blob.getBoundingBox().width,
+    // blob.getBoundingBox().height);
+    // crop.ApplyInPlace(fb2);
+    // fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x +
+    // "_" + System.currentTimeMillis() + ".png");
+    // }
     if (blobs.size() > 0) {
       for (Blob blob : blobs) {
         if (blob.getHeight() > 55 && blob.getWidth() > 55)
