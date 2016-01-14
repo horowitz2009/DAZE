@@ -1137,7 +1137,7 @@ public class ScreenScanner {
     Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 * 2 + 60,
         cellRange * 60 * 2 + 60);
     Pixel res = findDiggy(area);
-    LOGGER.info("Looking for diggy in " + pp + " " + res);
+    //LOGGER.info("Looking for diggy in " + pp + " " + res);
     return res;
   }
 

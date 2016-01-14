@@ -40,7 +40,15 @@ public class Position {
     int result = 1;
     result = prime * result + _col;
     result = prime * result + _row;
+    result = prime * result + ((_state == null) ? 0 : _state.hashCode());
     return result;
+  }
+
+
+  
+  @Override
+  public String toString() {
+    return _row + ", " + _col + " " + _state;
   }
 
   @Override
@@ -56,12 +64,9 @@ public class Position {
       return false;
     if (_row != other._row)
       return false;
+    if (_state != other._state)
+      return false;
     return true;
-  }
-  
-  @Override
-  public String toString() {
-    return _row + ", " + _col + " " + _coords;
   }
 
   

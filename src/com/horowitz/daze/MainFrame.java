@@ -80,7 +80,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.9c";
+  private static String APP_TITLE = "Daze v0.10";
 
   private Settings _settings;
   private Stats _stats;
@@ -1373,7 +1373,7 @@ public class MainFrame extends JFrame {
       boolean found = false;
       Pixel p = null;
       if (_scanner.isOptimized()) {
-        _mouse.click(_scanner.getSafePoint());
+        _mouse.mouseMove(_scanner.getParkingPoint());
         _mouse.delay(300);
       }
 

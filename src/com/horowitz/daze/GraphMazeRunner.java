@@ -62,7 +62,8 @@ public class GraphMazeRunner {
     @Override
     public boolean visit(Position vertex) throws Exception {
 
-      LOGGER.info("[" + vertex._row + ", " + vertex._col + "] " + vertex._state);
+      LOGGER.info("VISITING [" + vertex._row + ", " + vertex._col + "] " + vertex._state);
+      //LOGGER.info("STACKTRACE: " + Thread.currentThread().getStackTrace().length);
       try {
         ensureArea(vertex, 0, 0);
         if (vertex._state == State.GREEN) {
@@ -93,8 +94,6 @@ public class GraphMazeRunner {
             }
           }
 
-          vertex._state = State.VISITED;
-          _support.firePropertyChange("GREEN_CLICKED", null, vertex);
           _mouse.delay(750);
           // ////////////////////
 
@@ -102,7 +101,7 @@ public class GraphMazeRunner {
           // LOGGER.info("Diggy not near. Will wait a bit more...");
           // _mouse.delay(20000);
           // } else
-          //_mouse.delay(500);
+          // _mouse.delay(500);
 
           if (checkPopup()) {
             vertex._state = State.OBSTACLE;
@@ -121,12 +120,13 @@ public class GraphMazeRunner {
           } else {
             _mouse.delay(1000);
           }
-//          vertex._state = State.VISITED;
-//          _support.firePropertyChange("GREEN_CLICKED", null, vertex);
-//
-          LOGGER.info("Sleep " + _pauseTime + " seconds");
+          vertex._state = State.CHECKED;
+          _support.firePropertyChange("GREEN_CLICKED", State.GREEN, vertex);
+
+          //LOGGER.info("Sleep " + _pauseTime + " seconds");
           _mouse.delay(_pauseTime * 1000);
         }
+        // END OF GREEN
 
         if (_popups && checkPopups()) {
           _mouse.delay(250);
@@ -510,6 +510,7 @@ public class GraphMazeRunner {
 
           if (lookForGreenHere(neighborPos._coords)) {
             neighborPos._state = State.GREEN;
+            LOGGER.info("GREEN " + neighborPos);
             _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
             // if (isGate(p)) { // TODO not reliable! to be improved
             // LOGGER.info("It is gate!!!");
@@ -524,9 +525,19 @@ public class GraphMazeRunner {
             neighborPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
             _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
           }
-
-          graph.addEdge(vertex, neighborPos);
-          // graph.addEdge(newPos, vertex);
+          boolean contains = false;
+          for (Position npos : graph.getNeighbors(vertex)) {
+            if (npos.same(neighborPos)) {
+              contains = true;
+              break;
+            }
+          }
+          if (!contains) {
+            graph.addEdge(vertex, neighborPos);
+            // graph.addEdge(newPos, vertex);
+          } else {
+            LOGGER.info("FUNNY: " + vertex + " contains " + neighborPos);
+          }
           graph.addExplored(neighborPos);
           _support.firePropertyChange("POS_ADDED", null, neighborPos);
         }
@@ -615,7 +626,7 @@ public class GraphMazeRunner {
     if (yy < 0)
       yy = 0;
     Rectangle area = new Rectangle(xx, yy, 240, 240);
-    LOGGER.info("Looking for Diggy in " + area);
+    //LOGGER.info("Looking for Diggy in " + area);
     try {
       Pixel p = _scanner.findDiggy(area);
       if (p != null) {
@@ -635,7 +646,7 @@ public class GraphMazeRunner {
           images.add(robot.createScreenCapture(blockArea));
         }
         long end = System.currentTimeMillis();
-        LOGGER.info("time: " + (start - end));
+        //LOGGER.info("time: " + (start - end));
         int i = 0;
         // for (BufferedImage image : images) {
         // new FastBitmap(image).saveAsBMP("AA" + ++i + ".bmp");
@@ -763,7 +774,7 @@ public class GraphMazeRunner {
   }
 
   private boolean checkPopups() throws IOException, AWTException, RobotInterruptedException {
-    LOGGER.info("all popups...");
+    //LOGGER.info("all popups...");
     long start = System.currentTimeMillis();
     Rectangle area = _scanner._popupAreaX;
     Pixel p = _scanner.scanOneFast("X.bmp", area, false);
@@ -775,12 +786,12 @@ public class GraphMazeRunner {
     } else {
       p = _scanner.scanOneFast("claim.bmp", null, true);
     }
-    LOGGER.info("time: " + (System.currentTimeMillis() - start));
+    //LOGGER.info("time: " + (System.currentTimeMillis() - start));
     return p != null;
   }
 
   private boolean checkPopup() throws IOException, AWTException, RobotInterruptedException {
-    LOGGER.info("sign popup...");
+    //LOGGER.info("sign popup...");
     long start = System.currentTimeMillis();
     Rectangle area = _scanner.generateWindowedArea(520, 290);
     area.x = area.x + area.width - 70;
@@ -795,12 +806,12 @@ public class GraphMazeRunner {
 
       _mouse.delay(200);
     }
-    LOGGER.info("time: " + (System.currentTimeMillis() - start));
+    //LOGGER.info("time: " + (System.currentTimeMillis() - start));
     return p != null;
   }
 
   private boolean checkNoEnergy() throws IOException, AWTException, RobotInterruptedException {
-    LOGGER.info("energy popup...");
+    //LOGGER.info("energy popup...");
     long start = System.currentTimeMillis();
     Rectangle area = _scanner.generateWindowedArea(458 + 10, 464 + 10);
     area.x = area.x + 90;

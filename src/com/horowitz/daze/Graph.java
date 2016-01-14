@@ -58,20 +58,20 @@ public class Graph<T> {
   }
 
   public void preOrderTraversal(T vertex, Visitor<T> visitor) throws Exception {
-    preOrderTraversal(vertex, visitor, _explored);
+    preOrderTraversalRecursive(vertex, visitor);
   }
 
-  private void preOrderTraversal(T vertex, Visitor<T> visitor, Set<T> visited) throws Exception {
+  private void preOrderTraversalRecursive(T vertex, Visitor<T> visitor) throws Exception {
     if (!_interrupt) {
       boolean fine = visitor.visit(vertex);
-      visited.add(vertex);
+      _explored.add(vertex);
       if (fine) {
         List<T> neighbors = this.getNeighbors(vertex);
         List<T> prioritizedNeighbors = visitor.prioritize(neighbors);
         for (T neighbor : prioritizedNeighbors) {
           // if neighbor has not been visited then recurse
           if (canBeVisited(neighbor, visitor)) {
-            preOrderTraversal(neighbor, visitor, visited);
+            preOrderTraversalRecursive(neighbor, visitor);
           }
         }
       }
