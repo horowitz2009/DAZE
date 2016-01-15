@@ -24,13 +24,10 @@ import Catalano.Core.IntPoint;
 import Catalano.Core.IntRange;
 import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.ColorFiltering;
-import Catalano.Imaging.Filters.Crop;
 import Catalano.Imaging.Filters.ExtractRGBChannel;
 import Catalano.Imaging.Filters.ExtractRGBChannel.Channel;
 import Catalano.Imaging.Filters.Threshold;
 import Catalano.Imaging.Tools.Blob;
-import Catalano.Imaging.Tools.BlobDetection;
-import Catalano.Math.Geometry.PointsCloud;
 
 import com.horowitz.commons.ImageComparator;
 import com.horowitz.commons.ImageData;

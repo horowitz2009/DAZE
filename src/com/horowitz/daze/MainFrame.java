@@ -32,7 +32,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -80,7 +79,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.10";
+  private static String APP_TITLE = "Daze v0.11";
 
   private Settings _settings;
   private Stats _stats;
@@ -135,7 +134,7 @@ public class MainFrame extends JFrame {
       MainFrame frame = new MainFrame(isTestmode);
       frame.pack();
       frame.setSize(new Dimension(frame.getSize().width + 8, frame.getSize().height + 8));
-      int w = 275;// frame.getSize().width;
+      int w = 450;// frame.getSize().width;
       final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       int h = (int) (screenSize.height * 0.9);
       int x = screenSize.width - w;
@@ -386,8 +385,8 @@ public class MainFrame extends JFrame {
 
     final JTextArea shipLog = new JTextArea(5, 10);
     _mazeCanvas = new MazeCanvas();
-    _mazeCanvas.setMinimumSize(new Dimension(600, 350));
-    _mazeCanvas.setPreferredSize(new Dimension(600, 350));
+    _mazeCanvas.setMinimumSize(new Dimension(400, 300));
+    _mazeCanvas.setPreferredSize(new Dimension(400, 300));
 
     rootPanel.add(new JScrollPane(_mazeCanvas), BorderLayout.SOUTH);
 

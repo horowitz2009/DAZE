@@ -28,6 +28,12 @@ public class MazeCanvas extends JPanel {
     int h = getSize().height;
 
     _absCenter = new Point(w / 2 - _blockSize / 2, h / 2 - _blockSize / 2);
+    if (_diggy != null) {
+      int xOff = - _diggy._row;
+      int yOff = - _diggy._col;
+      _absCenter.x += (xOff * _blockSize);
+      _absCenter.y += (yOff * _blockSize);
+    }
 
     // g.drawArc(_absCenter.x, _absCenter.y, _blockSize, _blockSize, 0, 360);
 
