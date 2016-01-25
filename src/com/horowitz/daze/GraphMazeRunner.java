@@ -131,6 +131,7 @@ public class GraphMazeRunner {
 
         if (vertex._state == State.START) {
           vertex._state = State.VISITED;
+          _support.firePropertyChange("TOTAL_MATRIX", null, _explored);
           _support.firePropertyChange("DIGGY", State.START, vertex);
           // _support.firePropertyChange("STATE_CHANGED", State.START, vertex);
           checkNeighbor(_graph, vertex, 0, -1);// north was 3rd

@@ -148,6 +148,7 @@ public class MazeCanvas extends JPanel {
   public PropertyChangeListener createPropertyChangeListener() {
     final PropertyChangeListener listener = new PropertyChangeListener() {
 
+      @SuppressWarnings("unchecked")
       @Override
       public void propertyChange(PropertyChangeEvent e) {
         if (e.getPropertyName().equals("DIGGY")) {
@@ -156,6 +157,9 @@ public class MazeCanvas extends JPanel {
           _matrix.clear();
         } else if (e.getPropertyName().equals("POS_REMOVED")) {
           _matrix.remove(e.getNewValue());
+        } else if (e.getPropertyName().equals("TOTAL_MATRIX")) {
+          _matrix.clear();
+          _matrix.addAll((Set<Position>)e.getNewValue());
         } else if (e.getPropertyName().equals("GREEN_CLICKED")) {
           // DO NOTHING
         } else {
