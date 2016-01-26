@@ -71,6 +71,7 @@ import com.horowitz.commons.RobotInterruptedException;
 import com.horowitz.commons.Service;
 import com.horowitz.commons.Settings;
 import com.horowitz.commons.TemplateMatcher;
+import com.horowitz.daze.map.MapManager;
 import com.horowitz.ocr.OCRB;
 
 public class MainFrame extends JFrame {
@@ -269,6 +270,8 @@ public class MainFrame extends JFrame {
     reapplySettings();
 
     runSettingsListener();
+    
+    new MapManager().loadMaps();
 
   }
 

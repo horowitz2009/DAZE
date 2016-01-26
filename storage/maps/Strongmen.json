@@ -1,0 +1,43 @@
+{
+  "name": "Strongmen",
+  "priority": 2,
+  "position": -1,
+  "places": [
+    {
+      "name": "Winter Cave Of Digging 2",
+      "coords": {
+        "weight": 0,
+        "x": -75,
+        "y": -186
+      },
+      "repeatable": false
+    },
+    {
+      "name": "Winter Cave Of Rolling 2",
+      "coords": {
+        "weight": 0,
+        "x": 310,
+        "y": -79
+      },
+      "repeatable": false
+    },
+    {
+      "name": "Winter Quiz Cave 2",
+      "coords": {
+        "weight": 0,
+        "x": 711,
+        "y": -136
+      },
+      "repeatable": false
+    },
+    {
+      "name": "Winter Strongmen Chambers 2",
+      "coords": {
+        "weight": 0,
+        "x": 434,
+        "y": -276
+      },
+      "repeatable": false
+    }
+  ]
+}

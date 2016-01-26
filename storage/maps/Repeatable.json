@@ -1,0 +1,151 @@
+{
+  "name": "Repeatable",
+  "priority": 2,
+  "position": 1,
+  "places": [
+    {
+      "name": "Smithy",
+      "coords": {
+        "weight": 0,
+        "x": -185,
+        "y": -33
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Fishing Pond",
+      "coords": {
+        "weight": 0,
+        "x": -88,
+        "y": -189
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Tutankhamun\u0027s Treasury",
+      "coords": {
+        "weight": 0,
+        "x": -304,
+        "y": -194
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Lucky Oasis",
+      "coords": {
+        "weight": 0,
+        "x": -304,
+        "y": -324
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Tin Cave",
+      "coords": {
+        "weight": 0,
+        "x": -149,
+        "y": -342
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Coal Cavern",
+      "coords": {
+        "weight": 0,
+        "x": 152,
+        "y": -331
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Small Stone Pit",
+      "coords": {
+        "weight": 0,
+        "x": 323,
+        "y": -379
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Abandoned Tunnel",
+      "coords": {
+        "weight": 0,
+        "x": 398,
+        "y": -173
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Pyramid Of Eternal Knowledge",
+      "coords": {
+        "weight": 0,
+        "x": 572,
+        "y": -316
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Mushroom Pit",
+      "coords": {
+        "weight": 0,
+        "x": 622,
+        "y": -190
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Plantation",
+      "coords": {
+        "weight": 0,
+        "x": 867,
+        "y": -316
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Feline Treasury",
+      "coords": {
+        "weight": 0,
+        "x": 939,
+        "y": -211
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Stony Landslide",
+      "coords": {
+        "weight": 0,
+        "x": 970,
+        "y": -410
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Luxor Library",
+      "coords": {
+        "weight": 0,
+        "x": 1046,
+        "y": -124
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Iron Mine",
+      "coords": {
+        "weight": 0,
+        "x": 1202,
+        "y": -31
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Lumber Warehouse",
+      "coords": {
+        "weight": 0,
+        "x": 1202,
+        "y": -205
+      },
+      "repeatable": true
+    }
+  ]
+}

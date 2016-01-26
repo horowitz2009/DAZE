@@ -1,0 +1,43 @@
+{
+  "name": "Main",
+  "priority": 2,
+  "position": 0,
+  "places": [
+    {
+      "name": "Pen-Stock",
+      "coords": {
+        "weight": 0,
+        "x": 807,
+        "y": -394
+      },
+      "repeatable": false
+    },
+    {
+      "name": "Luxor Electrical Substation",
+      "coords": {
+        "weight": 0,
+        "x": 943,
+        "y": -305
+      },
+      "repeatable": false
+    },
+    {
+      "name": "Endangered Oasis",
+      "coords": {
+        "weight": 0,
+        "x": 788,
+        "y": -307
+      },
+      "repeatable": false
+    },
+    {
+      "name": "Machine Room",
+      "coords": {
+        "weight": 0,
+        "x": 836,
+        "y": -179
+      },
+      "repeatable": false
+    }
+  ]
+}
