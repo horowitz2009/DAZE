@@ -90,13 +90,17 @@ public class ScreenScanner {
 
   private Rectangle _buttonArea;
 
-  private Pixel _menuBR;
+  public Pixel _menuBR;
 
   public Rectangle _lastLocationButtonArea;
 
   public Rectangle _mapButtonArea;
 
   public Rectangle _campButtonArea;
+
+  public Pixel _eastButtons;
+
+  public Pixel _westButtons;
 
   public Pixel[] getShipLocations() {
     return _shipLocations;
@@ -158,12 +162,11 @@ public class ScreenScanner {
 
     _safePoint = new Pixel(_br.x - 15, _br.y - 15);
     _parkingPoint = new Pixel(_br);
-    
-    
+
     _lastLocationButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 38, 60, 36);
     _mapButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 75, 60, 36);
     _campButtonArea = new Rectangle(_menuBR.x - 169, _menuBR.y - 75, 60, 36);
-    
+
     getImageData("greenArrow.bmp", _lastLocationButtonArea, 17, 22);
 
     // int xxx = (getGameWidth() - 137) / 2;
@@ -276,6 +279,21 @@ public class ScreenScanner {
     // getImageData("populationRed.bmp", area, 0, 0);
     // getImageData("populationBlue.bmp", area, 0, 0);
     // */
+  }
+
+  public boolean scanForMapButtons() throws RobotInterruptedException, IOException, AWTException {
+
+    Rectangle area = new Rectangle(_menuBR.x - 423, _menuBR.y - 88, 44, 88);
+    _eastButtons = scanOne("map/eastButtonGroup.bmp", area, false);
+    if (_eastButtons != null) {
+      area.x = _eastButtons.x - 634;
+      if (area.x < 0)
+        area.x = 0;
+      area.width = 634 - 459 + 30;
+      _westButtons = scanOne("map/westButtonGroup.bmp", area, false);
+      return _westButtons != null;
+    }
+    return false;
   }
 
   public Pixel[] getBuildingLocations() {
@@ -1137,8 +1155,41 @@ public class ScreenScanner {
     Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 * 2 + 60,
         cellRange * 60 * 2 + 60);
     Pixel res = findDiggy(area);
-    //LOGGER.info("Looking for diggy in " + pp + " " + res);
+    // LOGGER.info("Looking for diggy in " + pp + " " + res);
     return res;
+  }
+
+  public void gotoMap(int position) throws RobotInterruptedException, IOException, AWTException {
+    int tries = 0;
+    boolean mapMode = false;
+    do {
+      tries++;
+      _mouse.click(_mapButtonArea.x + 32, _mapButtonArea.y + 20);
+      _mouse.delay(2000);
+      mapMode = scanForMapButtons();
+      if (!mapMode)
+        _mouse.delay(5000);
+    } while (!mapMode && tries < 4);
+    if (mapMode) {
+      // GOOD
+      LOGGER.info("MAP MODE! " + tries);
+      //click << button
+      _mouse.click(_westButtons.x + 12, _westButtons.y + 42);
+      _mouse.delay(1750);
+      
+      //look for main map
+      Rectangle area = new Rectangle(_westButtons.x + 26, _westButtons.y - 18, _eastButtons.x - _westButtons.x - 26, _menuBR.y - _eastButtons.y + 18);
+      writeArea(area, "mapsArea.jpg");
+      Pixel p = scanOne("map/mainMap.bmp", area, false);
+      if (p!= null) {
+        LOGGER.info("Found main map...");
+        
+      }
+
+    } else {
+      LOGGER.warning("Not sure I'm in maps screen!");
+    }
+
   }
 
 }

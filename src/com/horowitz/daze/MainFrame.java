@@ -119,6 +119,8 @@ public class MainFrame extends JFrame {
 
   protected long _lastTimeActivity = 0;
 
+  private MapManager mapManager;
+
   public static void main(String[] args) {
 
     try {
@@ -271,7 +273,8 @@ public class MainFrame extends JFrame {
 
     runSettingsListener();
     
-    new MapManager().loadMaps();
+    mapManager =  new MapManager(_scanner);
+    mapManager.loadMaps();
 
   }
 
@@ -705,6 +708,16 @@ public class MainFrame extends JFrame {
           runMagic();
         }
 
+      };
+      mainToolbar1.add(action);
+    }
+    // TEST GO TO MAP
+    {
+      AbstractAction action = new AbstractAction("Goto Map") {
+        public void actionPerformed(ActionEvent e) {
+          gotoMap();
+        }
+        
       };
       mainToolbar1.add(action);
     }
@@ -1149,6 +1162,18 @@ public class MainFrame extends JFrame {
 
         loadStats();
         _mouse.restorePosition();
+        
+//        _mouse.mouseMove(_scanner._menuBR);
+//        _mouse.delay(1000);
+//        if (_scanner.scanForMapButtons()) {
+//          _mouse.delay(1000);
+//          _mouse.mouseMove(_scanner._eastButtons);
+//          _mouse.delay(1000);
+//          _mouse.mouseMove(_scanner._westButtons);
+//        } else {
+//          LOGGER.info("COUNDNT FIND EASTWEST...");
+//        }
+        
       } else {
         LOGGER.info("CAN'T FIND THE GAME!");
         setTitle(APP_TITLE);
@@ -1612,6 +1637,26 @@ public class MainFrame extends JFrame {
       }
     }, "MAGIC");
 
+    myThread.start();
+  }
+  
+  private void gotoMap() {
+    Thread myThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          LOGGER.info("Going to map ...");
+          mapManager.gotoMap("Main");
+        } catch (RobotInterruptedException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
+        } catch (AWTException e) {
+          e.printStackTrace();
+        }
+      }
+    }, "GOTOMAP");
+    
     myThread.start();
   }
 
