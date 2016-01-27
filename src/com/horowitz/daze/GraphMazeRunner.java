@@ -1006,7 +1006,7 @@ public class GraphMazeRunner {
     // }
     if (blobs.size() > 0) {
       for (Blob blob : blobs) {
-        if (blob.getHeight() > 55 && blob.getWidth() > 55)
+        if (blob.getHeight() > 35 && blob.getWidth() > 35)
           return true;
       }
 
