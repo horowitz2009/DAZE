@@ -79,6 +79,24 @@ public class MapDataLoader {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    
+    
+    try {
+      // HATHOR
+      DMap map = new DMap("Hathor");
+      map.setPosition(11);
+      List<Place> places = new ArrayList<Place>();
+      places.add(new Place("Closed Theatre", new Pixel(433, -59), true));
+      places.add(new Place("Sandy Pastures", new Pixel(513, -182), true));
+      places.add(new Place("Monestery Of Joy", new Pixel(585, -261), true));
+      
+      
+      map.setPlaces(places);
+      
+      new JsonStorage().saveMap(map);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     System.out.println("DONE.");
   }
 

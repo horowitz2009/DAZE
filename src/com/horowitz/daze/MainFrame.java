@@ -1646,7 +1646,8 @@ public class MainFrame extends JFrame {
       public void run() {
         try {
           LOGGER.info("Going to map ...");
-          mapManager.gotoMap("Main");
+          boolean gotoMap = mapManager.gotoPlace("Hathor", "Sandy Pastures");//Closed Theatre
+          LOGGER.info("Done");
         } catch (RobotInterruptedException e) {
           e.printStackTrace();
         } catch (IOException e) {

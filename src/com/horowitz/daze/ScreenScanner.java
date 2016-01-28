@@ -102,6 +102,10 @@ public class ScreenScanner {
 
   public Pixel _westButtons;
 
+  public Rectangle _diggyCaveArea;
+
+  public Rectangle _scampArea;
+
   public Pixel[] getShipLocations() {
     return _shipLocations;
   }
@@ -147,12 +151,15 @@ public class ScreenScanner {
     int yy;
 
     _scanArea = new Rectangle(_tl.x + 120, _tl.y + 85, getGameWidth() - 120 - 120, getGameHeight() - 85 - 85);
+
+    _scampArea = new Rectangle(_scanArea.x + 280, _scanArea.y + 415, getGameWidth() - 120 - 120 - 280, 65);
     // writeArea(_scanArea, "scanArea.png");
 
     xx = (getGameWidth() - 140) / 2;
     _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
 
     _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144, _tl.y, 400 - 144, getGameWidth() / 2 + 50);
+    _diggyCaveArea = new Rectangle(_tl.x + getGameWidth() / 2 - 114, _tl.y + 53, 228, 171);
 
     xx = (getGameWidth() - 200) / 2;
     _buttonArea = new Rectangle(_tl.x + xx, _br.y - (70 + 87), xx, 87);
@@ -168,6 +175,9 @@ public class ScreenScanner {
     _campButtonArea = new Rectangle(_menuBR.x - 169, _menuBR.y - 75, 60, 36);
 
     getImageData("greenArrow.bmp", _lastLocationButtonArea, 17, 22);
+    
+    getImageData("map/diggyCave.bmp", _diggyCaveArea, -186, 49);
+    getImageData("map/placeEntry.bmp", _scanArea, 28, 20);
 
     // int xxx = (getGameWidth() - 137) / 2;
     // _leftNumbersArea = new Rectangle(_tl.x, _tl.y, xxx, 72);
@@ -1159,7 +1169,7 @@ public class ScreenScanner {
     return res;
   }
 
-  public void gotoMap(int position) throws RobotInterruptedException, IOException, AWTException {
+  public boolean gotoMap(int position) throws RobotInterruptedException, IOException, AWTException {
     int tries = 0;
     boolean mapMode = false;
     do {
@@ -1181,15 +1191,51 @@ public class ScreenScanner {
       Rectangle area = new Rectangle(_westButtons.x + 26, _westButtons.y - 18, _eastButtons.x - _westButtons.x - 26, _menuBR.y - _eastButtons.y + 18);
       writeArea(area, "mapsArea.jpg");
       Pixel p = scanOne("map/mainMap.bmp", area, false);
-      if (p!= null) {
+      if (p != null) {
+        p.x -= 23;
         LOGGER.info("Found main map...");
-        
+        int pos = position;
+        int cnt = area.width / 84;
+        int pp = p.x + pos * 84 + 42;
+        while (pp > _eastButtons.x) {
+          //click >> button
+          _mouse.click(_eastButtons.x + 12, _eastButtons.y + 42);
+          _mouse.delay(1750);
+          pos -= cnt;
+          pp = p.x + pos * 84 + 42;
+        }
+        assert pp < _eastButtons.x;
+        _mouse.click(pp, _eastButtons.y + 42);
+        _mouse.delay(2000);
+        return true;
       }
 
     } else {
       LOGGER.warning("Not sure I'm in maps screen!");
     }
+    
+    return false;
+  }
 
+  public Pixel findCamp() throws RobotInterruptedException, IOException, AWTException {
+    //dragMapToRight();
+    Pixel p = scanOne("map/scamp.bmp", _scampArea, false);
+    if (p == null) {
+      dragMapToRight();
+      _mouse.delay(1000);
+    }
+    p = scanOne("map/scamp.bmp", _scampArea, false);
+    return p;
+  }
+
+  private void dragMapToRight() throws RobotInterruptedException {
+    //make sure the map is fully dragged to its left part
+    int x1 = _scanArea.x + 5;
+    int x2 = _scanArea.x + _scampArea.width - 5;
+    int y = _scanArea.y + _scanArea.height - 15;
+    _mouse.drag(x1, y, x2, y);
+    _mouse.delay(100);
+    _mouse.drag(x1, y, x2, y);
   }
 
 }

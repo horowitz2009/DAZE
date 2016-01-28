@@ -1,0 +1,34 @@
+{
+  "name": "Hathor",
+  "priority": 2,
+  "position": 11,
+  "places": [
+    {
+      "name": "Closed Theatre",
+      "coords": {
+        "weight": 0,
+        "x": 433,
+        "y": -59
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Sandy Pastures",
+      "coords": {
+        "weight": 0,
+        "x": 513,
+        "y": -182
+      },
+      "repeatable": true
+    },
+    {
+      "name": "Monestery Of Joy",
+      "coords": {
+        "weight": 0,
+        "x": 585,
+        "y": -261
+      },
+      "repeatable": true
+    }
+  ]
+}
