@@ -2,6 +2,9 @@ package com.horowitz.daze.map;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
@@ -39,4 +42,17 @@ public class JsonStorage {
     this.mapPath = mapPath;
   }
 
+  public void saveAgenda(List<Agenda> agendas) throws IOException {
+    String json = gson.toJson(agendas);
+
+    FileUtils.writeStringToFile(new File("storage/agenda.json"), json);
+  }
+
+  public List<Agenda> loadAgenda() throws IOException {
+    String json = FileUtils.readFileToString(new File("storage/agenda.json"));
+
+    Agenda[] agendas = gson.fromJson(json, Agenda[].class);
+
+    return new ArrayList<Agenda>(Arrays.asList(agendas));
+  }
 }

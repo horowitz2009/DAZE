@@ -60,6 +60,7 @@ public class GraphMazeRunner {
     public boolean visit(Position vertex) throws Exception {
 
       LOGGER.info("VISITING [" + vertex._row + ", " + vertex._col + "] " + vertex._state);
+      _support.firePropertyChange("CLICK", null, vertex);
       //LOGGER.info("STACKTRACE: " + Thread.currentThread().getStackTrace().length);
       try {
         ensureArea(vertex, 0, 0);
@@ -142,7 +143,6 @@ public class GraphMazeRunner {
 
           // _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
           // _mouse.delay(6000);
-
           BufferedImage preClick = captureBlock(vertex._coords);
           _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
           if (isWalkable(vertex, preClick) || (isSlow() && isWalkable(vertex, preClick))) {

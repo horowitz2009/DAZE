@@ -16,6 +16,18 @@ public class MapDataLoader {
       d.mkdirs();
     }
     try {
+      // AGENDA
+      List<Agenda> agendas = new ArrayList<Agenda>();
+      agendas.add(new Agenda("Repeatable", "Tin Cave"));
+      agendas.add(new Agenda("Hathor", "Closed Theatre"));
+      agendas.add(new Agenda("Strongmen", "Winter Cave Of Digging 2"));
+      new JsonStorage().saveAgenda(agendas);
+      
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    try {
       // STRONGMEN 2 EVENT
       DMap map = new DMap("Strongmen");
       map.setPosition(-1);
@@ -24,14 +36,14 @@ public class MapDataLoader {
       places.add(new Place("Winter Cave Of Rolling 2", new Pixel(310, -79), false));
       places.add(new Place("Winter Quiz Cave 2", new Pixel(711, -136), false));
       places.add(new Place("Winter Strongmen Chambers 2", new Pixel(434, -276), false));
-
+      
       map.setPlaces(places);
-
+      
       new JsonStorage().saveMap(map);
     } catch (IOException e) {
       e.printStackTrace();
     }
-
+    
     try {
       // MAIN
       DMap map = new DMap("Main");

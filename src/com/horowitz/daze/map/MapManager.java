@@ -115,8 +115,6 @@ public class MapManager {
       // _scanner.writeArea(_scanner._diggyCaveArea, "diggyCave.png");
       Pixel pc = _scanner.scanOne("map/diggyCave.bmp", null, false);
       if (pc != null) {
-        
-        _mouse.mouseMove(pc);
         area = new Rectangle(pc.x + 421, pc.y + 131, 57, 36);
         Pixel pp = _scanner.scanOne("map/progressFull.bmp", area, false);
         if (pp != null) {
@@ -127,11 +125,17 @@ public class MapManager {
         }
         LOGGER.info("hmm");
         //find the entry
-        Rectangle area2 = new Rectangle(pc.x +193, pc.y+195, 100, 60);
+        Rectangle area2 = new Rectangle(pc.x +193, pc.y + 155, 100, 280);
         pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);//CLICK!!!
+//        if (pp == null) {
+//          area2 = new Rectangle(pc.x +193, pc.y+365, 100, 60);
+//          pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);//CLICK!!!
+//        }
         if (pp == null) {
-          area2 = new Rectangle(pc.x +193, pc.y+365, 100, 60);
-          pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);//CLICK!!!
+          LOGGER.info("UH OH...");
+          _mouse.click(pc.x + 456, pc.y + 6);
+          _mouse.delay(1000);
+          return false;
         }
         return pp != null;
       }
