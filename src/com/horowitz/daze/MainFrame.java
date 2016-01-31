@@ -71,6 +71,8 @@ import com.horowitz.commons.RobotInterruptedException;
 import com.horowitz.commons.Service;
 import com.horowitz.commons.Settings;
 import com.horowitz.commons.TemplateMatcher;
+import com.horowitz.daze.map.Agenda;
+import com.horowitz.daze.map.JsonStorage;
 import com.horowitz.daze.map.MapManager;
 import com.horowitz.ocr.OCRB;
 
@@ -80,7 +82,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.14";
+  private static String APP_TITLE = "Daze v0.15a";
 
   private Settings _settings;
   private Stats _stats;
@@ -264,6 +266,26 @@ public class MainFrame extends JFrame {
         _lastTimeActivity = now;
       }
     });
+    
+    _mazeRunner.addPropertyChangeListener("GREEN_CLICKED", new PropertyChangeListener() {
+      
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        long now = System.currentTimeMillis();
+        DateFormat sdf = DateFormat.getDateTimeInstance();
+        String ds = sdf.format(Calendar.getInstance().getTime());
+        _labels.get("FS").setText(ds);
+
+        _fstart = now;
+      }
+    });
+    _mazeRunner.addPropertyChangeListener("CLICK", new PropertyChangeListener() {
+      
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        captureArea(_scanner.getScanArea(), "diggy ");
+      }
+    });
 
     // ///////////////////////
 
@@ -272,8 +294,8 @@ public class MainFrame extends JFrame {
     reapplySettings();
 
     runSettingsListener();
-    
-    mapManager =  new MapManager(_scanner);
+
+    mapManager = new MapManager(_scanner);
     mapManager.loadMaps();
 
   }
@@ -417,9 +439,9 @@ public class MainFrame extends JFrame {
     gbc2.anchor = GridBagConstraints.EAST;
 
     // T
-    panel.add(new JLabel("Tiles:"), gbc);
+    panel.add(new JLabel("FS:"), gbc);
     l = new JLabel(" ");
-    _labels.put("T", l);
+    _labels.put("FS", l);
     panel.add(l, gbc2);
 
     // IA
@@ -713,11 +735,11 @@ public class MainFrame extends JFrame {
     }
     // TEST GO TO MAP
     {
-      AbstractAction action = new AbstractAction("Goto Map") {
+      AbstractAction action = new AbstractAction("Do Agenda") {
         public void actionPerformed(ActionEvent e) {
-          gotoMap();
+          doAgenda();
         }
-        
+
       };
       mainToolbar1.add(action);
     }
@@ -1162,18 +1184,18 @@ public class MainFrame extends JFrame {
 
         loadStats();
         _mouse.restorePosition();
-        
-//        _mouse.mouseMove(_scanner._menuBR);
-//        _mouse.delay(1000);
-//        if (_scanner.scanForMapButtons()) {
-//          _mouse.delay(1000);
-//          _mouse.mouseMove(_scanner._eastButtons);
-//          _mouse.delay(1000);
-//          _mouse.mouseMove(_scanner._westButtons);
-//        } else {
-//          LOGGER.info("COUNDNT FIND EASTWEST...");
-//        }
-        
+
+        // _mouse.mouseMove(_scanner._menuBR);
+        // _mouse.delay(1000);
+        // if (_scanner.scanForMapButtons()) {
+        // _mouse.delay(1000);
+        // _mouse.mouseMove(_scanner._eastButtons);
+        // _mouse.delay(1000);
+        // _mouse.mouseMove(_scanner._westButtons);
+        // } else {
+        // LOGGER.info("COUNDNT FIND EASTWEST...");
+        // }
+
       } else {
         LOGGER.info("CAN'T FIND THE GAME!");
         setTitle(APP_TITLE);
@@ -1227,78 +1249,10 @@ public class MainFrame extends JFrame {
     _lastTimeActivity = 0;
 
     try {
-      long start = System.currentTimeMillis();
-
       _mouse.saveCurrentPosition();
-      long fstart = System.currentTimeMillis();
+      _fstart = System.currentTimeMillis();
       do {
-        long mandatoryRefresh = _settings.getInt("autoRefresh.mandatoryRefresh", 45) * 60 * 1000;
-        long now = System.currentTimeMillis();
-        _mouse.checkUserMovement();
-        // // 1. SCAN
-        handlePopups();
-
-        // STUCK PREVENTION - 10min inactivity -> refresh
-        LOGGER.info("LTA: " + (now - _lastTimeActivity) + " > " + (10 * 60 * 1000) + "? "
-            + (_lastTimeActivity != 0 && now - _lastTimeActivity > 10 * 60 * 1000));
-
-        if (_lastTimeActivity != 0 && now - _lastTimeActivity > 10 * 60 * 1000) {
-          LOGGER.info("refresh due to inactivity...");
-          try {
-            refresh(false);
-          } catch (AWTException e) {
-            LOGGER.info("FAILED TO refresh: " + e.getMessage());
-          } catch (IOException e) {
-            LOGGER.info("FAILED TO refresh: " + e.getMessage());
-          }
-          fstart = System.currentTimeMillis();
-        }
-
-        // REFRESH
-        //LOGGER.info("refresh ? " + _autoRefreshToggle.isSelected() + " - " + mandatoryRefresh + " < " + (now - fstart));
-        if (_autoRefreshToggle.isSelected() && mandatoryRefresh > 0 && now - fstart >= mandatoryRefresh) {
-          LOGGER.info("refresh time...");
-          try {
-            refresh(false);
-          } catch (AWTException e) {
-            LOGGER.info("FAILED TO refresh: " + e.getMessage());
-          } catch (IOException e) {
-            LOGGER.info("FAILED TO refresh: " + e.getMessage());
-          }
-          fstart = System.currentTimeMillis();
-        }
-
-        // _mouse.checkUserMovement();
-        // if (_pingToggle.isSelected()) {
-        // ping();
-        // }
-
-        _mouse.checkUserMovement();
-
-        // 2. DO TASKS
-        // long now = System.currentTimeMillis();
-        // if (now - start > 11*60000) {
-        for (Task task : _tasks) {
-          if (task.isEnabled()) {
-            try {
-              _mouse.checkUserMovement();
-              task.preExecute();
-              _mouse.checkUserMovement();
-              task.execute();
-            } catch (AWTException e) {
-              LOGGER.info("FAILED TO execute task: " + task.getName());
-            } catch (IOException e) {
-              LOGGER.info("FAILED TO execute task: " + task.getName());
-            }
-          }
-        }
-        // start = System.currentTimeMillis();
-        // }
-
-        _mouse.mouseMove(_scanner.getParkingPoint());
-
-        _mouse.delay(200);
-
+        runOnce();
       } while (!_stopAllThreads);
 
     } catch (RobotInterruptedException e) {
@@ -1306,6 +1260,157 @@ public class MainFrame extends JFrame {
       setTitle(APP_TITLE);
       // e.printStackTrace();
     }
+  }
+
+  private void runOnce() throws RobotInterruptedException {
+    long mandatoryRefresh = _settings.getInt("autoRefresh.mandatoryRefresh", 45) * 60 * 1000;
+    long now = System.currentTimeMillis();
+    _mouse.checkUserMovement();
+    // // 1. SCAN
+    handlePopups();
+
+    // STUCK PREVENTION - 10min inactivity -> refresh
+    LOGGER.info("LTA: " + (now - _lastTimeActivity) + " > " + (10 * 60 * 1000) + "? "
+        + (_lastTimeActivity != 0 && now - _lastTimeActivity > 10 * 60 * 1000));
+
+    if (_lastTimeActivity != 0 && now - _lastTimeActivity > 10 * 60 * 1000) {
+      LOGGER.info("refresh due to inactivity...");
+      try {
+        refresh(false);
+      } catch (AWTException e) {
+        LOGGER.info("FAILED TO refresh: " + e.getMessage());
+      } catch (IOException e) {
+        LOGGER.info("FAILED TO refresh: " + e.getMessage());
+      }
+      _fstart = System.currentTimeMillis();
+    }
+
+    // REFRESH
+    // LOGGER.info("refresh ? " + _autoRefreshToggle.isSelected() + " - " +
+    // mandatoryRefresh + " < " + (now - fstart));
+    if (_autoRefreshToggle.isSelected() && mandatoryRefresh > 0 && now - _fstart >= mandatoryRefresh) {
+      LOGGER.info("refresh time...");
+      try {
+        refresh(false);
+      } catch (AWTException e) {
+        LOGGER.info("FAILED TO refresh: " + e.getMessage());
+      } catch (IOException e) {
+        LOGGER.info("FAILED TO refresh: " + e.getMessage());
+      }
+      _fstart = System.currentTimeMillis();
+    }
+
+    // _mouse.checkUserMovement();
+    // if (_pingToggle.isSelected()) {
+    // ping();
+    // }
+
+    _mouse.checkUserMovement();
+
+    // 2. DO TASKS
+    // long now = System.currentTimeMillis();
+    // if (now - start > 11*60000) {
+    for (Task task : _tasks) {
+      if (task.isEnabled()) {
+        try {
+          _mouse.checkUserMovement();
+          task.preExecute();
+          _mouse.checkUserMovement();
+          task.execute();
+        } catch (AWTException e) {
+          LOGGER.info("FAILED TO execute task: " + task.getName());
+        } catch (IOException e) {
+          LOGGER.info("FAILED TO execute task: " + task.getName());
+        }
+      }
+    }
+    // start = System.currentTimeMillis();
+    // }
+
+    _mouse.mouseMove(_scanner.getParkingPoint());
+
+    _mouse.delay(200);
+  }
+
+  private void doAgenda() {
+    Thread myThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          do {
+            List<Agenda> agendas = new JsonStorage().loadAgenda();
+            for (Agenda agenda : agendas) {
+              handlePopups();
+              boolean success = mapManager.gotoPlace(agenda.getMapName(), agenda.getPlaceName());
+              if (success) {
+                // do this place
+                _fstart = System.currentTimeMillis();
+                Thread runMazeThread = new Thread(new Runnable() {
+                  public void run() {
+                    try {
+                      int tries = 0;
+                      Pixel p;
+                      do {
+                        tries++;
+                        LOGGER.info("Looking for diggy... " + tries);
+                        p = _scanner.findDiggy(_scanner.getScanArea());
+                        _mouse.delay(700);
+                      } while (p == null && tries < 22);
+                      if (p != null) {
+                        LOGGER.info("OK. Found it! Let's do this!");
+                        _mazeRunner.traverse(p);
+                      }
+
+                    } catch (RobotInterruptedException e) {
+                      LOGGER.info("INTERRUPTED...");
+                    } catch (IOException e) {
+                      e.printStackTrace();
+                    } catch (AWTException e) {
+                      e.printStackTrace();
+                    } catch (Exception e) {
+                      e.printStackTrace();
+                    }
+                  }
+                }, "RUN_MAZE");
+                runMazeThread.start();
+
+                // sleep
+                do {
+                  _mouse.delay(1000);
+                  if (!isRunning("RUN_MAZE")) {
+                    break;
+                  }
+                  //LOGGER.info("tik tak... " + (System.currentTimeMillis() - _fstart) / 1000);
+                } while (System.currentTimeMillis() - _fstart < 30 * 60000);// 30 minutes
+
+                // THAT'S IT. STOP IT IF NOT DONE ALREADY
+                if (isRunning("RUN_MAZE")) {
+                  LOGGER.info("STOPPING maze runner...");
+                  _mazeRunner.setStopIt(true);
+                  while (isRunning("RUN_MAZE")) {
+                    try {
+                      Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                    }
+                    if (isRunning("RUN_MAZE"))
+                      LOGGER.info("maze runner still running...");
+                  }
+                }
+
+              }
+            }
+          } while (!_stopAllThreads);
+        } catch (RobotInterruptedException e) {
+          LOGGER.info("INTERRUPTED!");
+        } catch (IOException e) {
+          e.printStackTrace();
+        } catch (AWTException e) {
+          e.printStackTrace();
+        }
+      }
+    }, "GOTOMAP");
+
+    myThread.start();
   }
 
   private void refresh(boolean bookmark) throws AWTException, IOException, RobotInterruptedException {
@@ -1389,6 +1494,8 @@ public class MainFrame extends JFrame {
   private MazeCanvas _mazeCanvas;
 
   private MazeProtocol _mazeProtocol;
+
+  private long _fstart;
 
   private void setProtocol(String shipProtocolName) {
     // _shipProtocolManagerUI.setShipProtocol(shipProtocolName);
@@ -1582,14 +1689,20 @@ public class MainFrame extends JFrame {
   }
 
   private void captureScreen(String filename) {
-    if (filename == null)
-      filename = "ping ";
-    final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    writeImage(new Rectangle(0, 0, screenSize.width, screenSize.height),
-        filename + DateUtils.formatDateForFile(System.currentTimeMillis()) + ".jpg");
-    deleteOlder("ping", 8);
+    captureArea(null, filename);
   }
 
+  private void captureArea(Rectangle area, String filename) {
+    if (filename == null)
+      filename = "ping ";
+    if (area == null) {
+      final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      area = new Rectangle(0, 0, screenSize.width, screenSize.height);
+    }
+    writeImage(area, filename + DateUtils.formatDateForFile(System.currentTimeMillis()) + ".jpg");
+    deleteOlder("ping", 8);
+  }
+  
   public void writeImage(Rectangle rect, String filename) {
     try {
       writeImage(new Robot().createScreenCapture(rect), filename);
@@ -1637,27 +1750,6 @@ public class MainFrame extends JFrame {
       }
     }, "MAGIC");
 
-    myThread.start();
-  }
-  
-  private void gotoMap() {
-    Thread myThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          LOGGER.info("Going to map ...");
-          boolean gotoMap = mapManager.gotoPlace("Hathor", "Sandy Pastures");//Closed Theatre
-          LOGGER.info("Done");
-        } catch (RobotInterruptedException e) {
-          e.printStackTrace();
-        } catch (IOException e) {
-          e.printStackTrace();
-        } catch (AWTException e) {
-          e.printStackTrace();
-        }
-      }
-    }, "GOTOMAP");
-    
     myThread.start();
   }
 

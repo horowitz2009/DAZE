@@ -75,13 +75,13 @@ public class MapManager {
     return _scanner.findCamp();
   }
 
-  public boolean gotoPlace(String mapName, String placeName) throws RobotInterruptedException, IOException,
-      AWTException {
+  public boolean gotoPlace(String mapName, String placeName)
+      throws RobotInterruptedException, IOException, AWTException {
     boolean success = false;
     DMap map = getMap(mapName);
     Place place = null;
     for (Place pl : map.getPlaces()) {
-      if (pl.getName().equals(placeName)) {
+      if (pl.getName().startsWith(placeName)) {
         place = pl;
         break;
       }
@@ -95,12 +95,59 @@ public class MapManager {
         LOGGER.info("CAMP COORDS: " + p);
         p.x += place.getCoords().x;
         p.y += place.getCoords().y;
+        ensurePlace(p);
         success = checkPlaceIsPlayable(p);
 
       }
 
     }
     return success;
+  }
+
+  private void ensurePlace(Pixel p) throws RobotInterruptedException {
+    Rectangle area = _scanner.getScanArea();
+    int distance = 0;
+    if (p.x < area.x) {
+      // 2
+      distance = area.x + 5 - p.x;
+      p.x = area.x + 5;
+    } else if (p.x > area.x + area.getWidth()) {
+      // 3
+      distance = (int) (area.x + area.getWidth() - 5 - p.x);
+      p.x = (int) (area.x + area.getWidth() - 5);
+    }
+    if (distance != 0) {
+      // need dragging
+      int x1;
+      int x2;
+      int y = area.y + area.height - 15;
+      int d = distance / area.width;
+      int rest = distance - (d * area.width);
+      for (int i = 0; i < d; i++) {
+        if (distance > 0) {
+          // positive => move east
+          x1 = area.x + 5;
+          x2 = x1 + area.width;
+        } else {
+          x1 = area.x + area.width - 5;
+          x2 = x1 - area.width;
+        }
+        _mouse.drag(x1, y, x2, y);
+        _mouse.delay(100);
+      }
+      if (distance > 0) {
+        // positive => move east
+        x1 = area.x + 5;
+        x2 = x1 + rest;
+      } else {
+        x1 = area.x + area.width - 5;
+        x2 = x1 + rest;
+      }
+      _mouse.drag(x1, y, x2, y);
+
+      _mouse.delay(1000);
+    }
+
   }
 
   private boolean checkPlaceIsPlayable(Pixel p) throws RobotInterruptedException, IOException, AWTException {
@@ -124,13 +171,13 @@ public class MapManager {
           return false;
         }
         LOGGER.info("hmm");
-        //find the entry
-        Rectangle area2 = new Rectangle(pc.x +193, pc.y + 155, 100, 280);
-        pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);//CLICK!!!
-//        if (pp == null) {
-//          area2 = new Rectangle(pc.x +193, pc.y+365, 100, 60);
-//          pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);//CLICK!!!
-//        }
+        // find the entry
+        Rectangle area2 = new Rectangle(pc.x + 193, pc.y + 155, 100, 280);
+        pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);// CLICK!!!
+        // if (pp == null) {
+        // area2 = new Rectangle(pc.x +193, pc.y+365, 100, 60);
+        // pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);//CLICK!!!
+        // }
         if (pp == null) {
           LOGGER.info("UH OH...");
           _mouse.click(pc.x + 456, pc.y + 6);

@@ -1231,7 +1231,7 @@ public class ScreenScanner {
   private void dragMapToRight() throws RobotInterruptedException {
     //make sure the map is fully dragged to its left part
     int x1 = _scanArea.x + 5;
-    int x2 = _scanArea.x + _scampArea.width - 5;
+    int x2 = _scanArea.x + _scanArea.width - 5;
     int y = _scanArea.y + _scanArea.height - 15;
     _mouse.drag(x1, y, x2, y);
     _mouse.delay(100);

@@ -24,8 +24,11 @@ public class Catalano {
     Catalano catalano = new Catalano();
 
     try {
-      //catalano.extractGate(9);
-      catalano.extractGreen();
+      for(int i = 0; i <= 9; i++)
+        catalano.extractCommon("temp/digits/d"+i, 1, null, 200);
+      
+//      catalano.extractGate(9);
+//      catalano.extractGreen();
 //      catalano.extractCommon("temp/arr/a", 6, 
 //          new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240),
 //          new IntRange(5, 85)), 70);
@@ -217,7 +220,8 @@ public class Catalano {
     BufferedImage image1 = ImageIO.read(new File(prefix + ".bmp"));
     FastBitmap fb1 = new FastBitmap(image1);
 
-    colorFiltering.applyInPlace(fb1);
+    if (colorFiltering != null)
+      colorFiltering.applyInPlace(fb1);
     if (fb1.isRGB())
       fb1.toGrayscale();
 

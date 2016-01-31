@@ -42,6 +42,7 @@ public class GraphMazeRunner {
   private boolean _popups = false;
   private boolean _gates = false;
   private boolean _slow = false;
+  private boolean _stopIt = false;
 
   private final class Visitor implements Graph.Visitor<Position> {
     private final Position _start;
@@ -58,148 +59,153 @@ public class GraphMazeRunner {
 
     @Override
     public boolean visit(Position vertex) throws Exception {
+      if (!_stopIt) {
+        LOGGER.info("VISITING [" + vertex._row + ", " + vertex._col + "] " + vertex._state);
+        _support.firePropertyChange("CLICK", null, vertex);
+        // LOGGER.info("STACKTRACE: " +
+        // Thread.currentThread().getStackTrace().length);
+        try {
+          ensureArea(vertex, 0, 0);
+          if (vertex._state == State.GREEN) {
+            // //////////////////////
+            Pixel coords = new Pixel(_start._coords.x + vertex._row * 60, _start._coords.y + vertex._col * 60);
 
-      LOGGER.info("VISITING [" + vertex._row + ", " + vertex._col + "] " + vertex._state);
-      _support.firePropertyChange("CLICK", null, vertex);
-      //LOGGER.info("STACKTRACE: " + Thread.currentThread().getStackTrace().length);
-      try {
-        ensureArea(vertex, 0, 0);
-        if (vertex._state == State.GREEN) {
-          // //////////////////////
-          Pixel coords = new Pixel(_start._coords.x + vertex._row * 60, _start._coords.y + vertex._col * 60);
-
-          // is diggy around
-          // YES, click then
-          // NO, we have to wait until he comes
-          Pixel p;
-          int tries = 0;
-          do {
-            p = _scanner.lookForDiggyAroundHere(coords, 1);
-            if (p == null)
-              _mouse.delay(200);
-          } while (p == null && ++tries < 7);
-
-          // THE CLICK
-          _mouse.click(coords.x + 30, coords.y + 30);
-          // _mouse.click(_start._coords.x + vertex._row * 60 + 30,
-          // _start._coords.y + vertex._col * 60 + 30);
-
-          if (_gates) {
-            LOGGER.info("CHECK LOADING2...");
-            if (checkIsLoading()) {
-              recoverFromGate(vertex);
-              return false;
-            }
-          }
-
-          _mouse.delay(750);
-          // ////////////////////
-
-          // if (p == null) {
-          // LOGGER.info("Diggy not near. Will wait a bit more...");
-          // _mouse.delay(20000);
-          // } else
-          // _mouse.delay(500);
-
-          if (checkPopup()) {
-            vertex._state = State.OBSTACLE;
-            _support.firePropertyChange("STATE_CHANGED", State.GREEN, vertex);
-            return false;
-          } else if (checkNoEnergy()) {
-            LOGGER.info("OUT OF ENERGY...");
-            LOGGER.info("Waiting 20 seconds");
-            do {
-              _mouse.delay(20000);
-              _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
-              _mouse.delay(1000);
-            } while (checkNoEnergy());
-            // TODO when OCR is introduced, check if the tile is too expensive,
-            // then leave it and move on
-          } else {
-            _mouse.delay(1000);
-          }
-          vertex._state = State.CHECKED;
-          _support.firePropertyChange("GREEN_CLICKED", State.GREEN, vertex);
-
-          //LOGGER.info("Sleep " + _pauseTime + " seconds");
-          _mouse.delay(_pauseTime * 1000);
-        }
-        // END OF GREEN
-
-        if (_popups && checkPopups()) {
-          _mouse.delay(250);
-        }
-
-        if (vertex._state == State.START) {
-          vertex._state = State.VISITED;
-          _support.firePropertyChange("TOTAL_MATRIX", null, _explored);
-          _support.firePropertyChange("DIGGY", State.START, vertex);
-          // _support.firePropertyChange("STATE_CHANGED", State.START, vertex);
-          checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
-          checkNeighbor(_graph, vertex, 1, 0);
-          checkNeighbor(_graph, vertex, 0, 1);
-          checkNeighbor(_graph, vertex, -1, 0);
-        } else {
-
-          // _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
-          // _mouse.delay(6000);
-          BufferedImage preClick = captureBlock(vertex._coords);
-          _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
-          if (isWalkable(vertex, preClick) || (isSlow() && isWalkable(vertex, preClick))) {
-            // wait until diggy arrives
+            // is diggy around
+            // YES, click then
+            // NO, we have to wait until he comes
+            Pixel p;
             int tries = 0;
-            boolean diggyHere = false;
             do {
-              _mouse.delay(250);
-              if (tries++ > 5 && tries % 4 == 0)
-                LOGGER.info("waiting diggy to arrive " + tries);
-              diggyHere = _scanner.isDiggyExactlyHere(vertex._coords);
-            } while (!diggyHere && tries < 30);
+              p = _scanner.lookForDiggyAroundHere(coords, 1);
+              if (p == null)
+                _mouse.delay(200);
+            } while (!_stopIt && p == null && ++tries < 7);
 
-            // if (diggyHere)
+            // THE CLICK
+            _mouse.click(coords.x + 30, coords.y + 30);
+            // _mouse.click(_start._coords.x + vertex._row * 60 + 30,
+            // _start._coords.y + vertex._col * 60 + 30);
+
+            if (_gates) {
+              LOGGER.info("CHECK LOADING2...");
+              if (checkIsLoading()) {
+                recoverFromGate(vertex);
+                return false;
+              }
+            }
+
+            _mouse.delay(750);
+            // ////////////////////
+
+            // if (p == null) {
+            // LOGGER.info("Diggy not near. Will wait a bit more...");
+            // _mouse.delay(20000);
+            // } else
+            // _mouse.delay(500);
+
+            if (checkPopup()) {
+              vertex._state = State.OBSTACLE;
+              _support.firePropertyChange("STATE_CHANGED", State.GREEN, vertex);
+              return false;
+            } else if (!_stopIt && checkNoEnergy()) {
+              LOGGER.info("OUT OF ENERGY...");
+              LOGGER.info("Waiting 20 seconds");
+              do {
+                _mouse.delay(20000);
+                _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
+                _mouse.delay(1000);
+              } while (!_stopIt & checkNoEnergy());//both conditions must be checked!!!
+              // TODO when OCR is introduced, check if the tile is too
+              // expensive,
+              // then leave it and move on
+            } else {
+              _mouse.delay(1000);
+            }
+            vertex._state = State.CHECKED;
+            _support.firePropertyChange("GREEN_CLICKED", State.GREEN, vertex);
+
+            // LOGGER.info("Sleep " + _pauseTime + " seconds");
+            _mouse.delay(_pauseTime * 1000);
+          }
+          // END OF GREEN
+
+          if (_popups && checkPopups()) {
+            _mouse.delay(250);
+          }
+
+          if (vertex._state == State.START) {
             vertex._state = State.VISITED;
-            // else
-            // vertex._state = State.CHECKED;
-
-            // TODO Do something about errors
-
-            // if (_scanner.isDiggyExactlyHere(vertex._coords)) {
-            // vertex._state = State.VISITED;
-            // } else {
-            // vertex._state = State.CHECKEDTWICE;
-            // }
-            // tadaaaa
-
-            _support.firePropertyChange("STATE_CHANGED", null, vertex);
-            _support.firePropertyChange("DIGGY", null, vertex);
-
+            _support.firePropertyChange("TOTAL_MATRIX", null, _explored);
+            _support.firePropertyChange("DIGGY", State.START, vertex);
+            // _support.firePropertyChange("STATE_CHANGED", State.START,
+            // vertex);
             checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
             checkNeighbor(_graph, vertex, 1, 0);
             checkNeighbor(_graph, vertex, 0, 1);
             checkNeighbor(_graph, vertex, -1, 0);
-
           } else {
-            if (_gates) {
-              LOGGER.info("CHECK LOADING...");
-              if (checkIsLoading()) {
-                recoverFromGate(vertex);
-                return false;
-              } else {
-                if (_slow)
-                  _mouse.delay(1000);
-              }
-            }
-            vertex._state = State.OBSTACLE;
-            _support.firePropertyChange("STATE_CHANGED", null, vertex);
-            return false;
 
+            // _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
+            // _mouse.delay(6000);
+            BufferedImage preClick = captureBlock(vertex._coords);
+            _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
+            if (isWalkable(vertex, preClick) || (isSlow() && isWalkable(vertex, preClick))) {
+              // wait until diggy arrives
+              int tries = 0;
+              boolean diggyHere = false;
+              do {
+                _mouse.delay(250);
+                if (tries++ > 5 && tries % 4 == 0)
+                  LOGGER.info("waiting diggy to arrive " + tries);
+                diggyHere = _scanner.isDiggyExactlyHere(vertex._coords);
+              } while (!diggyHere && tries < 30);
+
+              // if (diggyHere)
+              vertex._state = State.VISITED;
+              // else
+              // vertex._state = State.CHECKED;
+
+              // TODO Do something about errors
+
+              // if (_scanner.isDiggyExactlyHere(vertex._coords)) {
+              // vertex._state = State.VISITED;
+              // } else {
+              // vertex._state = State.CHECKEDTWICE;
+              // }
+              // tadaaaa
+
+              _support.firePropertyChange("STATE_CHANGED", null, vertex);
+              _support.firePropertyChange("DIGGY", null, vertex);
+
+              checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
+              checkNeighbor(_graph, vertex, 1, 0);
+              checkNeighbor(_graph, vertex, 0, 1);
+              checkNeighbor(_graph, vertex, -1, 0);
+
+            } else {
+              if (_gates) {
+                LOGGER.info("CHECK LOADING...");
+                if (checkIsLoading()) {
+                  recoverFromGate(vertex);
+                  return false;
+                } else {
+                  if (_slow)
+                    _mouse.delay(1000);
+                }
+              }
+              vertex._state = State.OBSTACLE;
+              _support.firePropertyChange("STATE_CHANGED", null, vertex);
+              return false;
+
+            }
           }
+        } catch (IOException | AWTException e1) {
+          e1.printStackTrace();
+          return false;
         }
-      } catch (IOException | AWTException e1) {
-        e1.printStackTrace();
+        return true;
+      } else
         return false;
-      }
-      return true;
     }
 
     private void recoverFromGate(Position vertex) throws RobotInterruptedException, IOException, AWTException {
@@ -339,8 +345,8 @@ public class GraphMazeRunner {
       return neighbor._state != State.VISITED && neighbor._state != State.OBSTACLE;
     }
 
-    private void ensureArea(Position pos, int rowOffset, int colOffset) throws RobotInterruptedException, IOException,
-        AWTException {
+    private void ensureArea(Position pos, int rowOffset, int colOffset)
+        throws RobotInterruptedException, IOException, AWTException {
       pos._coords = new Pixel(_start._coords.x + pos._row * 60, _start._coords.y + pos._col * 60);
       int xx = _start._coords.x + (pos._row + rowOffset) * 60;
       int yy = _start._coords.y + (pos._col + colOffset) * 60;
@@ -498,8 +504,8 @@ public class GraphMazeRunner {
         throws RobotInterruptedException, IOException, AWTException {
       Position neighborPos = new Position(vertex._row + rowOffset, vertex._col + colOffset);
       if (!isAlreadyChecked(graph, neighborPos)) {
-        neighborPos._coords = new Pixel(_start._coords.x + neighborPos._row * 60, _start._coords.y + neighborPos._col
-            * 60);
+        neighborPos._coords = new Pixel(_start._coords.x + neighborPos._row * 60,
+            _start._coords.y + neighborPos._col * 60);
 
         if (graph.canBeVisited(neighborPos, this)) {
 
@@ -624,7 +630,7 @@ public class GraphMazeRunner {
     if (yy < 0)
       yy = 0;
     Rectangle area = new Rectangle(xx, yy, 240, 240);
-    //LOGGER.info("Looking for Diggy in " + area);
+    // LOGGER.info("Looking for Diggy in " + area);
     try {
       Pixel p = _scanner.findDiggy(area);
       if (p != null) {
@@ -644,7 +650,7 @@ public class GraphMazeRunner {
           images.add(robot.createScreenCapture(blockArea));
         }
         long end = System.currentTimeMillis();
-        //LOGGER.info("time: " + (start - end));
+        // LOGGER.info("time: " + (start - end));
         int i = 0;
         // for (BufferedImage image : images) {
         // new FastBitmap(image).saveAsBMP("AA" + ++i + ".bmp");
@@ -680,8 +686,8 @@ public class GraphMazeRunner {
                 cnt++;
               if (cnt > 3) {
                 // BINGOOO
-                fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_"
-                    + System.currentTimeMillis() + ".png");
+                fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_" + System.currentTimeMillis()
+                    + ".png");
                 break;
               }
             }
@@ -719,7 +725,8 @@ public class GraphMazeRunner {
 
   public void traverse(Pixel p) throws Exception {
     clearMatrix();
-
+    setStopIt(false);
+    
     final Position start = new Position(0, 0, null, State.START);
     start._coords = p;
     final Graph<Position> graph = new Graph<>(_explored);
@@ -772,7 +779,7 @@ public class GraphMazeRunner {
   }
 
   private boolean checkPopups() throws IOException, AWTException, RobotInterruptedException {
-    //LOGGER.info("all popups...");
+    // LOGGER.info("all popups...");
     long start = System.currentTimeMillis();
     Rectangle area = _scanner._popupAreaX;
     Pixel p = _scanner.scanOneFast("X.bmp", area, false);
@@ -784,12 +791,12 @@ public class GraphMazeRunner {
     } else {
       p = _scanner.scanOneFast("claim.bmp", null, true);
     }
-    //LOGGER.info("time: " + (System.currentTimeMillis() - start));
+    // LOGGER.info("time: " + (System.currentTimeMillis() - start));
     return p != null;
   }
 
   private boolean checkPopup() throws IOException, AWTException, RobotInterruptedException {
-    //LOGGER.info("sign popup...");
+    // LOGGER.info("sign popup...");
     long start = System.currentTimeMillis();
     Rectangle area = _scanner.generateWindowedArea(520, 290);
     area.x = area.x + area.width - 70;
@@ -804,12 +811,12 @@ public class GraphMazeRunner {
 
       _mouse.delay(200);
     }
-    //LOGGER.info("time: " + (System.currentTimeMillis() - start));
+    // LOGGER.info("time: " + (System.currentTimeMillis() - start));
     return p != null;
   }
 
   private boolean checkNoEnergy() throws IOException, AWTException, RobotInterruptedException {
-    //LOGGER.info("energy popup...");
+    // LOGGER.info("energy popup...");
     long start = System.currentTimeMillis();
     Rectangle area = _scanner.generateWindowedArea(458 + 10, 464 + 10);
     area.x = area.x + 90;
@@ -904,8 +911,8 @@ public class GraphMazeRunner {
     return newPos;
   }
 
-  private Pixel lookForDiggyAroundHere(Pixel pp, int cellRange) throws IOException, RobotInterruptedException,
-      AWTException {
+  private Pixel lookForDiggyAroundHere(Pixel pp, int cellRange)
+      throws IOException, RobotInterruptedException, AWTException {
     Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 + 120 + 60,
         cellRange * 60 + 120 + 60);
     Pixel res = _scanner.findDiggy(area);
@@ -956,8 +963,8 @@ public class GraphMazeRunner {
       BufferedImage image = ImageIO.read(new File("temp/mud.bmp"));
       FastBitmap fb1 = new FastBitmap(image);
 
-      ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240), new IntRange(5,
-          85));
+      ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240),
+          new IntRange(5, 85));
       colorFiltering.applyInPlace(fb1);
 
       if (fb1.isRGB())
@@ -974,8 +981,8 @@ public class GraphMazeRunner {
   private BufferedImage filterArrows(BufferedImage image) {
     FastBitmap fb1 = new FastBitmap(image);
 
-    ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240), new IntRange(5,
-        85));
+    ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240),
+        new IntRange(5, 85));
     colorFiltering.applyInPlace(fb1);
 
     if (fb1.isRGB())
@@ -1097,4 +1104,11 @@ public class GraphMazeRunner {
     _slow = slow;
   }
 
+  public boolean isStopIt() {
+    return _stopIt;
+  }
+
+  public void setStopIt(boolean stopIt) {
+    _stopIt = stopIt;
+  }
 }
