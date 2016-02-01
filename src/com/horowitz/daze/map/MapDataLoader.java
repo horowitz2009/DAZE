@@ -17,12 +17,16 @@ public class MapDataLoader {
     }
     try {
       // AGENDA
+      Agenda agenda1 = new Agenda("HMM");
+      List<AgendaEntry> agendaEntries = new ArrayList<AgendaEntry>();
+      agendaEntries.add(new AgendaEntry("Repeatable", "Tin Cave"));
+      agendaEntries.add(new AgendaEntry("Hathor", "Closed Theatre"));
+      agendaEntries.add(new AgendaEntry("Strongmen", "Winter Cave Of Digging 2"));
+      agenda1.setEntries(agendaEntries);
       List<Agenda> agendas = new ArrayList<Agenda>();
-      agendas.add(new Agenda("Repeatable", "Tin Cave"));
-      agendas.add(new Agenda("Hathor", "Closed Theatre"));
-      agendas.add(new Agenda("Strongmen", "Winter Cave Of Digging 2"));
-      new JsonStorage().saveAgenda(agendas);
-      
+      agendas.add(agenda1);
+      new JsonStorage().saveAgendas(agendas);
+
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -36,14 +40,14 @@ public class MapDataLoader {
       places.add(new Place("Winter Cave Of Rolling 2", new Pixel(310, -79), false));
       places.add(new Place("Winter Quiz Cave 2", new Pixel(711, -136), false));
       places.add(new Place("Winter Strongmen Chambers 2", new Pixel(434, -276), false));
-      
+
       map.setPlaces(places);
-      
+
       new JsonStorage().saveMap(map);
     } catch (IOException e) {
       e.printStackTrace();
     }
-    
+
     try {
       // MAIN
       DMap map = new DMap("Main");
@@ -61,7 +65,7 @@ public class MapDataLoader {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    
+
     try {
       // REPEATABLE
       DMap map = new DMap("Repeatable");
@@ -84,15 +88,14 @@ public class MapDataLoader {
       places.add(new Place("Luxor Library", new Pixel(1046, -124), true));
       places.add(new Place("Iron Mine", new Pixel(1202, -31), true));
       places.add(new Place("Lumber Warehouse", new Pixel(1202, -205), true));
-      
+
       map.setPlaces(places);
-      
+
       new JsonStorage().saveMap(map);
     } catch (IOException e) {
       e.printStackTrace();
     }
-    
-    
+
     try {
       // HATHOR
       DMap map = new DMap("Hathor");
@@ -101,10 +104,9 @@ public class MapDataLoader {
       places.add(new Place("Closed Theatre", new Pixel(433, -59), true));
       places.add(new Place("Sandy Pastures", new Pixel(513, -182), true));
       places.add(new Place("Monestery Of Joy", new Pixel(585, -261), true));
-      
-      
+
       map.setPlaces(places);
-      
+
       new JsonStorage().saveMap(map);
     } catch (IOException e) {
       e.printStackTrace();

@@ -1,0 +1,36 @@
+[
+  {
+    "name": "HMM334",
+    "entries": [
+      {
+        "mapName": "Repeatable",
+        "placeName": "Smithy"
+      },
+      {
+        "mapName": "Hathor",
+        "placeName": "Closed Theatre"
+      },
+      {
+        "mapName": "Strongmen",
+        "placeName": "Winter Quiz Cave 2"
+      },
+      {
+        "mapName": "Strongmen",
+        "placeName": "Winter Strongmen Chambers 2"
+      }
+    ]
+  },
+  {
+    "name": "Strongmen",
+    "entries": [
+      {
+        "mapName": "Strongmen",
+        "placeName": "Winter Quiz Cave 2"
+      },
+      {
+        "mapName": "Strongmen",
+        "placeName": "Winter Strongmen Chambers 2"
+      }
+    ]
+  }
+]

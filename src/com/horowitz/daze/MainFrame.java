@@ -53,6 +53,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -61,6 +62,8 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.horowitz.commons.DateUtils;
 import com.horowitz.commons.MouseRobot;
@@ -72,7 +75,7 @@ import com.horowitz.commons.Service;
 import com.horowitz.commons.Settings;
 import com.horowitz.commons.TemplateMatcher;
 import com.horowitz.daze.map.Agenda;
-import com.horowitz.daze.map.JsonStorage;
+import com.horowitz.daze.map.AgendaEntry;
 import com.horowitz.daze.map.MapManager;
 import com.horowitz.ocr.OCRB;
 
@@ -82,7 +85,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.15a";
+  private static String APP_TITLE = "Daze v0.16";
 
   private Settings _settings;
   private Stats _stats;
@@ -102,7 +105,7 @@ public class MainFrame extends JFrame {
   private JToggleButton _popupsToggle;
   private JToggleButton _gatesToggle;
 
-  private JToggleButton _industriesToggle;
+  private JToggleButton _ping2Toggle;
   // private JToggleButton _xpToggle;
 
   private List<Task> _tasks;
@@ -190,6 +193,9 @@ public class MainFrame extends JFrame {
       System.exit(1);
     }
 
+    mapManager = new MapManager(_scanner);
+    mapManager.loadMaps();
+
     initLayout();
 
     // WIRING listeners
@@ -266,9 +272,9 @@ public class MainFrame extends JFrame {
         _lastTimeActivity = now;
       }
     });
-    
+
     _mazeRunner.addPropertyChangeListener("GREEN_CLICKED", new PropertyChangeListener() {
-      
+
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
         long now = System.currentTimeMillis();
@@ -280,10 +286,11 @@ public class MainFrame extends JFrame {
       }
     });
     _mazeRunner.addPropertyChangeListener("CLICK", new PropertyChangeListener() {
-      
+
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
-        captureArea(_scanner.getScanArea(), "diggy ");
+        if (_ping2Toggle.isSelected())
+          captureArea(_scanner.getScanArea(), "diggy ");
       }
     });
 
@@ -295,15 +302,14 @@ public class MainFrame extends JFrame {
 
     runSettingsListener();
 
-    mapManager = new MapManager(_scanner);
-    mapManager.loadMaps();
-
   }
 
   private void setDefaultSettings() {
     _settings.setProperty("popups", "false");
     _settings.setProperty("gates", "false");
     _settings.setProperty("slow", "false");
+    _settings.setProperty("ping", "false");
+    _settings.setProperty("ping2", "false");
     // _settings.setProperty("industries", "true");
     // _settings.setProperty("slow", "false");
     // _settings.setProperty("autoSailors", "false");
@@ -352,6 +358,7 @@ public class MainFrame extends JFrame {
     Box north = Box.createVerticalBox();
     north.add(toolbars);
     north.add(createStatsPanel());
+    north.add(createAgendaManagerPanel());
     if (_testMode) {
 
       JToolBar testToolbar = createTestToolbar();
@@ -886,6 +893,22 @@ public class MainFrame extends JFrame {
 
       toolbar.add(_pingToggle);
 
+      _ping2Toggle = new JToggleButton("Ping2");
+      // _autoSailorsToggle.setSelected(false);
+      _ping2Toggle.addItemListener(new ItemListener() {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+          boolean b = e.getStateChange() == ItemEvent.SELECTED;
+          LOGGER.info("Ping2: " + (b ? "on" : "off"));
+          _settings.setProperty("ping2", "" + b);
+          _settings.saveSettingsSorted();
+
+        }
+      });
+
+      toolbar.add(_ping2Toggle);
+
       _slowToggle = new JToggleButton("Slow");
       // _shipsToggle.setSelected(true);
       toolbar.add(_slowToggle);
@@ -1333,84 +1356,88 @@ public class MainFrame extends JFrame {
   }
 
   private void doAgenda() {
-    Thread myThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          do {
-            List<Agenda> agendas = new JsonStorage().loadAgenda();
-            for (Agenda agenda : agendas) {
-              handlePopups();
-              boolean success = mapManager.gotoPlace(agenda.getMapName(), agenda.getPlaceName());
-              if (success) {
-                // do this place
-                _fstart = System.currentTimeMillis();
-                Thread runMazeThread = new Thread(new Runnable() {
-                  public void run() {
-                    try {
-                      int tries = 0;
-                      Pixel p;
-                      do {
-                        tries++;
-                        LOGGER.info("Looking for diggy... " + tries);
-                        p = _scanner.findDiggy(_scanner.getScanArea());
-                        _mouse.delay(700);
-                      } while (p == null && tries < 22);
-                      if (p != null) {
-                        LOGGER.info("OK. Found it! Let's do this!");
-                        _mazeRunner.traverse(p);
+    if (_agenda != null && !_agenda.getEntries().isEmpty()) {
+      Thread myThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            do {
+              List<AgendaEntry> agendas = _agenda.getEntries();
+              for (AgendaEntry agenda : agendas) {
+                handlePopups();
+                boolean success = mapManager.gotoPlace(agenda.getMapName(), agenda.getPlaceName());
+                if (success) {
+                  // do this place
+                  _fstart = System.currentTimeMillis();
+                  Thread runMazeThread = new Thread(new Runnable() {
+                    public void run() {
+                      try {
+                        int tries = 0;
+                        Pixel p;
+                        do {
+                          tries++;
+                          LOGGER.info("Looking for diggy... " + tries);
+                          p = _scanner.findDiggy(_scanner.getScanArea());
+                          _mouse.delay(700);
+                        } while (p == null && tries < 22);
+                        if (p != null) {
+                          LOGGER.info("OK. Found it! Let's do this!");
+                          _mazeRunner.traverse(p);
+                        }
+
+                      } catch (RobotInterruptedException e) {
+                        LOGGER.info("INTERRUPTED...");
+                      } catch (IOException e) {
+                        e.printStackTrace();
+                      } catch (AWTException e) {
+                        e.printStackTrace();
+                      } catch (Exception e) {
+                        e.printStackTrace();
                       }
+                    }
+                  }, "RUN_MAZE");
+                  runMazeThread.start();
 
-                    } catch (RobotInterruptedException e) {
-                      LOGGER.info("INTERRUPTED...");
-                    } catch (IOException e) {
-                      e.printStackTrace();
-                    } catch (AWTException e) {
-                      e.printStackTrace();
-                    } catch (Exception e) {
-                      e.printStackTrace();
+                  // sleep
+                  do {
+                    _mouse.delay(1000);
+                    if (!isRunning("RUN_MAZE")) {
+                      break;
+                    }
+                    // LOGGER.info("tik tak... " + (System.currentTimeMillis() -
+                    // _fstart) / 1000);
+                  } while (System.currentTimeMillis() - _fstart < 30 * 60000);// 30
+                                                                              // minutes
+
+                  // THAT'S IT. STOP IT IF NOT DONE ALREADY
+                  if (isRunning("RUN_MAZE")) {
+                    LOGGER.info("STOPPING maze runner...");
+                    _mazeRunner.setStopIt(true);
+                    while (isRunning("RUN_MAZE")) {
+                      try {
+                        Thread.sleep(5000);
+                      } catch (InterruptedException e) {
+                      }
+                      if (isRunning("RUN_MAZE"))
+                        LOGGER.info("maze runner still running...");
                     }
                   }
-                }, "RUN_MAZE");
-                runMazeThread.start();
 
-                // sleep
-                do {
-                  _mouse.delay(1000);
-                  if (!isRunning("RUN_MAZE")) {
-                    break;
-                  }
-                  //LOGGER.info("tik tak... " + (System.currentTimeMillis() - _fstart) / 1000);
-                } while (System.currentTimeMillis() - _fstart < 30 * 60000);// 30 minutes
-
-                // THAT'S IT. STOP IT IF NOT DONE ALREADY
-                if (isRunning("RUN_MAZE")) {
-                  LOGGER.info("STOPPING maze runner...");
-                  _mazeRunner.setStopIt(true);
-                  while (isRunning("RUN_MAZE")) {
-                    try {
-                      Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                    }
-                    if (isRunning("RUN_MAZE"))
-                      LOGGER.info("maze runner still running...");
-                  }
                 }
-
               }
-            }
-          } while (!_stopAllThreads);
-        } catch (RobotInterruptedException e) {
-          LOGGER.info("INTERRUPTED!");
-        } catch (IOException e) {
-          e.printStackTrace();
-        } catch (AWTException e) {
-          e.printStackTrace();
+            } while (!_stopAllThreads);
+          } catch (RobotInterruptedException e) {
+            LOGGER.info("INTERRUPTED!");
+          } catch (IOException e) {
+            e.printStackTrace();
+          } catch (AWTException e) {
+            e.printStackTrace();
+          }
         }
-      }
-    }, "GOTOMAP");
+      }, "GOTOMAP");
 
-    myThread.start();
+      myThread.start();
+    }
   }
 
   private void refresh(boolean bookmark) throws AWTException, IOException, RobotInterruptedException {
@@ -1497,8 +1524,12 @@ public class MainFrame extends JFrame {
 
   private long _fstart;
 
-  private void setProtocol(String shipProtocolName) {
-    // _shipProtocolManagerUI.setShipProtocol(shipProtocolName);
+  private AgendaManagerUI _agendaManagerUI;
+
+  protected Agenda _agenda;
+
+  private void setAgenda(String agName) {
+    _agendaManagerUI.setAgenda(agName);
   }
 
   private void handlePopups() throws RobotInterruptedException {
@@ -1542,21 +1573,26 @@ public class MainFrame extends JFrame {
       _gatesToggle.setSelected(gates);
     }
 
-    // boolean industries =
-    // "true".equalsIgnoreCase(_settings.getProperty("industries"));
-    // if (industries != _industriesToggle.isSelected()) {
-    // _industriesToggle.setSelected(industries);
-    // }
-    //
     boolean slow = "true".equalsIgnoreCase(_settings.getProperty("slow"));
     if (slow != _slowToggle.isSelected()) {
       _slowToggle.setSelected(slow);
     }
-    //
-    // boolean ping = "true".equalsIgnoreCase(_settings.getProperty("ping"));
-    // if (ping != _pingToggle.isSelected()) {
-    // _pingToggle.setSelected(ping);
-    // }
+
+    boolean ping = "true".equalsIgnoreCase(_settings.getProperty("ping"));
+    if (ping != _pingToggle.isSelected()) {
+      _pingToggle.setSelected(ping);
+    }
+
+    boolean ping2 = "true".equalsIgnoreCase(_settings.getProperty("ping2"));
+    if (ping2 != _ping2Toggle.isSelected()) {
+      _ping2Toggle.setSelected(ping2);
+    }
+    
+    // agenda
+    String ag = _settings.getProperty("agenda", "DEFAULT");
+    if (!ag.equals(_agenda != null ? _agenda.getName() : "")) {
+      setAgenda(ag);
+    }
 
   }
 
@@ -1702,7 +1738,7 @@ public class MainFrame extends JFrame {
     writeImage(area, filename + DateUtils.formatDateForFile(System.currentTimeMillis()) + ".jpg");
     deleteOlder("ping", 8);
   }
-  
+
   public void writeImage(Rectangle rect, String filename) {
     try {
       writeImage(new Robot().createScreenCapture(rect), filename);
@@ -1757,4 +1793,26 @@ public class MainFrame extends JFrame {
     int seconds = Integer.parseInt(_timeTF.getText());
     _mazeRunner.doSomething(clearMatrix, seconds);
   }
+
+  private JPanel createAgendaManagerPanel() {
+    _agendaManagerUI = new AgendaManagerUI(mapManager);
+    _agendaManagerUI.addListSelectionListener(new ListSelectionListener() {
+
+      @SuppressWarnings("rawtypes")
+      @Override
+      public void valueChanged(ListSelectionEvent e) {
+        if (!e.getValueIsAdjusting()) {
+          JList list = (JList) e.getSource();
+          _agenda = (Agenda) list.getSelectedValue();
+          // _shipProtocolExecutor.setShipProtocol(_shipProtocol);
+          if (_agenda != null) {
+            _settings.setProperty("agenda", _agenda.getName());
+            _settings.saveSettingsSorted();
+          }
+        }
+      }
+    });
+    return _agendaManagerUI;
+  }
+
 }

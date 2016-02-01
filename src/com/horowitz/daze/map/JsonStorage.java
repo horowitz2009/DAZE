@@ -42,14 +42,14 @@ public class JsonStorage {
     this.mapPath = mapPath;
   }
 
-  public void saveAgenda(List<Agenda> agendas) throws IOException {
+  public void saveAgendas(List<Agenda> agendas) throws IOException {
     String json = gson.toJson(agendas);
 
-    FileUtils.writeStringToFile(new File("storage/agenda.json"), json);
+    FileUtils.writeStringToFile(new File("storage/agendas.json"), json);
   }
 
-  public List<Agenda> loadAgenda() throws IOException {
-    String json = FileUtils.readFileToString(new File("storage/agenda.json"));
+  public List<Agenda> loadAgendas() throws IOException {
+    String json = FileUtils.readFileToString(new File("storage/agendas.json"));
 
     Agenda[] agendas = gson.fromJson(json, Agenda[].class);
 

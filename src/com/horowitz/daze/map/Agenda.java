@@ -1,46 +1,84 @@
 package com.horowitz.daze.map;
 
-import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.horowitz.commons.Deserializable;
-import com.horowitz.commons.Deserializer;
+public class Agenda implements Serializable, Cloneable {
+  private static final long serialVersionUID = -3179495716926724628L;
+  private String name;
+  private List<AgendaEntry> entries;
 
-public class Agenda implements Cloneable, Serializable, Deserializable {
-  private static final long serialVersionUID = 5684617885487400700L;
-
-  private String mapName;
-  private String placeName;
-
-  public Agenda(String mapName, String placeName) {
+  public Agenda(String name) {
     super();
-    this.mapName = mapName;
-    this.placeName = placeName;
+    this.name = name;
+  }
+
+  public Agenda() {
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public List<AgendaEntry> getEntries() {
+    return entries;
+  }
+
+  public void setEntries(List<AgendaEntry> entries) {
+    this.entries = entries;
   }
 
   @Override
-  public void deserialize(Deserializer deserializer) throws IOException {
-  }
+  public Object clone() throws CloneNotSupportedException {
+    Object clone = super.clone();
+    Agenda other = (Agenda) clone;
+    other.entries = new ArrayList<AgendaEntry>(this.entries);
+    for (AgendaEntry ae : other.entries) {
+      ae = (AgendaEntry) ae.clone();
+    }
 
-  public String getMapName() {
-    return mapName;
-  }
-
-  public void setMapName(String mapName) {
-    this.mapName = mapName;
-  }
-
-  public String getPlaceName() {
-    return placeName;
-  }
-
-  public void setPlaceName(String placeName) {
-    this.placeName = placeName;
+    return clone;
   }
 
   @Override
   public String toString() {
-    return mapName + " - " + placeName;
+    return name;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((entries == null) ? 0 : entries.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Agenda other = (Agenda) obj;
+    if (entries == null) {
+      if (other.entries != null)
+        return false;
+    } else if (!entries.equals(other.entries))
+      return false;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    return true;
   }
 
 }

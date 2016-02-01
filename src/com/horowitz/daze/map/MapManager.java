@@ -50,6 +50,14 @@ public class MapManager {
     return _maps;
   }
 
+  public List<String> getMapNames() {
+    List<String> mapNames = new ArrayList<String>();
+    for (DMap dMap : _maps) {
+      mapNames.add(dMap.getName());
+    }
+    return mapNames;
+  }
+
   public boolean gotoMap(String mapName) throws RobotInterruptedException, IOException, AWTException {
     boolean success = false;
     DMap map = getMap(mapName);
@@ -75,8 +83,8 @@ public class MapManager {
     return _scanner.findCamp();
   }
 
-  public boolean gotoPlace(String mapName, String placeName)
-      throws RobotInterruptedException, IOException, AWTException {
+  public boolean gotoPlace(String mapName, String placeName) throws RobotInterruptedException, IOException,
+      AWTException {
     boolean success = false;
     DMap map = getMap(mapName);
     Place place = null;
