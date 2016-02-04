@@ -85,7 +85,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.16";
+  private static String APP_TITLE = "Daze v0.17";
 
   private Settings _settings;
   private Stats _stats;
@@ -1381,8 +1381,9 @@ public class MainFrame extends JFrame {
                           _mouse.delay(700);
                         } while (p == null && tries < 22);
                         if (p != null) {
-                          LOGGER.info("OK. Found it! Let's do this!");
+                          LOGGER.info("TRAVERSE START!");
                           _mazeRunner.traverse(p);
+                          LOGGER.info("TARVERSE DONE!");
                         }
 
                       } catch (RobotInterruptedException e) {
@@ -1400,13 +1401,13 @@ public class MainFrame extends JFrame {
 
                   // sleep
                   do {
-                    _mouse.delay(1000);
+                    _mouse.delay(1000, false);//DO NOT INTTERRUPT!!!
                     if (!isRunning("RUN_MAZE")) {
                       break;
                     }
-                    // LOGGER.info("tik tak... " + (System.currentTimeMillis() -
-                    // _fstart) / 1000);
-                  } while (System.currentTimeMillis() - _fstart < 30 * 60000);// 30
+                     LOGGER.info("tik tak... " + (System.currentTimeMillis() -
+                     _fstart) / 1000);
+                  } while (System.currentTimeMillis() - _fstart < 2 * 60000);// 30
                                                                               // minutes
 
                   // THAT'S IT. STOP IT IF NOT DONE ALREADY
@@ -1422,7 +1423,7 @@ public class MainFrame extends JFrame {
                         LOGGER.info("maze runner still running...");
                     }
                   }
-
+                  LOGGER.info("MOVE TO NEXT PLACE...");
                 }
               }
             } while (!_stopAllThreads);
