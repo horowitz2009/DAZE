@@ -56,6 +56,7 @@ public class ScreenScanner {
   private boolean _debugMode = false;
 
   private Rectangle _scanArea = null;
+  private Rectangle _ping2Area;
 
   private GameLocator _gameLocator;
 
@@ -151,6 +152,7 @@ public class ScreenScanner {
     int yy;
 
     _scanArea = new Rectangle(_tl.x + 120, _tl.y + 85, getGameWidth() - 120 - 120, getGameHeight() - 85 - 85);
+    _ping2Area = new Rectangle(_tl.x + 120, _tl.y + 19, getGameWidth() - 120 - 120, getGameHeight() - 85 - 19);
 
     _scampArea = new Rectangle(_scanArea.x + 280, _scanArea.y + 415, getGameWidth() - 120 - 120 - 280, 65);
     // writeArea(_scanArea, "scanArea.png");
@@ -399,6 +401,7 @@ public class ScreenScanner {
   }
 
   private Pixel _rock = null;
+
 
   public void reset() {
     _rock = null;
@@ -1236,6 +1239,10 @@ public class ScreenScanner {
     _mouse.drag(x1, y, x2, y);
     _mouse.delay(100);
     _mouse.drag(x1, y, x2, y);
+  }
+
+  public Rectangle getPing2Area() {
+    return _ping2Area;
   }
 
 }
