@@ -164,18 +164,17 @@ public class AgendaEditor extends JPanel {
       _titleTF.setText(agenda.getName());
       for (AgendaEntry ae : agenda.getEntries()) {
         AgendaEntryView aev = new AgendaEntryView();
-        ComboBoxModel<DMap> m = aev._mapCB.getModel();
-        int n = m.getSize();
-        for (int i = 0; i < n; i++) {
-          if (m.getElementAt(i).getName().equals(ae.getMapName())) {
+        ComboBoxModel<DMap> mapModel = aev._mapCB.getModel();
+        for (int i = 0; i < mapModel.getSize(); i++) {
+          if (mapModel.getElementAt(i).getName().equals(ae.getMapName())) {
             aev._mapCB.setSelectedIndex(i);
-            aev.loadPlaces(m.getElementAt(i));
+            aev.loadPlaces(mapModel.getElementAt(i));
             break;
           }
         }
-        ComboBoxModel<Place> m2 = aev._placeCB.getModel();
-        for (int i = 0; i < n; i++) {
-          if (m2.getElementAt(i).getName().equals(ae.getPlaceName())) {
+        ComboBoxModel<Place> placeModel = aev._placeCB.getModel();
+        for (int i = 0; i < placeModel.getSize(); i++) {
+          if (placeModel.getElementAt(i).getName().equals(ae.getPlaceName())) {
             aev._placeCB.setSelectedIndex(i);
             break;
           }
