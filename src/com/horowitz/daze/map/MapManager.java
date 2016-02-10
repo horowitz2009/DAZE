@@ -89,7 +89,7 @@ public class MapManager {
     DMap map = getMap(mapName);
     Place place = null;
     for (Place pl : map.getPlaces()) {
-      if (pl.getName().startsWith(placeName)) {
+      if (pl.getName().equalsIgnoreCase(placeName)) {
         place = pl;
         break;
       }
@@ -172,13 +172,13 @@ public class MapManager {
       if (pc != null) {
         area = new Rectangle(pc.x + 421, pc.y + 131, 57, 36);
         Pixel pp = _scanner.scanOne("map/progressFull.bmp", area, false);
-        if (pp != null) {
-          LOGGER.info("This place is done! Moving forward...");
-          _mouse.click(pc.x + 456, pc.y + 6);
-          _mouse.delay(1000);
-          return false;
-        }
-        LOGGER.info("hmm");
+//        if (pp != null) {
+//          LOGGER.info("This place is done! Moving forward...");
+//          _mouse.click(pc.x + 456, pc.y + 6);
+//          _mouse.delay(1000);
+//          return false;
+//        }
+//        LOGGER.info("hmm");
         // find the entry
         Rectangle area2 = new Rectangle(pc.x + 193, pc.y + 155, 100, 280);
         pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);// CLICK!!!
