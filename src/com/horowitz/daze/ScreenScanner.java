@@ -177,7 +177,7 @@ public class ScreenScanner {
     _campButtonArea = new Rectangle(_menuBR.x - 169, _menuBR.y - 75, 60, 36);
 
     getImageData("greenArrow.bmp", _lastLocationButtonArea, 17, 22);
-    
+
     getImageData("map/diggyCave.bmp", _diggyCaveArea, -186, 49);
     getImageData("map/placeEntry.bmp", _scanArea, 28, 20);
 
@@ -373,8 +373,8 @@ public class ScreenScanner {
       setKeyAreas();
       return true;
     } else {
-      boolean found = _gameLocator.locateGameArea(new ImageData("beta.bmp", null, _comparator, 0, 0), new ImageData(
-          "camp.bmp", null, _comparator, 25, 48), false);
+      boolean found = _gameLocator.locateGameArea(new ImageData("beta.bmp", null, _comparator, 0, 0),
+          new ImageData("camp.bmp", null, _comparator, 25, 48), false);
       if (found) {
         _tl = _gameLocator.getTopLeft();
         _br = _gameLocator.getBottomRight();
@@ -401,7 +401,6 @@ public class ScreenScanner {
   }
 
   private Pixel _rock = null;
-
 
   public void reset() {
     _rock = null;
@@ -488,8 +487,8 @@ public class ScreenScanner {
     writeArea(new Rectangle(new Point(_tl.x, _tl.y), new Dimension(getGameWidth(), getGameHeight())), filename);
   }
 
-  public Pixel locateImageCoords(String imageName, Rectangle[] area, int xOff, int yOff) throws AWTException,
-      IOException, RobotInterruptedException {
+  public Pixel locateImageCoords(String imageName, Rectangle[] area, int xOff, int yOff)
+      throws AWTException, IOException, RobotInterruptedException {
 
     final Robot robot = new Robot();
     final BufferedImage image = ImageIO.read(ImageManager.getImageURL(imageName));
@@ -701,8 +700,8 @@ public class ScreenScanner {
     return _comparator;
   }
 
-  public List<Pixel> scanMany(String filename, BufferedImage screen, boolean click) throws RobotInterruptedException,
-      IOException, AWTException {
+  public List<Pixel> scanMany(String filename, BufferedImage screen, boolean click)
+      throws RobotInterruptedException, IOException, AWTException {
 
     ImageData imageData = getImageData(filename);
     if (imageData == null)
@@ -807,8 +806,8 @@ public class ScreenScanner {
     FastBitmap fbAREA = new FastBitmap(screen);
 
     // COLOR FILTERING
-    ColorFiltering colorFiltering = new ColorFiltering(new IntRange(255, 255), new IntRange(255, 255), new IntRange(
-        255, 255));
+    ColorFiltering colorFiltering = new ColorFiltering(new IntRange(255, 255), new IntRange(255, 255),
+        new IntRange(255, 255));
     colorFiltering.applyInPlace(fbID);
     colorFiltering.applyInPlace(fbAREA);
 
@@ -826,8 +825,8 @@ public class ScreenScanner {
 
   }
 
-  public Pixel scanOne(ImageData imageData, Rectangle area, boolean click) throws AWTException,
-      RobotInterruptedException {
+  public Pixel scanOne(ImageData imageData, Rectangle area, boolean click)
+      throws AWTException, RobotInterruptedException {
     if (area == null) {
       area = imageData.getDefaultArea();
     }
@@ -849,8 +848,8 @@ public class ScreenScanner {
 
   }
 
-  public Pixel scanOne(String filename, Rectangle area, boolean click) throws RobotInterruptedException, IOException,
-      AWTException {
+  public Pixel scanOne(String filename, Rectangle area, boolean click)
+      throws RobotInterruptedException, IOException, AWTException {
     ImageData imageData = getImageData(filename);
     if (imageData == null)
       return null;
@@ -876,8 +875,8 @@ public class ScreenScanner {
     return pixel;
   }
 
-  public Pixel scanOneFast(ImageData imageData, Rectangle area, boolean click) throws AWTException,
-      RobotInterruptedException {
+  public Pixel scanOneFast(ImageData imageData, Rectangle area, boolean click)
+      throws AWTException, RobotInterruptedException {
     if (area == null) {
       area = imageData.getDefaultArea();
     }
@@ -899,8 +898,8 @@ public class ScreenScanner {
 
   }
 
-  public Pixel scanOneFast(String filename, Rectangle area, boolean click) throws RobotInterruptedException,
-      IOException, AWTException {
+  public Pixel scanOneFast(String filename, Rectangle area, boolean click)
+      throws RobotInterruptedException, IOException, AWTException {
     ImageData imageData = getImageData(filename);
     if (imageData == null)
       return null;
@@ -1107,7 +1106,8 @@ public class ScreenScanner {
     return _sailorsPos;
   }
 
-  public Pixel scanPrecise(String filename, Rectangle area) throws AWTException, IOException, RobotInterruptedException {
+  public Pixel scanPrecise(String filename, Rectangle area)
+      throws AWTException, IOException, RobotInterruptedException {
     return scanPrecise(getImageData(filename), area);
   }
 
@@ -1163,8 +1163,8 @@ public class ScreenScanner {
    * @throws RobotInterruptedException
    * @throws AWTException
    */
-  public Pixel lookForDiggyAroundHere(Pixel pp, int cellRange) throws IOException, RobotInterruptedException,
-      AWTException {
+  public Pixel lookForDiggyAroundHere(Pixel pp, int cellRange)
+      throws IOException, RobotInterruptedException, AWTException {
     Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 * 2 + 60,
         cellRange * 60 * 2 + 60);
     Pixel res = findDiggy(area);
@@ -1186,42 +1186,54 @@ public class ScreenScanner {
     if (mapMode) {
       // GOOD
       LOGGER.info("MAP MODE! " + tries);
-      //click << button
-      _mouse.click(_westButtons.x + 12, _westButtons.y + 42);
-      _mouse.delay(1750);
-      
-      //look for main map
-      Rectangle area = new Rectangle(_westButtons.x + 26, _westButtons.y - 18, _eastButtons.x - _westButtons.x - 26, _menuBR.y - _eastButtons.y + 18);
-      writeArea(area, "mapsArea.jpg");
-      Pixel p = scanOne("map/mainMap.bmp", area, false);
-      if (p != null) {
-        p.x -= 23;
-        LOGGER.info("Found main map...");
-        int pos = position;
-        int cnt = area.width / 84;
-        int pp = p.x + pos * 84 + 42;
-        while (pp > _eastButtons.x) {
-          //click >> button
-          _mouse.click(_eastButtons.x + 12, _eastButtons.y + 42);
-          _mouse.delay(1750);
-          pos -= cnt;
-          pp = p.x + pos * 84 + 42;
-        }
-        assert pp < _eastButtons.x;
-        _mouse.click(pp, _eastButtons.y + 42);
+      // click << button
+      if (position > 90) {
+        _mouse.click(_eastButtons.x + 12, _eastButtons.y + 63);
+        _mouse.delay(1750);
+        int pos = 100 - position;
+        Pixel p = new Pixel(_eastButtons.x - 44, _eastButtons.y + 42);
+        p.x = p.x - pos * 84;
+        _mouse.click(p);
         _mouse.delay(2000);
         return true;
-      }
+      } else {
 
+        _mouse.click(_westButtons.x + 12, _westButtons.y + 42);
+        _mouse.delay(1750);
+
+        // look for main map
+        Rectangle area = new Rectangle(_westButtons.x + 26, _westButtons.y - 18, _eastButtons.x - _westButtons.x - 26,
+            _menuBR.y - _eastButtons.y + 18);
+        writeArea(area, "mapsArea.jpg");
+        Pixel p = scanOne("map/mainMap.bmp", area, false);
+        if (p != null) {
+          p.x -= 23;
+          LOGGER.info("Found main map...");
+          int pos = position;
+          int cnt = area.width / 84;
+          int pp = p.x + pos * 84 + 42;
+          while (pp > _eastButtons.x) {
+            // click >> button
+            _mouse.click(_eastButtons.x + 12, _eastButtons.y + 42);
+            _mouse.delay(1750);
+            pos -= cnt;
+            pp = p.x + pos * 84 + 42;
+          }
+          assert pp < _eastButtons.x;
+          _mouse.click(pp, _eastButtons.y + 42);
+          _mouse.delay(2000);
+          return true;
+        }
+      }
     } else {
       LOGGER.warning("Not sure I'm in maps screen!");
     }
-    
+
     return false;
   }
 
   public Pixel findCamp() throws RobotInterruptedException, IOException, AWTException {
-    //dragMapToRight();
+    // dragMapToRight();
     Pixel p = scanOne("map/scamp.bmp", _scampArea, false);
     if (p == null) {
       dragMapToRight();
@@ -1232,7 +1244,7 @@ public class ScreenScanner {
   }
 
   private void dragMapToRight() throws RobotInterruptedException {
-    //make sure the map is fully dragged to its left part
+    // make sure the map is fully dragged to its left part
     int x1 = _scanArea.x + 5;
     int x2 = _scanArea.x + _scanArea.width - 5;
     int y = _scanArea.y + _scanArea.height - 15;

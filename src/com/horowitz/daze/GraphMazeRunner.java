@@ -94,7 +94,7 @@ public class GraphMazeRunner {
               }
             }
 
-            _mouse.delay(750);
+            _mouse.delay(1250);
             // ////////////////////
 
             // if (p == null) {
@@ -130,7 +130,7 @@ public class GraphMazeRunner {
             vertex._state = State.CHECKED;
             _support.firePropertyChange("GREEN_CLICKED", State.GREEN, vertex);
 
-            // LOGGER.info("Sleep " + _pauseTime + " seconds");
+            LOGGER.info("Sleep " + _pauseTime + " seconds");
             _mouse.delay(_pauseTime * 1000);
           }
           // END OF GREEN
@@ -565,7 +565,7 @@ public class GraphMazeRunner {
   private List<Position> _searchSequence;
   private Set<Position> _explored;
 
-  private int _pauseTime = 5;
+  private int _pauseTime = 3;
 
   public GraphMazeRunner(ScreenScanner scanner) {
     super();
@@ -813,6 +813,7 @@ public class GraphMazeRunner {
     // LOGGER.info("sign popup...");
     long start = System.currentTimeMillis();
     Rectangle area = _scanner.generateWindowedArea(137, 325);
+    //_scanner.writeArea(area, "cleared1Area.bmp");
     Pixel p = _scanner.scanOneFast("cleared.bmp", area, false);
     if (p != null) {
       _mouse.click(p.x + 42, p.y + 166);
@@ -826,6 +827,7 @@ public class GraphMazeRunner {
       area.height = 62;
       area.x += 100;
       area.width = 150;
+      //_scanner.writeArea(area, "cleared2Area.bmp");
       p = _scanner.scanOneFast("clearedRep.bmp", area, false);
       if (p != null) {
         _mouse.click(p.x + 47, p.y + 248);//ok button could be elsewhere!!!

@@ -2,6 +2,7 @@ package com.horowitz.daze;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -24,6 +25,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -77,10 +79,16 @@ public class AgendaEditor extends JPanel {
     // CENTER
     // //////////
     JPanel root = new JPanel(new BorderLayout());
-    mainRoot.add(root, BorderLayout.CENTER);
+    mainRoot.add(new JScrollPane(root), BorderLayout.CENTER);
 
     _box = Box.createVerticalBox();
+    mainRoot.setMinimumSize(new Dimension(50, 100));
+    mainRoot.setMaximumSize(new Dimension(100, 300));
+    mainRoot.setPreferredSize(new Dimension(90, 300));
 
+    _box.setMinimumSize(new Dimension(100, 20));
+    _box.setMaximumSize(new Dimension(200, 300));
+    //_box.setPreferredSize(new Dimension(200, 280));
     root.add(_box, BorderLayout.NORTH);
 
     // ADD BUTTON
@@ -248,7 +256,7 @@ public class AgendaEditor extends JPanel {
         }
 
       });
-      
+
       _mapCB.setSelectedIndex(-1);
       _mapCB.setSelectedIndex(0);
 

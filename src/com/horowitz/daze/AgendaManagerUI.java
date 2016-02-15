@@ -2,6 +2,7 @@ package com.horowitz.daze;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -189,9 +190,9 @@ public class AgendaManagerUI extends JPanel {
 
   private void initLayout2() {
     _editor = new AgendaEditor(_mapManager);
-    // _editor.setMinimumSize(new Dimension(300, 300));
-    // _editor.setPreferredSize(new Dimension(260, 300));
-    // add(new JScrollPane(_editor), BorderLayout.CENTER);
+  _editor.setMinimumSize(new Dimension(300, 300));
+  _editor.setPreferredSize(new Dimension(260, 300));
+//  add(new JScrollPane(_editor), BorderLayout.CENTER);
     add(_editor, BorderLayout.CENTER);
 
     _agendasCB.addListSelectionListener(new ListSelectionListener() {
@@ -283,7 +284,7 @@ public class AgendaManagerUI extends JPanel {
 
           js.saveAgendas(newList);
           // _protocolsCB.setSelectedValue(null, false);
-          //_agendasCB.setSelectedIndex(-1);
+          // _agendasCB.setSelectedIndex(-1);
           _agendasCB.getSelectionModel().clearSelection();
           _agendasCB.setSelectedValue(originalAgenda, true);
           revalidate();
