@@ -77,6 +77,7 @@ import com.horowitz.commons.TemplateMatcher;
 import com.horowitz.daze.map.Agenda;
 import com.horowitz.daze.map.AgendaEntry;
 import com.horowitz.daze.map.MapManager;
+import com.horowitz.daze.map.PlaceUnreachableException;
 import com.horowitz.ocr.OCRB;
 
 public class MainFrame extends JFrame {
@@ -85,7 +86,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.19";
+  private static String APP_TITLE = "Daze v0.21";
 
   private Settings _settings;
   private Stats _stats;
@@ -1365,65 +1366,69 @@ public class MainFrame extends JFrame {
               List<AgendaEntry> agendas = _agenda.getEntries();
               for (AgendaEntry agenda : agendas) {
                 handlePopups();
-                boolean success = mapManager.gotoPlace(agenda.getMapName(), agenda.getPlaceName());
-                if (success) {
-                  // do this place
-                  _fstart = System.currentTimeMillis();
-                  Thread runMazeThread = new Thread(new Runnable() {
-                    public void run() {
-                      try {
-                        int tries = 0;
-                        Pixel p;
-                        do {
-                          tries++;
-                          LOGGER.info("Looking for diggy... " + tries);
-                          p = _scanner.findDiggy(_scanner.getScanArea());
-                          _mouse.delay(700);
-                        } while (p == null && tries < 22);
-                        if (p != null) {
-                          LOGGER.info("TRAVERSE START!");
-                          _mazeRunner.traverse(p);
-                          LOGGER.info("TARVERSE DONE!");
+                try {
+                  boolean success = mapManager.gotoPlace(agenda.getMapName(), agenda.getPlaceName());
+                  if (success) {
+                    // do this place
+                    _fstart = System.currentTimeMillis();
+                    Thread runMazeThread = new Thread(new Runnable() {
+                      public void run() {
+                        try {
+                          int tries = 0;
+                          Pixel p;
+                          do {
+                            tries++;
+                            LOGGER.info("Looking for diggy... " + tries);
+                            p = _scanner.findDiggy(_scanner.getScanArea());
+                            _mouse.delay(700);
+                          } while (p == null && tries < 22);
+                          if (p != null) {
+                            LOGGER.info("TRAVERSE START!");
+                            _mazeRunner.traverse(p);
+                            LOGGER.info("TARVERSE DONE!");
+                          }
+
+                        } catch (RobotInterruptedException e) {
+                          LOGGER.info("INTERRUPTED...");
+                        } catch (IOException e) {
+                          e.printStackTrace();
+                        } catch (AWTException e) {
+                          e.printStackTrace();
+                        } catch (Exception e) {
+                          e.printStackTrace();
                         }
+                      }
+                    }, "RUN_MAZE");
+                    runMazeThread.start();
 
-                      } catch (RobotInterruptedException e) {
-                        LOGGER.info("INTERRUPTED...");
-                      } catch (IOException e) {
-                        e.printStackTrace();
-                      } catch (AWTException e) {
-                        e.printStackTrace();
-                      } catch (Exception e) {
-                        e.printStackTrace();
+                    // sleep
+                    do {
+                      _mouse.delay(1000, false);// DO NOT INTTERRUPT!!!
+                      if (!isRunning("RUN_MAZE")) {
+                        break;
+                      }
+                      LOGGER.info("tik tak... " + (System.currentTimeMillis() - _fstart) / 1000);
+                    } while (System.currentTimeMillis() - _fstart < 20 * 60000);// 20
+                                                                                // minutes
+
+                    // THAT'S IT. STOP IT IF NOT DONE ALREADY
+                    if (isRunning("RUN_MAZE")) {
+                      LOGGER.info("STOPPING maze runner...");
+                      _mazeRunner.setStopIt(true);
+                      while (isRunning("RUN_MAZE")) {
+                        try {
+                          Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+                        }
+                        if (isRunning("RUN_MAZE"))
+                          LOGGER.info("maze runner still running...");
                       }
                     }
-                  }, "RUN_MAZE");
-                  runMazeThread.start();
-
-                  // sleep
-                  do {
-                    _mouse.delay(1000, false);//DO NOT INTTERRUPT!!!
-                    if (!isRunning("RUN_MAZE")) {
-                      break;
-                    }
-                     LOGGER.info("tik tak... " + (System.currentTimeMillis() -
-                     _fstart) / 1000);
-                  } while (System.currentTimeMillis() - _fstart < 30 * 60000);// 30
-                                                                              // minutes
-
-                  // THAT'S IT. STOP IT IF NOT DONE ALREADY
-                  if (isRunning("RUN_MAZE")) {
-                    LOGGER.info("STOPPING maze runner...");
-                    _mazeRunner.setStopIt(true);
-                    while (isRunning("RUN_MAZE")) {
-                      try {
-                        Thread.sleep(5000);
-                      } catch (InterruptedException e) {
-                      }
-                      if (isRunning("RUN_MAZE"))
-                        LOGGER.info("maze runner still running...");
-                    }
+                    LOGGER.info("MOVE TO NEXT PLACE...");
                   }
-                  LOGGER.info("MOVE TO NEXT PLACE...");
+                } catch (PlaceUnreachableException e) {
+                  LOGGER.warning(e.getMessage());
+                  refresh(false);
                 }
               }
             } while (!_stopAllThreads);
@@ -1544,8 +1549,16 @@ public class MainFrame extends JFrame {
       }
 
       long start = System.currentTimeMillis();
-      Rectangle area = _scanner._popupAreaX;
-      p = _scanner.scanOneFast("X.bmp", area, false);
+      Rectangle area = _scanner.generateWindowedArea(204, 648);// was 486
+      area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
+      area.width = _scanner.getGameHeight() / 2;
+      p = _scanner.scanOneFast("share.bmp", area, false);
+      if (p != null) {
+        _mouse.click(p.x + 34, p.y + 11);
+        _mouse.delay(200);
+      }
+
+      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
       if (p != null) {
         _mouse.click(p.x + 16, p.y + 16);
         _mouse.delay(200);
@@ -1588,7 +1601,7 @@ public class MainFrame extends JFrame {
     if (ping2 != _ping2Toggle.isSelected()) {
       _ping2Toggle.setSelected(ping2);
     }
-    
+
     // agenda
     String ag = _settings.getProperty("agenda", "DEFAULT");
     if (!ag.equals(_agenda != null ? _agenda.getName() : "")) {

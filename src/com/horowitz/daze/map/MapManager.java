@@ -58,13 +58,16 @@ public class MapManager {
     return mapNames;
   }
 
-  public boolean gotoMap(String mapName) throws RobotInterruptedException, IOException, AWTException {
+  public boolean gotoMap(String mapName) throws RobotInterruptedException, IOException, AWTException,
+      PlaceUnreachableException {
     boolean success = false;
     DMap map = getMap(mapName);
     if (map != null) {
       success = _scanner.gotoMap(map.getPosition());
       if (success) {
         LOGGER.info("Entered map " + map.getName());
+      } else {
+        throw new PlaceUnreachableException("Map " + map.getName() + " not found!");
       }
     }
     return success;
@@ -84,7 +87,7 @@ public class MapManager {
   }
 
   public boolean gotoPlace(String mapName, String placeName) throws RobotInterruptedException, IOException,
-      AWTException {
+      AWTException, PlaceUnreachableException {
     boolean success = false;
     DMap map = getMap(mapName);
     Place place = null;
@@ -106,6 +109,8 @@ public class MapManager {
         ensurePlace(p);
         success = checkPlaceIsPlayable(p);
 
+      } else {
+        throw new PlaceUnreachableException("Camp can't be found");
       }
 
     }
@@ -172,13 +177,13 @@ public class MapManager {
       if (pc != null) {
         area = new Rectangle(pc.x + 421, pc.y + 131, 57, 36);
         Pixel pp = _scanner.scanOne("map/progressFull.bmp", area, false);
-//        if (pp != null) {
-//          LOGGER.info("This place is done! Moving forward...");
-//          _mouse.click(pc.x + 456, pc.y + 6);
-//          _mouse.delay(1000);
-//          return false;
-//        }
-//        LOGGER.info("hmm");
+        // if (pp != null) {
+        // LOGGER.info("This place is done! Moving forward...");
+        // _mouse.click(pc.x + 456, pc.y + 6);
+        // _mouse.delay(1000);
+        // return false;
+        // }
+        // LOGGER.info("hmm");
         // find the entry
         Rectangle area2 = new Rectangle(pc.x + 193, pc.y + 155, 100, 280);
         pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);// CLICK!!!

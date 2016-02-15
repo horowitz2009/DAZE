@@ -103,6 +103,11 @@ public class GraphMazeRunner {
             // } else
             // _mouse.delay(500);
 
+            if (checkIsReady()) {
+              _stopIt = true;
+              return false;
+            }
+
             if (checkPopup()) {
               vertex._state = State.OBSTACLE;
               _support.firePropertyChange("STATE_CHANGED", State.GREEN, vertex);
@@ -114,7 +119,8 @@ public class GraphMazeRunner {
                 _mouse.delay(20000);
                 _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
                 _mouse.delay(1000);
-              } while (!_stopIt & checkNoEnergy());//both conditions must be checked!!!
+              } while (!_stopIt & checkNoEnergy());// both conditions must be
+                                                   // checked!!!
               // TODO when OCR is introduced, check if the tile is too
               // expensive,
               // then leave it and move on
@@ -345,8 +351,8 @@ public class GraphMazeRunner {
       return neighbor._state != State.VISITED && neighbor._state != State.OBSTACLE;
     }
 
-    private void ensureArea(Position pos, int rowOffset, int colOffset)
-        throws RobotInterruptedException, IOException, AWTException {
+    private void ensureArea(Position pos, int rowOffset, int colOffset) throws RobotInterruptedException, IOException,
+        AWTException {
       pos._coords = new Pixel(_start._coords.x + pos._row * 60, _start._coords.y + pos._col * 60);
       int xx = _start._coords.x + (pos._row + rowOffset) * 60;
       int yy = _start._coords.y + (pos._col + colOffset) * 60;
@@ -504,8 +510,8 @@ public class GraphMazeRunner {
         throws RobotInterruptedException, IOException, AWTException {
       Position neighborPos = new Position(vertex._row + rowOffset, vertex._col + colOffset);
       if (!isAlreadyChecked(graph, neighborPos)) {
-        neighborPos._coords = new Pixel(_start._coords.x + neighborPos._row * 60,
-            _start._coords.y + neighborPos._col * 60);
+        neighborPos._coords = new Pixel(_start._coords.x + neighborPos._row * 60, _start._coords.y + neighborPos._col
+            * 60);
 
         if (graph.canBeVisited(neighborPos, this)) {
 
@@ -686,8 +692,8 @@ public class GraphMazeRunner {
                 cnt++;
               if (cnt > 3) {
                 // BINGOOO
-                fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_" + System.currentTimeMillis()
-                    + ".png");
+                fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_"
+                    + System.currentTimeMillis() + ".png");
                 break;
               }
             }
@@ -726,7 +732,7 @@ public class GraphMazeRunner {
   public void traverse(Pixel p) throws Exception {
     clearMatrix();
     setStopIt(false);
-    
+
     final Position start = new Position(0, 0, null, State.START);
     start._coords = p;
     final Graph<Position> graph = new Graph<>(_explored);
@@ -781,8 +787,16 @@ public class GraphMazeRunner {
   private boolean checkPopups() throws IOException, AWTException, RobotInterruptedException {
     // LOGGER.info("all popups...");
     long start = System.currentTimeMillis();
-    Rectangle area = _scanner._popupAreaX;
-    Pixel p = _scanner.scanOneFast("X.bmp", area, false);
+    Rectangle area = _scanner.generateWindowedArea(204, 648);// was 486
+    area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
+    area.width = _scanner.getGameHeight() / 2;
+    Pixel p = _scanner.scanOneFast("share.bmp", area, false);
+    if (p != null) {
+      _mouse.click(p.x + 34, p.y + 11);
+      _mouse.delay(200);
+    }
+
+    p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
     if (p != null) {
       _mouse.click(p.x + 16, p.y + 16);
       LOGGER.info("click checkPopups");
@@ -792,6 +806,32 @@ public class GraphMazeRunner {
       p = _scanner.scanOneFast("claim.bmp", null, true);
     }
     // LOGGER.info("time: " + (System.currentTimeMillis() - start));
+    return p != null;
+  }
+
+  private boolean checkIsReady() throws IOException, AWTException, RobotInterruptedException {
+    // LOGGER.info("sign popup...");
+    long start = System.currentTimeMillis();
+    Rectangle area = _scanner.generateWindowedArea(137, 325);
+    Pixel p = _scanner.scanOneFast("cleared.bmp", area, false);
+    if (p != null) {
+      _mouse.click(p.x + 42, p.y + 166);
+      LOGGER.info("click congrats popup");
+
+      _mouse.delay(200);
+    } else {
+      // repeatable scenario
+      area = _scanner.generateWindowedArea(479, 648);
+      area.y = _scanner.getTopLeft().y + 187;
+      area.height = 62;
+      area.x += 100;
+      area.width = 150;
+      p = _scanner.scanOneFast("clearedRep.bmp", area, false);
+      if (p != null) {
+        _mouse.click(p.x + 47, p.y + 248);//ok button could be elsewhere!!!
+      }
+    }
+    LOGGER.info("time: " + (System.currentTimeMillis() - start));
     return p != null;
   }
 
@@ -911,8 +951,8 @@ public class GraphMazeRunner {
     return newPos;
   }
 
-  private Pixel lookForDiggyAroundHere(Pixel pp, int cellRange)
-      throws IOException, RobotInterruptedException, AWTException {
+  private Pixel lookForDiggyAroundHere(Pixel pp, int cellRange) throws IOException, RobotInterruptedException,
+      AWTException {
     Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 + 120 + 60,
         cellRange * 60 + 120 + 60);
     Pixel res = _scanner.findDiggy(area);
@@ -963,8 +1003,8 @@ public class GraphMazeRunner {
       BufferedImage image = ImageIO.read(new File("temp/mud.bmp"));
       FastBitmap fb1 = new FastBitmap(image);
 
-      ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240),
-          new IntRange(5, 85));
+      ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240), new IntRange(5,
+          85));
       colorFiltering.applyInPlace(fb1);
 
       if (fb1.isRGB())
@@ -981,8 +1021,8 @@ public class GraphMazeRunner {
   private BufferedImage filterArrows(BufferedImage image) {
     FastBitmap fb1 = new FastBitmap(image);
 
-    ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240),
-        new IntRange(5, 85));
+    ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240), new IntRange(5,
+        85));
     colorFiltering.applyInPlace(fb1);
 
     if (fb1.isRGB())
