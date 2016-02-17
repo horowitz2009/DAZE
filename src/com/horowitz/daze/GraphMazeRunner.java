@@ -69,7 +69,6 @@ public class GraphMazeRunner {
           if (vertex._state == State.GREEN) {
             // //////////////////////
             Pixel coords = new Pixel(_start._coords.x + vertex._row * 60, _start._coords.y + vertex._col * 60);
-
             // is diggy around
             // YES, click then
             // NO, we have to wait until he comes
@@ -82,6 +81,9 @@ public class GraphMazeRunner {
             } while (!_stopIt && p == null && ++tries < 7);
 
             // THE CLICK
+            _mouse.mouseMove(coords.x + 30, coords.y + 30);
+            _mouse.delay(100);
+            _support.firePropertyChange("CAPTURE", null, vertex);
             _mouse.click(coords.x + 30, coords.y + 30);
             // _mouse.click(_start._coords.x + vertex._row * 60 + 30,
             // _start._coords.y + vertex._col * 60 + 30);
@@ -94,7 +96,7 @@ public class GraphMazeRunner {
               }
             }
 
-            _mouse.delay(1250);
+            _mouse.delay(800);
             // ////////////////////
 
             // if (p == null) {
@@ -168,6 +170,7 @@ public class GraphMazeRunner {
 
               // if (diggyHere)
               vertex._state = State.VISITED;
+              _support.firePropertyChange("CAPTURE", null, vertex);
               // else
               // vertex._state = State.CHECKED;
 
@@ -565,7 +568,7 @@ public class GraphMazeRunner {
   private List<Position> _searchSequence;
   private Set<Position> _explored;
 
-  private int _pauseTime = 3;
+  private int _pauseTime = 2;
 
   public GraphMazeRunner(ScreenScanner scanner) {
     super();

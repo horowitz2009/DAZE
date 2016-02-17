@@ -86,7 +86,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.21";
+  private static String APP_TITLE = "Daze v0.22";
 
   private Settings _settings;
   private Stats _stats;
@@ -286,7 +286,7 @@ public class MainFrame extends JFrame {
         _fstart = now;
       }
     });
-    _mazeRunner.addPropertyChangeListener("CLICK", new PropertyChangeListener() {
+    _mazeRunner.addPropertyChangeListener("CAPTURE", new PropertyChangeListener() {
 
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
@@ -1369,6 +1369,7 @@ public class MainFrame extends JFrame {
                 try {
                   boolean success = mapManager.gotoPlace(agenda.getMapName(), agenda.getPlaceName());
                   if (success) {
+                    LOGGER.info("WORKING ON " + agenda.getMapName() + "-" + agenda.getPlaceName());
                     // do this place
                     _fstart = System.currentTimeMillis();
                     Thread runMazeThread = new Thread(new Runnable() {
@@ -1407,7 +1408,7 @@ public class MainFrame extends JFrame {
                       if (!isRunning("RUN_MAZE")) {
                         break;
                       }
-                      LOGGER.info("tik tak... " + (System.currentTimeMillis() - _fstart) / 1000);
+                      //LOGGER.info("tik tak... " + (System.currentTimeMillis() - _fstart) / 1000);
                     } while (System.currentTimeMillis() - _fstart < 20 * 60000);// 20
                                                                                 // minutes
 

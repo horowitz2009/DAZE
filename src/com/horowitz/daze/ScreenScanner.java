@@ -373,8 +373,8 @@ public class ScreenScanner {
       setKeyAreas();
       return true;
     } else {
-      boolean found = _gameLocator.locateGameArea(new ImageData("beta.bmp", null, _comparator, 0, 0),
-          new ImageData("camp.bmp", null, _comparator, 25, 48), false);
+      boolean found = _gameLocator.locateGameArea(new ImageData("beta.bmp", null, _comparator, 0, 0), new ImageData(
+          "camp.bmp", null, _comparator, 25, 48), false);
       if (found) {
         _tl = _gameLocator.getTopLeft();
         _br = _gameLocator.getBottomRight();
@@ -487,8 +487,8 @@ public class ScreenScanner {
     writeArea(new Rectangle(new Point(_tl.x, _tl.y), new Dimension(getGameWidth(), getGameHeight())), filename);
   }
 
-  public Pixel locateImageCoords(String imageName, Rectangle[] area, int xOff, int yOff)
-      throws AWTException, IOException, RobotInterruptedException {
+  public Pixel locateImageCoords(String imageName, Rectangle[] area, int xOff, int yOff) throws AWTException,
+      IOException, RobotInterruptedException {
 
     final Robot robot = new Robot();
     final BufferedImage image = ImageIO.read(ImageManager.getImageURL(imageName));
@@ -700,8 +700,8 @@ public class ScreenScanner {
     return _comparator;
   }
 
-  public List<Pixel> scanMany(String filename, BufferedImage screen, boolean click)
-      throws RobotInterruptedException, IOException, AWTException {
+  public List<Pixel> scanMany(String filename, BufferedImage screen, boolean click) throws RobotInterruptedException,
+      IOException, AWTException {
 
     ImageData imageData = getImageData(filename);
     if (imageData == null)
@@ -806,8 +806,8 @@ public class ScreenScanner {
     FastBitmap fbAREA = new FastBitmap(screen);
 
     // COLOR FILTERING
-    ColorFiltering colorFiltering = new ColorFiltering(new IntRange(255, 255), new IntRange(255, 255),
-        new IntRange(255, 255));
+    ColorFiltering colorFiltering = new ColorFiltering(new IntRange(255, 255), new IntRange(255, 255), new IntRange(
+        255, 255));
     colorFiltering.applyInPlace(fbID);
     colorFiltering.applyInPlace(fbAREA);
 
@@ -825,8 +825,8 @@ public class ScreenScanner {
 
   }
 
-  public Pixel scanOne(ImageData imageData, Rectangle area, boolean click)
-      throws AWTException, RobotInterruptedException {
+  public Pixel scanOne(ImageData imageData, Rectangle area, boolean click) throws AWTException,
+      RobotInterruptedException {
     if (area == null) {
       area = imageData.getDefaultArea();
     }
@@ -848,8 +848,8 @@ public class ScreenScanner {
 
   }
 
-  public Pixel scanOne(String filename, Rectangle area, boolean click)
-      throws RobotInterruptedException, IOException, AWTException {
+  public Pixel scanOne(String filename, Rectangle area, boolean click) throws RobotInterruptedException, IOException,
+      AWTException {
     ImageData imageData = getImageData(filename);
     if (imageData == null)
       return null;
@@ -875,8 +875,8 @@ public class ScreenScanner {
     return pixel;
   }
 
-  public Pixel scanOneFast(ImageData imageData, Rectangle area, boolean click)
-      throws AWTException, RobotInterruptedException {
+  public Pixel scanOneFast(ImageData imageData, Rectangle area, boolean click) throws AWTException,
+      RobotInterruptedException {
     if (area == null) {
       area = imageData.getDefaultArea();
     }
@@ -898,8 +898,8 @@ public class ScreenScanner {
 
   }
 
-  public Pixel scanOneFast(String filename, Rectangle area, boolean click)
-      throws RobotInterruptedException, IOException, AWTException {
+  public Pixel scanOneFast(String filename, Rectangle area, boolean click) throws RobotInterruptedException,
+      IOException, AWTException {
     ImageData imageData = getImageData(filename);
     if (imageData == null)
       return null;
@@ -1106,8 +1106,7 @@ public class ScreenScanner {
     return _sailorsPos;
   }
 
-  public Pixel scanPrecise(String filename, Rectangle area)
-      throws AWTException, IOException, RobotInterruptedException {
+  public Pixel scanPrecise(String filename, Rectangle area) throws AWTException, IOException, RobotInterruptedException {
     return scanPrecise(getImageData(filename), area);
   }
 
@@ -1163,8 +1162,8 @@ public class ScreenScanner {
    * @throws RobotInterruptedException
    * @throws AWTException
    */
-  public Pixel lookForDiggyAroundHere(Pixel pp, int cellRange)
-      throws IOException, RobotInterruptedException, AWTException {
+  public Pixel lookForDiggyAroundHere(Pixel pp, int cellRange) throws IOException, RobotInterruptedException,
+      AWTException {
     Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 * 2 + 60,
         cellRange * 60 * 2 + 60);
     Pixel res = findDiggy(area);
@@ -1236,21 +1235,26 @@ public class ScreenScanner {
     // dragMapToRight();
     Pixel p = scanOne("map/scamp.bmp", _scampArea, false);
     if (p == null) {
-      dragMapToRight();
-      _mouse.delay(1000);
+      int tries = 0;
+      do {
+        dragMapToRight();
+        _mouse.delay(300);
+        p = scanOne("map/scamp.bmp", _scampArea, false);
+        tries++;
+      } while (p == null && tries < 5);
     }
-    p = scanOne("map/scamp.bmp", _scampArea, false);
+    //p = scanOne("map/scamp.bmp", _scampArea, false);
     return p;
   }
 
   private void dragMapToRight() throws RobotInterruptedException {
     // make sure the map is fully dragged to its left part
     int x1 = _scanArea.x + 5;
-    int x2 = _scanArea.x + _scanArea.width - 5;
+    int x2 = _scanArea.x + _scanArea.width / 2 + 5;
     int y = _scanArea.y + _scanArea.height - 15;
     _mouse.drag(x1, y, x2, y);
     _mouse.delay(100);
-    _mouse.drag(x1, y, x2, y);
+    // _mouse.drag(x1, y, x2, y);
   }
 
   public Rectangle getPing2Area() {
