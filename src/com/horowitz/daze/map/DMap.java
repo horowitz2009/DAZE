@@ -10,6 +10,7 @@ import com.horowitz.commons.Deserializer;
 public class DMap implements Cloneable, Serializable, Deserializable {
   private static final long serialVersionUID = 5684617885487400700L;
   private String name;
+  private String world;
   private int priority;
   private int position;
 
@@ -57,9 +58,21 @@ public class DMap implements Cloneable, Serializable, Deserializable {
     this.position = position;
   }
 
+  public String getWorld() {
+    return world;
+  }
+
+  public void setWorld(String world) {
+    this.world = world;
+  }
+
   @Override
   public String toString() {
-    return name;
+    String s = "";
+    if (world != null)
+      s = s + world + " ";
+    s = s + name;
+    return s;
   }
 
   @Override
@@ -70,6 +83,7 @@ public class DMap implements Cloneable, Serializable, Deserializable {
     result = prime * result + ((places == null) ? 0 : places.hashCode());
     result = prime * result + position;
     result = prime * result + priority;
+    result = prime * result + ((world == null) ? 0 : world.hashCode());
     return result;
   }
 
@@ -95,6 +109,11 @@ public class DMap implements Cloneable, Serializable, Deserializable {
     if (position != other.position)
       return false;
     if (priority != other.priority)
+      return false;
+    if (world == null) {
+      if (other.world != null)
+        return false;
+    } else if (!world.equals(other.world))
       return false;
     return true;
   }

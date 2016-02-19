@@ -39,6 +39,7 @@ import com.horowitz.commons.RobotInterruptedException;
 import com.horowitz.commons.Settings;
 import com.horowitz.commons.SimilarityImageComparator;
 import com.horowitz.commons.TemplateMatcher;
+import com.horowitz.daze.map.DMap;
 
 public class ScreenScanner {
 
@@ -1171,7 +1172,8 @@ public class ScreenScanner {
     return res;
   }
 
-  public boolean gotoMap(int position) throws RobotInterruptedException, IOException, AWTException {
+  public boolean gotoMap(DMap map) throws RobotInterruptedException, IOException, AWTException {
+    int position = map.getPosition();
     int tries = 0;
     boolean mapMode = false;
     do {
@@ -1185,6 +1187,28 @@ public class ScreenScanner {
     if (mapMode) {
       // GOOD
       LOGGER.info("MAP MODE! " + tries);
+      
+      if (position >= 0) {
+        //ensure world
+        //HARDCODED 4 worlds. I'm too lazy to make it right
+        int y = 282;
+        int slot = 0;
+        if ("egypt".equalsIgnoreCase(map.getWorld())) {
+          slot = 0;  
+        } else if ("scandinavia".equalsIgnoreCase(map.getWorld())) {
+          slot = 1;
+        } else if ("china".equalsIgnoreCase(map.getWorld())) {
+          slot = 2;
+        } else if ("atlantis".equalsIgnoreCase(map.getWorld())) {
+          slot = 3;
+        }
+        _mouse.click(_br.x - 37, _tl.y + y + 36 * slot);
+        _mouse.delay(2000);
+      }
+      
+      
+      
+      
       // click << button
       if (position > 90) {
         _mouse.click(_eastButtons.x + 12, _eastButtons.y + 63);
