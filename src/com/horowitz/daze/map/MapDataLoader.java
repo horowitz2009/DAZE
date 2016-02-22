@@ -19,9 +19,9 @@ public class MapDataLoader {
       // AGENDA
       Agenda agenda1 = new Agenda("HMM");
       List<AgendaEntry> agendaEntries = new ArrayList<AgendaEntry>();
-      agendaEntries.add(new AgendaEntry("Repeatable", "Tin Cave"));
-      agendaEntries.add(new AgendaEntry("Hathor", "Closed Theatre"));
-      agendaEntries.add(new AgendaEntry("Strongmen", "Winter Cave Of Digging 2"));
+      //agendaEntries.add(new AgendaEntry("Repeatable", "Tin Cave"));
+      //agendaEntries.add(new AgendaEntry("Hathor", "Closed Theatre"));
+      //agendaEntries.add(new AgendaEntry("Strongmen", "Winter Cave Of Digging 2"));
       agenda1.setEntries(agendaEntries);
       List<Agenda> agendas = new ArrayList<Agenda>();
       agendas.add(agenda1);

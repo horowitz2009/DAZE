@@ -58,10 +58,9 @@ public class MapManager {
     return mapNames;
   }
 
-  public boolean gotoMap(String mapName) throws RobotInterruptedException, IOException, AWTException,
-      PlaceUnreachableException {
+  public boolean gotoMap(DMap map)
+      throws RobotInterruptedException, IOException, AWTException, PlaceUnreachableException {
     boolean success = false;
-    DMap map = getMap(mapName);
     if (map != null) {
       success = _scanner.gotoMap(map);
       if (success) {
@@ -86,10 +85,9 @@ public class MapManager {
     return _scanner.findCamp();
   }
 
-  public boolean gotoPlace(String mapName, String placeName) throws RobotInterruptedException, IOException,
-      AWTException, PlaceUnreachableException {
+  public boolean gotoPlace(DMap map, String placeName)
+      throws RobotInterruptedException, IOException, AWTException, PlaceUnreachableException {
     boolean success = false;
-    DMap map = getMap(mapName);
     Place place = null;
     for (Place pl : map.getPlaces()) {
       if (pl.getName().equalsIgnoreCase(placeName)) {
@@ -97,7 +95,7 @@ public class MapManager {
         break;
       }
     }
-    success = place != null && gotoMap(mapName);
+    success = place != null && gotoMap(map);
     if (success) {
       _mouse.mouseMove(_scanner.getSafePoint());
       _mouse.delay(1500);

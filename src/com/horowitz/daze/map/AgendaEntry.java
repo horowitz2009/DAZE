@@ -5,25 +5,17 @@ import java.io.Serializable;
 public class AgendaEntry implements Cloneable, Serializable {
   private static final long serialVersionUID = 5684617885487400700L;
 
-  private String mapName;
+  private DMap map;
   private String placeName;
 
-  public AgendaEntry(String mapName, String placeName) {
+  public AgendaEntry(DMap map, String placeName) {
     super();
-    this.mapName = mapName;
+    this.map = map;
     this.placeName = placeName;
   }
 
   public AgendaEntry() {
     super();
-  }
-
-  public String getMapName() {
-    return mapName;
-  }
-
-  public void setMapName(String mapName) {
-    this.mapName = mapName;
   }
 
   public String getPlaceName() {
@@ -36,7 +28,7 @@ public class AgendaEntry implements Cloneable, Serializable {
 
   @Override
   public String toString() {
-    return mapName + " - " + placeName;
+    return map.toString() + " - " + placeName;
   }
 
   @Override
@@ -45,11 +37,19 @@ public class AgendaEntry implements Cloneable, Serializable {
     return super.clone();
   }
 
+  public DMap getMap() {
+    return map;
+  }
+
+  public void setMap(DMap map) {
+    this.map = map;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((mapName == null) ? 0 : mapName.hashCode());
+    result = prime * result + ((map == null) ? 0 : map.hashCode());
     result = prime * result + ((placeName == null) ? 0 : placeName.hashCode());
     return result;
   }
@@ -63,10 +63,10 @@ public class AgendaEntry implements Cloneable, Serializable {
     if (getClass() != obj.getClass())
       return false;
     AgendaEntry other = (AgendaEntry) obj;
-    if (mapName == null) {
-      if (other.mapName != null)
+    if (map == null) {
+      if (other.map != null)
         return false;
-    } else if (!mapName.equals(other.mapName))
+    } else if (!map.equals(other.map))
       return false;
     if (placeName == null) {
       if (other.placeName != null)

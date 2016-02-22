@@ -88,7 +88,7 @@ public class AgendaEditor extends JPanel {
 
     _box.setMinimumSize(new Dimension(100, 20));
     _box.setMaximumSize(new Dimension(200, 300));
-    //_box.setPreferredSize(new Dimension(200, 280));
+    // _box.setPreferredSize(new Dimension(200, 280));
     root.add(_box, BorderLayout.NORTH);
 
     // ADD BUTTON
@@ -156,7 +156,7 @@ public class AgendaEditor extends JPanel {
       DMap map = (DMap) aev._mapCB.getSelectedItem();
       Place place = (Place) aev._placeCB.getSelectedItem();
       AgendaEntry ae = new AgendaEntry();
-      ae.setMapName(map.getName());
+      ae.setMap(map);
       ae.setPlaceName(place.getName());
       entries.add(ae);
     }
@@ -174,7 +174,8 @@ public class AgendaEditor extends JPanel {
         AgendaEntryView aev = new AgendaEntryView();
         ComboBoxModel<DMap> mapModel = aev._mapCB.getModel();
         for (int i = 0; i < mapModel.getSize(); i++) {
-          if (mapModel.getElementAt(i).getName().equals(ae.getMapName())) {
+          if (mapModel.getElementAt(i).getName().equals(ae.getMap().getName())
+              && mapModel.getElementAt(i).getWorld().equals(ae.getMap().getWorld())) {
             aev._mapCB.setSelectedIndex(i);
             aev.loadPlaces(mapModel.getElementAt(i));
             break;
