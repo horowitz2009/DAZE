@@ -379,19 +379,19 @@ public class ScreenScanner {
       if (found) {
         _tl = _gameLocator.getTopLeft();
         _br = _gameLocator.getBottomRight();
-        _menuBR = new Pixel(_br.x + 30, _br.y + 48);
-        Rectangle area = new Rectangle(_br.x + 25, _tl.y, screenSize.width - (_br.x + 25), getGameHeight() / 2);
+        _menuBR = new Pixel(_br.x, _br.y);
+        Rectangle area = new Rectangle(_br.x, _tl.y, screenSize.width - _br.x, getGameHeight() / 2);
         BufferedImage screen = new Robot().createScreenCapture(area);
 
         ImageData id = getImageData("gems.bmp");
         Pixel p = _comparator.findImage(id.getImage(), screen, id.getColorToBypass());
         if (p != null) {
-          _br.x = _br.x + 25 + p.x + 41;
+          _br.x = _br.x + p.x + 41;
         } else {
           LOGGER.warning("GEMS not found!");
           _br.x = screenSize.width - _tl.x - 1;
         }
-        _br.y += 48;
+        //_br.y += 48;
         LOGGER.fine("FINAL GAME COORDINATES: " + _tl + " - " + _br);
 
         setKeyAreas();
