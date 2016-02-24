@@ -7,6 +7,10 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +28,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -82,6 +87,9 @@ public class AgendaEditor extends JPanel {
     mainRoot.add(new JScrollPane(root), BorderLayout.CENTER);
 
     _box = Box.createVerticalBox();
+    DragMouseAdapter dmAdapter = new DragMouseAdapter(JFrame.getFrames()[0]);
+    _box.addMouseListener(dmAdapter);
+    _box.addMouseMotionListener(dmAdapter);
     mainRoot.setMinimumSize(new Dimension(50, 100));
     mainRoot.setMaximumSize(new Dimension(100, 300));
     mainRoot.setPreferredSize(new Dimension(90, 300));
@@ -206,6 +214,26 @@ public class AgendaEditor extends JPanel {
     comp.setFont(comp.getFont().deriveFont(size));
   }
 
+  class MyMouseListener extends  MouseAdapter implements MouseListener, MouseMotionListener {
+    @Override
+    public void mousePressed(MouseEvent e) {
+      System.err.println("PRESSED");
+    }
+    @Override
+    public void mouseDragged(MouseEvent e) {
+      System.err.println("DRAGGED");
+    }
+    @Override
+    public void mouseMoved(MouseEvent e) {
+      System.err.println("MOVED");
+    }
+    @Override
+    public void mouseReleased(MouseEvent e) {
+      System.err.println("RELEASED");
+    }
+    
+  }
+  
   class AgendaEntryView extends Box {
 
     private static final long serialVersionUID = -1413464832208854042L;
@@ -215,6 +243,7 @@ public class AgendaEditor extends JPanel {
     JComboBox<DMap> _mapCB;
     JComboBox<Place> _placeCB;
     JTextField _placeField;
+    JLabel _anchor;
 
     public AgendaEntryView() {
       super(BoxLayout.LINE_AXIS);
@@ -223,6 +252,8 @@ public class AgendaEditor extends JPanel {
       JButton removeButton = new JButton(_removeAction);
       shrinkFont(removeButton, -1);
       removeButton.setMargin(new Insets(2, 2, 2, 2));
+      _anchor = new JLabel(" ► ");
+      add(_anchor);
       add(removeButton);
       add(Box.createHorizontalStrut(6));
       // map
@@ -274,6 +305,8 @@ public class AgendaEditor extends JPanel {
       }
 
     }
+    
+    
   }
 
   class AddAction extends AbstractAction {
