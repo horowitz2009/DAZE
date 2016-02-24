@@ -84,7 +84,14 @@ public class GraphMazeRunner {
             _mouse.mouseMove(coords.x + 30, coords.y + 30);
             _mouse.delay(100);
             _support.firePropertyChange("CAPTURE", null, vertex);
-            _mouse.click(coords.x + 30, coords.y + 30);
+
+            if (checkIsSafeToClick(coords.x + 30, coords.y + 30))
+              _mouse.click(coords.x + 30, coords.y + 30);
+            else {
+              _stopIt = true;
+              return false;
+            }
+            
             // _mouse.click(_start._coords.x + vertex._row * 60 + 30,
             // _start._coords.y + vertex._col * 60 + 30);
 
@@ -96,7 +103,7 @@ public class GraphMazeRunner {
               }
             }
 
-            _mouse.delay(800);
+            _mouse.delay(400);
             // ////////////////////
 
             // if (p == null) {
@@ -156,56 +163,60 @@ public class GraphMazeRunner {
             // _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
             // _mouse.delay(6000);
             BufferedImage preClick = captureBlock(vertex._coords);
-            _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
-            if (isWalkable(vertex, preClick) || (isSlow() && isWalkable(vertex, preClick))) {
-              // wait until diggy arrives
-              int tries = 0;
-              boolean diggyHere = false;
-              do {
-                _mouse.delay(250);
-                if (tries++ > 5 && tries % 4 == 0)
-                  LOGGER.info("waiting diggy to arrive " + tries);
-                diggyHere = _scanner.isDiggyExactlyHere(vertex._coords);
-              } while (!diggyHere && tries < 30);
+            if (checkIsSafeToClick(vertex._coords.x + 30, vertex._coords.y + 30)) {
+              _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
+              if (isWalkable(vertex, preClick) || (isSlow() && isWalkable(vertex, preClick))) {
+                // wait until diggy arrives
+                int tries = 0;
+                boolean diggyHere = false;
+                do {
+                  _mouse.delay(250);
+                  if (tries++ > 5 && tries % 4 == 0)
+                    LOGGER.info("waiting diggy to arrive " + tries);
+                  diggyHere = _scanner.isDiggyExactlyHere(vertex._coords);
+                } while (!diggyHere && tries < 30);
 
-              // if (diggyHere)
-              vertex._state = State.VISITED;
-              _support.firePropertyChange("CAPTURE", null, vertex);
-              // else
-              // vertex._state = State.CHECKED;
+                // if (diggyHere)
+                vertex._state = State.VISITED;
+                _support.firePropertyChange("CAPTURE", null, vertex);
+                // else
+                // vertex._state = State.CHECKED;
 
-              // TODO Do something about errors
+                // TODO Do something about errors
 
-              // if (_scanner.isDiggyExactlyHere(vertex._coords)) {
-              // vertex._state = State.VISITED;
-              // } else {
-              // vertex._state = State.CHECKEDTWICE;
-              // }
-              // tadaaaa
+                // if (_scanner.isDiggyExactlyHere(vertex._coords)) {
+                // vertex._state = State.VISITED;
+                // } else {
+                // vertex._state = State.CHECKEDTWICE;
+                // }
+                // tadaaaa
 
-              _support.firePropertyChange("STATE_CHANGED", null, vertex);
-              _support.firePropertyChange("DIGGY", null, vertex);
+                _support.firePropertyChange("STATE_CHANGED", null, vertex);
+                _support.firePropertyChange("DIGGY", null, vertex);
 
-              checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
-              checkNeighbor(_graph, vertex, 1, 0);
-              checkNeighbor(_graph, vertex, 0, 1);
-              checkNeighbor(_graph, vertex, -1, 0);
+                checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
+                checkNeighbor(_graph, vertex, 1, 0);
+                checkNeighbor(_graph, vertex, 0, 1);
+                checkNeighbor(_graph, vertex, -1, 0);
 
-            } else {
-              if (_gates) {
-                LOGGER.info("CHECK LOADING...");
-                if (checkIsLoading()) {
-                  recoverFromGate(vertex);
-                  return false;
-                } else {
-                  if (_slow)
-                    _mouse.delay(1000);
+              } else {
+                if (_gates) {
+                  LOGGER.info("CHECK LOADING...");
+                  if (checkIsLoading()) {
+                    recoverFromGate(vertex);
+                    return false;
+                  } else {
+                    if (_slow)
+                      _mouse.delay(1000);
+                  }
                 }
-              }
-              vertex._state = State.OBSTACLE;
-              _support.firePropertyChange("STATE_CHANGED", null, vertex);
-              return false;
+                vertex._state = State.OBSTACLE;
+                _support.firePropertyChange("STATE_CHANGED", null, vertex);
+                return false;
 
+              }
+            } else {
+              return false;
             }
           }
         } catch (IOException | AWTException e1) {
@@ -215,6 +226,20 @@ public class GraphMazeRunner {
         return true;
       } else
         return false;
+    }
+
+    private boolean checkIsSafeToClick(int x, int y) throws RobotInterruptedException, IOException, AWTException {
+      Rectangle area = _scanner.generateWindowedArea(312, 173);
+      area.y = _scanner.getTopLeft().y + 231 + 100;
+      area.x += 26;
+      area.width = 114;
+      area.height = 68;
+      if (_scanner.isPixelInArea(new Pixel(x, y), area)) {
+        // ok check is OK button in the area
+        Pixel p = _scanner.scanOne("okButton.bmp", area, false);
+        return p == null;
+      }
+      return true;
     }
 
     private void recoverFromGate(Position vertex) throws RobotInterruptedException, IOException, AWTException {
@@ -816,7 +841,7 @@ public class GraphMazeRunner {
     // LOGGER.info("sign popup...");
     long start = System.currentTimeMillis();
     Rectangle area = _scanner.generateWindowedArea(137, 325);
-    //_scanner.writeArea(area, "cleared1Area.bmp");
+    // _scanner.writeArea(area, "cleared1Area.bmp");
     Pixel p = _scanner.scanOneFast("cleared.bmp", area, false);
     if (p != null) {
       _mouse.click(p.x + 42, p.y + 166);
@@ -830,10 +855,11 @@ public class GraphMazeRunner {
       area.height = 62;
       area.x += 100;
       area.width = 150;
-      //_scanner.writeArea(area, "cleared2Area.bmp");
-      p = _scanner.scanOneFast("clearedRep.bmp", area, false);
+      // _scanner.writeArea(area, "cleared2Area.bmp");
+      p = _scanner.scanOne("clearedRep.bmp", area, false);
       if (p != null) {
-        _mouse.click(p.x + 47, p.y + 248);//ok button could be elsewhere!!!
+        LOGGER.info("click congrats popup2");
+        _mouse.click(p.x + 47, p.y + 248);// ok button could be elsewhere!!!
       }
     }
     LOGGER.info("time: " + (System.currentTimeMillis() - start));
