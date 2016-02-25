@@ -143,6 +143,11 @@ public class GraphMazeRunner {
             _mouse.delay(_pauseTime * 1000);
           }
           // END OF GREEN
+          
+          if (checkIsReady()) {
+            _stopIt = true;
+            return false;
+          }
 
           if (_popups && checkPopups()) {
             _mouse.delay(250);
