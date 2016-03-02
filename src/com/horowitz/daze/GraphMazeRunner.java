@@ -553,7 +553,7 @@ public class GraphMazeRunner {
 
           if (lookForGreenHere(neighborPos._coords)) {
             neighborPos._state = State.GREEN;
-            LOGGER.info("GREEN " + neighborPos);
+            LOGGER.fine("GREEN " + neighborPos);
             _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
             // if (isGate(p)) { // TODO not reliable! to be improved
             // LOGGER.info("It is gate!!!");
@@ -564,7 +564,7 @@ public class GraphMazeRunner {
 
           if (isGate(neighborPos._coords)) { // TODO not reliable! to be
                                              // improved
-            LOGGER.info("It is gate!!!");
+            LOGGER.info("It's a gate!!!");
             neighborPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
             _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
           }
