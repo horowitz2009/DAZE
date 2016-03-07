@@ -86,7 +86,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.27";
+  private static String APP_TITLE = "Daze v0.28a";
 
   private Settings _settings;
   private Stats _stats;
@@ -1426,6 +1426,20 @@ public class MainFrame extends JFrame {
                           LOGGER.info("maze runner still running...");
                       }
                     }
+
+                    // REFRESH
+                    if (_autoRefreshToggle.isSelected() && System.currentTimeMillis() - _fstart >= 10 * 60000) {
+                      LOGGER.info("refresh time...");
+                      try {
+                        refresh(false);
+                      } catch (AWTException e) {
+                        LOGGER.info("FAILED TO refresh: " + e.getMessage());
+                      } catch (IOException e) {
+                        LOGGER.info("FAILED TO refresh: " + e.getMessage());
+                      }
+                      _fstart = System.currentTimeMillis();
+                    }
+
                     LOGGER.info("MOVE TO NEXT PLACE...");
                   }
                 } catch (PlaceUnreachableException e) {
