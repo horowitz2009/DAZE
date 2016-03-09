@@ -1262,7 +1262,8 @@ public class ScreenScanner {
       int tries = 0;
       do {
         dragMapToRight();
-        _mouse.delay(300);
+        _mouse.mouseMove(_safePoint);
+        _mouse.delay(1000);
         p = scanOne("map/scamp.bmp", _scampArea, false);
         tries++;
       } while (p == null && tries < 5);
