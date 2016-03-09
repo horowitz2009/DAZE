@@ -86,7 +86,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.28a";
+  private static String APP_TITLE = "Daze v0.28b";
 
   private Settings _settings;
   private Stats _stats;
@@ -1372,6 +1372,7 @@ public class MainFrame extends JFrame {
                     LOGGER.info("WORKING ON " + agenda.getMap() + "-" + agenda.getPlaceName());
                     // do this place
                     _fstart = System.currentTimeMillis();
+                    long start = System.currentTimeMillis();
                     Thread runMazeThread = new Thread(new Runnable() {
                       public void run() {
                         try {
@@ -1410,7 +1411,7 @@ public class MainFrame extends JFrame {
                       }
                       // LOGGER.info("tik tak... " + (System.currentTimeMillis()
                       // - _fstart) / 1000);
-                    } while (System.currentTimeMillis() - _fstart < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);// 20
+                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);// 20
                                                                                 // minutes
 
                     // THAT'S IT. STOP IT IF NOT DONE ALREADY
@@ -1428,7 +1429,7 @@ public class MainFrame extends JFrame {
                     }
 
                     // REFRESH
-                    if (_autoRefreshToggle.isSelected() && System.currentTimeMillis() - _fstart >= 10 * 60000) {
+                    if (_autoRefreshToggle.isSelected() && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
                       LOGGER.info("refresh time...");
                       try {
                         refresh(false);
