@@ -164,7 +164,8 @@ public class AgendaEditor extends JPanel {
       DMap map = (DMap) aev._mapCB.getSelectedItem();
       Place place = (Place) aev._placeCB.getSelectedItem();
       AgendaEntry ae = new AgendaEntry();
-      ae.setMap(map);
+      ae.setMapName(map.getName());
+      ae.setWorldName(map.getWorld());
       ae.setPlaceName(place.getName());
       entries.add(ae);
     }
@@ -182,8 +183,8 @@ public class AgendaEditor extends JPanel {
         AgendaEntryView aev = new AgendaEntryView();
         ComboBoxModel<DMap> mapModel = aev._mapCB.getModel();
         for (int i = 0; i < mapModel.getSize(); i++) {
-          if (mapModel.getElementAt(i).getName().equals(ae.getMap().getName())
-              && mapModel.getElementAt(i).getWorld().equals(ae.getMap().getWorld())) {
+          if (mapModel.getElementAt(i).getName().equals(ae.getMapName())
+              && mapModel.getElementAt(i).getWorld().equals(ae.getWorldName())) {
             aev._mapCB.setSelectedIndex(i);
             aev.loadPlaces(mapModel.getElementAt(i));
             break;
@@ -214,26 +215,29 @@ public class AgendaEditor extends JPanel {
     comp.setFont(comp.getFont().deriveFont(size));
   }
 
-  class MyMouseListener extends  MouseAdapter implements MouseListener, MouseMotionListener {
+  class MyMouseListener extends MouseAdapter implements MouseListener, MouseMotionListener {
     @Override
     public void mousePressed(MouseEvent e) {
       System.err.println("PRESSED");
     }
+
     @Override
     public void mouseDragged(MouseEvent e) {
       System.err.println("DRAGGED");
     }
+
     @Override
     public void mouseMoved(MouseEvent e) {
       System.err.println("MOVED");
     }
+
     @Override
     public void mouseReleased(MouseEvent e) {
       System.err.println("RELEASED");
     }
-    
+
   }
-  
+
   class AgendaEntryView extends Box {
 
     private static final long serialVersionUID = -1413464832208854042L;
@@ -305,8 +309,7 @@ public class AgendaEditor extends JPanel {
       }
 
     }
-    
-    
+
   }
 
   class AddAction extends AbstractAction {

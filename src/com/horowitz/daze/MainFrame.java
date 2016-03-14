@@ -86,7 +86,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.28c";
+  private static String APP_TITLE = "Daze v0.30";
 
   private Settings _settings;
   private Stats _stats;
@@ -1367,9 +1367,10 @@ public class MainFrame extends JFrame {
               for (AgendaEntry agenda : agendas) {
                 handlePopups();
                 try {
-                  boolean success = mapManager.gotoPlace(agenda.getMap(), agenda.getPlaceName());
+                  boolean success = mapManager.gotoPlace(agenda.getWorldName(), agenda.getMapName(),
+                      agenda.getPlaceName());
                   if (success) {
-                    LOGGER.info("WORKING ON " + agenda.getMap() + "-" + agenda.getPlaceName());
+                    LOGGER.info("WORKING ON " + agenda.toString());
                     // do this place
                     _fstart = System.currentTimeMillis();
                     long start = System.currentTimeMillis();
@@ -1411,8 +1412,7 @@ public class MainFrame extends JFrame {
                       }
                       // LOGGER.info("tik tak... " + (System.currentTimeMillis()
                       // - _fstart) / 1000);
-                    } while (System.currentTimeMillis() - _fstart < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);// 20
-                                                                                // minutes
+                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);
 
                     // THAT'S IT. STOP IT IF NOT DONE ALREADY
                     if (isRunning("RUN_MAZE")) {
@@ -1429,7 +1429,8 @@ public class MainFrame extends JFrame {
                     }
 
                     // REFRESH
-                    if (_autoRefreshToggle.isSelected() && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
+                    if (_autoRefreshToggle.isSelected()
+                        && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
                       LOGGER.info("refresh time...");
                       try {
                         refresh(false);
