@@ -86,7 +86,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.30";
+  private static String APP_TITLE = "Daze v0.30a";
 
   private Settings _settings;
   private Stats _stats;
@@ -562,7 +562,7 @@ public class MainFrame extends JFrame {
         }
       } else {
         LOGGER.info("CAN'T FIND THE ROCK!!!");
-        handlePopups();
+        handlePopups(false);
         if (attempt <= 2)
           recalcPositions(false, ++attempt);
         else
@@ -1291,7 +1291,7 @@ public class MainFrame extends JFrame {
     long now = System.currentTimeMillis();
     _mouse.checkUserMovement();
     // // 1. SCAN
-    handlePopups();
+    handlePopups(false);
 
     // STUCK PREVENTION - 10min inactivity -> refresh
     LOGGER.info("LTA: " + (now - _lastTimeActivity) + " > " + (10 * 60 * 1000) + "? "
@@ -1365,7 +1365,7 @@ public class MainFrame extends JFrame {
             do {
               List<AgendaEntry> agendas = _agenda.getEntries();
               for (AgendaEntry agenda : agendas) {
-                handlePopups();
+                handlePopups(false);
                 try {
                   boolean success = mapManager.gotoPlace(agenda.getWorldName(), agenda.getMapName(),
                       agenda.getPlaceName());
@@ -1494,10 +1494,14 @@ public class MainFrame extends JFrame {
       for (int i = 0; i < 17 && !done; i++) {
         LOGGER.info("after refresh recovery try " + (i + 1));
 
-        handlePopups();
-
+        handlePopups(i > 10);
+        _mouse.delay(200);
+        handlePopups(i > 10);
+        _mouse.delay(200);
+        handlePopups(i > 10);
+        _mouse.delay(200);
         // LOCATE THE GAME
-        if (_scanner.locateGameArea(false)) {
+        if (_scanner.locateGameArea(false) && !_scanner.isWide()) {
           LOGGER.info("Game located successfully!");
           done = true;
         } else {
@@ -1556,20 +1560,26 @@ public class MainFrame extends JFrame {
     _agendaManagerUI.setAgenda(agName);
   }
 
-  private void handlePopups() throws RobotInterruptedException {
+  private void handlePopups(boolean wide) throws RobotInterruptedException {
     try {
       LOGGER.info("Popups...");
       boolean found = false;
       Pixel p = null;
+      Rectangle area = _scanner.generateWindowedArea(204, 648);// was 486
       if (_scanner.isOptimized()) {
         _mouse.mouseMove(_scanner.getParkingPoint());
         _mouse.delay(300);
+      } else {
+        wide = true;
+      }
+      
+      long start = System.currentTimeMillis();
+      area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
+      
+      if (wide) {
+        area = _scanner.generateWindowedArea(800, _scanner.getGameHeight());
       }
 
-      long start = System.currentTimeMillis();
-      Rectangle area = _scanner.generateWindowedArea(204, 648);// was 486
-      area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
-      area.width = _scanner.getGameHeight() / 2;
       p = _scanner.scanOneFast("share.bmp", area, false);
       if (p != null) {
         _mouse.click(p.x + 34, p.y + 11);
@@ -1618,6 +1628,11 @@ public class MainFrame extends JFrame {
     boolean ping2 = "true".equalsIgnoreCase(_settings.getProperty("ping2"));
     if (ping2 != _ping2Toggle.isSelected()) {
       _ping2Toggle.setSelected(ping2);
+    }
+    
+    boolean ar = "true".equalsIgnoreCase(_settings.getProperty("autoRefresh"));
+    if (ar != _autoRefreshToggle.isSelected()) {
+      _autoRefreshToggle.setSelected(ar);
     }
 
     // agenda

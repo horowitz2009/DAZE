@@ -108,6 +108,12 @@ public class ScreenScanner {
 
   public Rectangle _scampArea;
 
+  private boolean _wide;
+
+  public boolean isWide() {
+    return _wide;
+  }
+
   public Pixel[] getShipLocations() {
     return _shipLocations;
   }
@@ -139,6 +145,8 @@ public class ScreenScanner {
   }
 
   public Rectangle generateWindowedArea(int width, int height) {
+    if (_wide)
+      width += 400;
     int xx = (getGameWidth() - width) / 2;
     int yy = (getGameHeight() - height) / 2;
     return new Rectangle(_tl.x + xx, _tl.y + yy, width, height);
@@ -161,10 +169,10 @@ public class ScreenScanner {
     xx = (getGameWidth() - 140) / 2;
     _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
 
-    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144, _tl.y, 400 - 144, getGameWidth() / 2 + 50);
+    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144 - (_wide?200:0), _tl.y, 400 - 144 + (_wide?400:0), getGameHeight() / 2 + 50);
     _diggyCaveArea = new Rectangle(_tl.x + getGameWidth() / 2 - 114, _tl.y + 53, 228, 171);
 
-    xx = (getGameWidth() - 200) / 2;
+    xx = (getGameWidth() - 200 - (_wide?400:0)) / 2;
     _buttonArea = new Rectangle(_tl.x + xx, _br.y - (70 + 87), xx, 87);
 
     getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
@@ -387,9 +395,11 @@ public class ScreenScanner {
         Pixel p = _comparator.findImage(id.getImage(), screen, id.getColorToBypass());
         if (p != null) {
           _br.x = _br.x + p.x + 41;
+          _wide = false;
         } else {
           LOGGER.warning("GEMS not found!");
           _br.x = screenSize.width - _tl.x - 1;
+          _wide = true;
         }
         //_br.y += 48;
         LOGGER.fine("FINAL GAME COORDINATES: " + _tl + " - " + _br);
