@@ -9,17 +9,19 @@ public class AgendaEntry implements Cloneable, Serializable {
   private String worldName;
   private String mapName;
   private String placeName;
+  private String directions;
 
   public AgendaEntry(DMap map, String placeName) {
     super();
     this.placeName = placeName;
   }
 
-  public AgendaEntry(String worldName, String mapName, String placeName) {
+  public AgendaEntry(String worldName, String mapName, String placeName, String directions) {
     super();
     this.worldName = worldName;
     this.mapName = mapName;
     this.placeName = placeName;
+    this.directions = directions;
   }
 
   public AgendaEntry() {
@@ -40,6 +42,14 @@ public class AgendaEntry implements Cloneable, Serializable {
 
   public void setPlaceName(String placeName) {
     this.placeName = placeName;
+  }
+
+  public String getDirections() {
+    return directions;
+  }
+
+  public void setDirections(String directions) {
+    this.directions = directions;
   }
 
   public String getMapName() {

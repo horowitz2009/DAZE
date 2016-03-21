@@ -86,7 +86,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.32";
+  private static String APP_TITLE = "Daze v0.33";
 
   private Settings _settings;
   private Stats _stats;
@@ -1365,6 +1365,7 @@ public class MainFrame extends JFrame {
             do {
               List<AgendaEntry> agendas = _agenda.getEntries();
               for (AgendaEntry agenda : agendas) {
+                final String directions = agenda.getDirections();
                 handlePopups(false);
                 try {
                   boolean success = mapManager.gotoPlace(agenda.getWorldName(), agenda.getMapName(),
@@ -1387,6 +1388,9 @@ public class MainFrame extends JFrame {
                           } while (p == null && tries < 22);
                           if (p != null) {
                             LOGGER.info("TRAVERSE START!");
+                            if (directions != null && directions.length() == 4) {
+                              _mazeRunner.setDirections(Direction.buildDirections(directions));
+                            }
                             _mazeRunner.traverse(p);
                             LOGGER.info("TARVERSE DONE!");
                           }

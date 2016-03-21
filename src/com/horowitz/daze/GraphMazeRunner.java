@@ -91,7 +91,7 @@ public class GraphMazeRunner {
               _stopIt = true;
               return false;
             }
-            
+
             // _mouse.click(_start._coords.x + vertex._row * 60 + 30,
             // _start._coords.y + vertex._col * 60 + 30);
 
@@ -143,7 +143,7 @@ public class GraphMazeRunner {
             _mouse.delay(_pauseTime * 1000);
           }
           // END OF GREEN
-          
+
           if (checkIsReady()) {
             _stopIt = true;
             return false;
@@ -159,10 +159,9 @@ public class GraphMazeRunner {
             _support.firePropertyChange("DIGGY", State.START, vertex);
             // _support.firePropertyChange("STATE_CHANGED", State.START,
             // vertex);
-            checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
-            checkNeighbor(_graph, vertex, 1, 0);
-            checkNeighbor(_graph, vertex, 0, 1);
-            checkNeighbor(_graph, vertex, -1, 0);
+            for (Direction direction : _directions) {
+              checkNeighbor(_graph, vertex, direction.getxOff(), direction.getyOff());
+            }
           } else {
 
             // _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
@@ -199,10 +198,9 @@ public class GraphMazeRunner {
                 _support.firePropertyChange("STATE_CHANGED", null, vertex);
                 _support.firePropertyChange("DIGGY", null, vertex);
 
-                checkNeighbor(_graph, vertex, 0, -1);// north was 3rd
-                checkNeighbor(_graph, vertex, 1, 0);
-                checkNeighbor(_graph, vertex, 0, 1);
-                checkNeighbor(_graph, vertex, -1, 0);
+                for (Direction direction : _directions) {
+                  checkNeighbor(_graph, vertex, direction.getxOff(), direction.getyOff());
+                }
 
               } else {
                 if (_gates) {
@@ -597,6 +595,7 @@ public class GraphMazeRunner {
 
   private List<Position> _searchSequence;
   private Set<Position> _explored;
+  private Direction[] _directions;
 
   private int _pauseTime = 2;
 
@@ -605,6 +604,7 @@ public class GraphMazeRunner {
 
     _support = new PropertyChangeSupport(this);
     _scanner = scanner;
+    _directions = new Direction[] { Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST };
     _mouse = _scanner.getMouse();
     _mouse.addPropertyChangeListener("DELAY", new PropertyChangeListener() {
 
@@ -623,6 +623,14 @@ public class GraphMazeRunner {
     _searchSequence = new ArrayList<Position>();
     setSearchSequence2();
 
+  }
+
+  public Direction[] getDirections() {
+    return _directions;
+  }
+
+  public void setDirections(Direction[] directions) {
+    _directions = directions;
   }
 
   private void setSearchSequence2() {

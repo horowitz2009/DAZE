@@ -167,6 +167,31 @@ public class AgendaEditor extends JPanel {
       ae.setMapName(map.getName());
       ae.setWorldName(map.getWorld());
       ae.setPlaceName(place.getName());
+      String dd = aev._directionsTF.getText();
+      if (dd == null)
+        dd = "NESW";
+      if (dd.length() == 0)
+        dd = "NESW";
+
+      dd = dd.toUpperCase();
+      
+      String res = dd;
+      if (dd.length() > 0 && dd.length() != 4) {
+        res = "";
+        String ss = "NESW";
+        for (int j = 0; j < dd.length() && ss.length() > 0; j++) {
+          String d = dd.substring(j, j + 1);
+          res += d;
+          int ind = ss.indexOf(d);
+          if (ind >= 0)
+            ss = ss.substring(0, ind) + ss.substring(ind + 1);
+        }
+        res += ss;
+      }
+      
+
+      ae.setDirections(res);
+      aev._directionsTF.setText(res);
       entries.add(ae);
     }
     egenda.setEntries(entries);
@@ -197,7 +222,7 @@ public class AgendaEditor extends JPanel {
             break;
           }
         }
-        // aev._placeField.setText(ae.getPlaceName());
+        aev._directionsTF.setText(ae.getDirections());
         _box.add(aev);
       }
     } else {
@@ -246,7 +271,7 @@ public class AgendaEditor extends JPanel {
 
     JComboBox<DMap> _mapCB;
     JComboBox<Place> _placeCB;
-    JTextField _placeField;
+    JTextField _directionsTF;
     JLabel _anchor;
 
     public AgendaEntryView() {
@@ -277,9 +302,9 @@ public class AgendaEditor extends JPanel {
       _placeCB = new JComboBox<Place>();
       add(_placeCB);
       // dest
-      _placeField = new JTextField(15);
+      _directionsTF = new JTextField(5);
 
-      // add(_placeField);
+      add(_directionsTF);
 
       _mapCB.addItemListener(new ItemListener() {
 
@@ -370,6 +395,20 @@ public class AgendaEditor extends JPanel {
   }
 
   public static void main(String[] args) {
+    String dd = "W";
+    String res = "";
+    if (dd.length() > 0 && dd.length() != 4) {
+      String ss = "NESW";
+      for (int j = 0; j < dd.length() && ss.length() > 0; j++) {
+        String d = dd.substring(j, j + 1);
+        res += d;
+        int ind = ss.indexOf(d);
+        if (ind >= 0)
+          ss = ss.substring(0, ind) + ss.substring(ind + 1);
+      }
+      res += ss;
+    }
+    System.out.println(res);
 
     try {
       JFrame frame = new JFrame("TEST");
