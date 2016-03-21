@@ -1286,7 +1286,7 @@ public class ScreenScanner {
     // make sure the map is fully dragged to its left part
     int x1 = _scanArea.x + 5;
     int x2 = _scanArea.x + _scanArea.width / 2 + 5;
-    int y = _scanArea.y + _scanArea.height - 15;
+    int y = _scanArea.y + _scanArea.height - 35;
     _mouse.drag(x1, y, x2, y);
     _mouse.delay(100);
     // _mouse.drag(x1, y, x2, y);

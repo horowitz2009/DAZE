@@ -133,7 +133,7 @@ public class MapManager {
       // need dragging
       int x1;
       int x2;
-      int y = area.y + area.height - 15;
+      int y = area.y + area.height - 35;
       int d = distance / area.width;
       int rest = distance - (d * area.width);
       for (int i = 0; i < d; i++) {
