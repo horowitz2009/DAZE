@@ -171,6 +171,8 @@ public class MapManager {
       return false;
     } else {
       _mouse.click(p);
+      _mouse.delay(10);
+      _mouse.mouseMove(_scanner.getSafePoint());
       _mouse.delay(1000);
       // _scanner.writeArea(_scanner._diggyCaveArea, "diggyCave.png");
       Pixel pc = _scanner.scanOne("map/diggyCave.bmp", null, false);
