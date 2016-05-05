@@ -65,6 +65,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import Catalano.Core.IntRange;
+import Catalano.Imaging.FastBitmap;
+import Catalano.Imaging.Filters.ColorFiltering;
+
 import com.horowitz.commons.DateUtils;
 import com.horowitz.commons.MouseRobot;
 import com.horowitz.commons.MyImageIO;
@@ -78,6 +82,7 @@ import com.horowitz.daze.map.Agenda;
 import com.horowitz.daze.map.AgendaEntry;
 import com.horowitz.daze.map.MapManager;
 import com.horowitz.daze.map.PlaceUnreachableException;
+import com.horowitz.daze.ocr.OCREnergy;
 import com.horowitz.ocr.OCRB;
 
 public class MainFrame extends JFrame {
@@ -172,6 +177,7 @@ public class MainFrame extends JFrame {
 
       _stats = new Stats();
       _scanner = new ScreenScanner(_settings);
+      ocrEnergy = new OCREnergy(_scanner.getComparator());
       _scanner.setDebugMode(_testMode);
       _matcher = _scanner.getMatcher();
       _mouse = _scanner.getMouse();
@@ -748,6 +754,28 @@ public class MainFrame extends JFrame {
           doAgenda();
         }
 
+      };
+      mainToolbar1.add(action);
+    }
+    
+    // TEST scan energy
+    {
+      AbstractAction action = new AbstractAction("SE") {
+        public void actionPerformed(ActionEvent e) {
+          Thread t = new Thread(new Runnable() {
+            public void run() {
+              try {
+                scanEnergy();
+              } catch (AWTException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+              }
+              
+            }
+          });
+          t.start();
+        }
+        
       };
       mainToolbar1.add(action);
     }
@@ -1411,6 +1439,7 @@ public class MainFrame extends JFrame {
                     // sleep
                     do {
                       _mouse.delay(1000, false);// DO NOT INTTERRUPT!!!
+                      scanEnergy();//EXPERIMENTAL!!!
                       if (!isRunning("RUN_MAZE")) {
                         break;
                       }
@@ -1576,10 +1605,10 @@ public class MainFrame extends JFrame {
       } else {
         wide = true;
       }
-      
+
       long start = System.currentTimeMillis();
       area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
-      
+
       if (wide) {
         area = _scanner.generateWindowedArea(800, _scanner.getGameHeight());
       }
@@ -1633,7 +1662,7 @@ public class MainFrame extends JFrame {
     if (ping2 != _ping2Toggle.isSelected()) {
       _ping2Toggle.setSelected(ping2);
     }
-    
+
     boolean ar = "true".equalsIgnoreCase(_settings.getProperty("autoRefresh"));
     if (ar != _autoRefreshToggle.isSelected()) {
       _autoRefreshToggle.setSelected(ar);
@@ -1864,6 +1893,18 @@ public class MainFrame extends JFrame {
       }
     });
     return _agendaManagerUI;
+  }
+
+  private OCREnergy ocrEnergy;
+
+  private void scanEnergy() throws AWTException {
+    Rectangle energyArea = _scanner.getEnergyArea();
+    if (energyArea != null) {
+      BufferedImage image = new Robot().createScreenCapture(energyArea);
+
+      String res = ocrEnergy.scanImage(image);
+      LOGGER.info("ENERGY: " + res);
+    }
   }
 
 }

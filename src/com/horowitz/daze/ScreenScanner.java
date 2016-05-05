@@ -88,7 +88,7 @@ public class ScreenScanner {
 
   private Rectangle _rightNumbersArea;
 
-  private Pixel _sailorsPos;
+  private Rectangle _energyArea;
 
   private Rectangle _buttonArea;
 
@@ -162,6 +162,7 @@ public class ScreenScanner {
 
     _scanArea = new Rectangle(_tl.x + 120, _tl.y + 85, getGameWidth() - 120 - 120, getGameHeight() - 85 - 85);
     _ping2Area = new Rectangle(_tl.x + 120, _tl.y + 19, getGameWidth() - 120 - 120, getGameHeight() - 85 - 19);
+    _energyArea = new Rectangle(_tl.x + getGameWidth() / 2 - 18, _tl.y + 21, 200, 17);
 
     _scampArea = new Rectangle(_scanArea.x + 280, _scanArea.y + 415, getGameWidth() - 120 - 120 - 280, 65);
     // writeArea(_scanArea, "scanArea.png");
@@ -1113,8 +1114,8 @@ public class ScreenScanner {
     return _rightNumbersArea;
   }
 
-  public Pixel getSailorsPos() {
-    return _sailorsPos;
+  public Rectangle getEnergyArea() {
+    return _energyArea;
   }
 
   public Pixel scanPrecise(String filename, Rectangle area) throws AWTException, IOException, RobotInterruptedException {
