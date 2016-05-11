@@ -164,6 +164,9 @@ public class MapManager {
   }
 
   private boolean checkPlaceIsPlayable(Pixel p) throws RobotInterruptedException, IOException, AWTException {
+    _mouse.mouseMove(_scanner.getSafePoint());
+    _mouse.delay(100);
+    
     Rectangle area = new Rectangle(p.x + -35, p.y - 35, 70, 70);
     Pixel pd = _scanner.scanOne("map/placeDone.bmp", area, false);
     if (pd != null) {
