@@ -1732,6 +1732,9 @@ public class MainFrame extends JFrame {
         stopMagic();
         doAgenda();
         captureScreen(null);
+      } else if (r.startsWith("click")) {
+        service.inProgress(r);
+        processClick(r);
 
       } else if (r.startsWith("refresh")) {
         service.inProgress(r);
@@ -1755,6 +1758,21 @@ public class MainFrame extends JFrame {
     }
 
     // service.purgeOld(1000 * 60 * 60);// 1 hour old
+  }
+  
+  private void processClick(String r) {
+    try {
+      String[] ss = r.split("_");
+      int x = Integer.parseInt(ss[1]);
+      int y = Integer.parseInt(ss[2]);
+      _mouse.click(x, y);
+      try {
+        _mouse.delay(1000);
+      } catch (RobotInterruptedException e) {
+      }
+    } finally {
+      new Service().done(r);
+    }
   }
 
   private void runSettingsListener() {
