@@ -170,10 +170,11 @@ public class ScreenScanner {
     xx = (getGameWidth() - 140) / 2;
     _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
 
-    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144 - (_wide?200:0), _tl.y, 400 - 144 + (_wide?400:0), getGameHeight() / 2 + 50);
+    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144 - (_wide ? 200 : 0), _tl.y, 400 - 144 + (_wide ? 400
+        : 0), getGameHeight() / 2 + 50);
     _diggyCaveArea = new Rectangle(_tl.x + getGameWidth() / 2 - 114, _tl.y + 53, 228, 171);
 
-    xx = (getGameWidth() - 200 - (_wide?400:0)) / 2;
+    xx = (getGameWidth() - 200 - (_wide ? 400 : 0)) / 2;
     _buttonArea = new Rectangle(_tl.x + xx, _br.y - (70 + 87), xx, 87);
 
     getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
@@ -385,6 +386,10 @@ public class ScreenScanner {
     } else {
       boolean found = _gameLocator.locateGameArea(new ImageData("beta.bmp", null, _comparator, 0, 0), new ImageData(
           "camp.bmp", null, _comparator, 25, 48), false);
+      if (!found) {
+        _gameLocator.setTopLeft(new Pixel(0, 0));
+        found = true;
+      }
       if (found) {
         _tl = _gameLocator.getTopLeft();
         _br = _gameLocator.getBottomRight();
@@ -402,7 +407,7 @@ public class ScreenScanner {
           _br.x = screenSize.width - _tl.x - 1;
           _wide = true;
         }
-        //_br.y += 48;
+        // _br.y += 48;
         LOGGER.fine("FINAL GAME COORDINATES: " + _tl + " - " + _br);
 
         setKeyAreas();
@@ -1198,14 +1203,14 @@ public class ScreenScanner {
     if (mapMode) {
       // GOOD
       LOGGER.info("MAP MODE! " + tries);
-      
+
       if (position >= 0) {
-        //ensure world
-        //HARDCODED 4 worlds. I'm too lazy to make it right
+        // ensure world
+        // HARDCODED 4 worlds. I'm too lazy to make it right
         int y = 282;
         int slot = 0;
         if ("egypt".equalsIgnoreCase(map.getWorld())) {
-          slot = 0;  
+          slot = 0;
         } else if ("scandinavia".equalsIgnoreCase(map.getWorld())) {
           slot = 1;
         } else if ("china".equalsIgnoreCase(map.getWorld())) {
@@ -1216,10 +1221,7 @@ public class ScreenScanner {
         _mouse.click(_br.x - 37, _tl.y + y + 36 * slot);
         _mouse.delay(2000);
       }
-      
-      
-      
-      
+
       // click << button
       if (position > 90) {
         _mouse.click(_eastButtons.x + 12, _eastButtons.y + 63);
@@ -1279,7 +1281,7 @@ public class ScreenScanner {
         tries++;
       } while (p == null && tries < 5);
     }
-    //p = scanOne("map/scamp.bmp", _scampArea, false);
+    // p = scanOne("map/scamp.bmp", _scampArea, false);
     return p;
   }
 
