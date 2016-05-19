@@ -757,7 +757,7 @@ public class MainFrame extends JFrame {
       };
       mainToolbar1.add(action);
     }
-    
+
     // TEST scan energy
     {
       AbstractAction action = new AbstractAction("SE") {
@@ -770,12 +770,12 @@ public class MainFrame extends JFrame {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
               }
-              
+
             }
           });
           t.start();
         }
-        
+
       };
       mainToolbar1.add(action);
     }
@@ -1389,16 +1389,20 @@ public class MainFrame extends JFrame {
       Thread myThread = new Thread(new Runnable() {
         @Override
         public void run() {
+          _mazeRunner.setStopIt(false);
           try {
             do {
               List<AgendaEntry> agendas = _agenda.getEntries();
               for (AgendaEntry agenda : agendas) {
+                if (_stopAllThreads)
+                  break;
+
                 final String directions = agenda.getDirections();
                 handlePopups(false);
                 try {
                   boolean success = mapManager.gotoPlace(agenda.getWorldName(), agenda.getMapName(),
                       agenda.getPlaceName());
-                  if (success) {
+                  if (success && !_stopAllThreads) {
                     LOGGER.info("WORKING ON " + agenda.toString());
                     // do this place
                     _fstart = System.currentTimeMillis();
@@ -1439,13 +1443,15 @@ public class MainFrame extends JFrame {
                     // sleep
                     do {
                       _mouse.delay(1000, false);// DO NOT INTTERRUPT!!!
-                      scanEnergy();//EXPERIMENTAL!!!
+                      if (false)
+                        scanEnergy();// EXPERIMENTAL!!!
                       if (!isRunning("RUN_MAZE")) {
                         break;
                       }
                       // LOGGER.info("tik tak... " + (System.currentTimeMillis()
                       // - _fstart) / 1000);
-                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);
+                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30)
+                        * 60000);
 
                     // THAT'S IT. STOP IT IF NOT DONE ALREADY
                     if (isRunning("RUN_MAZE")) {
@@ -1462,8 +1468,8 @@ public class MainFrame extends JFrame {
                     }
 
                     // REFRESH
-                    if (_autoRefreshToggle.isSelected()
-                        && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
+                    if (_autoRefreshToggle.isSelected() && System.currentTimeMillis()
+                        - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
                       LOGGER.info("refresh time...");
                       try {
                         refresh(false);
@@ -1482,6 +1488,7 @@ public class MainFrame extends JFrame {
                   refresh(false);
                 }
               }
+              LOGGER.info("stop all threads: " + _stopAllThreads);
             } while (!_stopAllThreads);
           } catch (RobotInterruptedException e) {
             LOGGER.info("INTERRUPTED!");
@@ -1491,7 +1498,7 @@ public class MainFrame extends JFrame {
             e.printStackTrace();
           }
         }
-      }, "GOTOMAP");
+      }, "MAGIC");
 
       myThread.start();
     }
@@ -1677,20 +1684,22 @@ public class MainFrame extends JFrame {
   }
 
   private void stopMagic() {
+    _mazeRunner.setStopIt(true);
     _stopAllThreads = true;
     LOGGER.info("Stopping...");
     int tries = 10;
     boolean stillRunning = true;
+    _mouse.mouseMove(_scanner.getSafePoint());
     for (int i = 0; i < tries && stillRunning; ++i) {
-      _mouse.mouseMove(_scanner.getSafePoint());
       stillRunning = isRunning("MAGIC");
       if (stillRunning) {
         LOGGER.info("Magic still working...");
         try {
-          for (int j = 0; j < 150; j++) {
-            _mouse.mouseMove(_scanner.getSafePoint());
-            Thread.sleep(100);
-          }
+          Thread.sleep(5000);
+          // for (int j = 0; j < 150; j++) {
+          // _mouse.mouseMove(_scanner.getSafePoint());
+          // Thread.sleep(100);
+          // }
         } catch (InterruptedException e) {
         }
       } else {
@@ -1718,6 +1727,15 @@ public class MainFrame extends JFrame {
         runMagic();
         captureScreen(null);
 
+      } else if (r.startsWith("agenda")) {
+        service.inProgress(r);
+        stopMagic();
+        doAgenda();
+        captureScreen(null);
+      } else if (r.startsWith("click")) {
+        service.inProgress(r);
+        processClick(r);
+
       } else if (r.startsWith("refresh")) {
         service.inProgress(r);
         try {
@@ -1740,6 +1758,21 @@ public class MainFrame extends JFrame {
     }
 
     // service.purgeOld(1000 * 60 * 60);// 1 hour old
+  }
+  
+  private void processClick(String r) {
+    try {
+      String[] ss = r.split("_");
+      int x = Integer.parseInt(ss[1]);
+      int y = Integer.parseInt(ss[2]);
+      _mouse.click(x, y);
+      try {
+        _mouse.delay(1000);
+      } catch (RobotInterruptedException e) {
+      }
+    } finally {
+      new Service().done(r);
+    }
   }
 
   private void runSettingsListener() {
