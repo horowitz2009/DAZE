@@ -191,7 +191,7 @@ public class MapManager {
         // LOGGER.info("hmm");
         // find the entry
         Rectangle area2 = new Rectangle(pc.x + 193, pc.y + 155, 100, 280);
-        Pixel pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);// CLICK!!!
+        Pixel pp = _scanner.scanOne("map/placeEntry2.bmp", area2, true);// CLICK!!!
         // if (pp == null) {
         // area2 = new Rectangle(pc.x +193, pc.y+365, 100, 60);
         // pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);//CLICK!!!

@@ -378,18 +378,16 @@ public class ScreenScanner {
 
     final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     _br = new Pixel(screenSize.width - 3, screenSize.height - 130);
-
+    boolean notReally = false;
     if (fullScreen) {
       // use default
       setKeyAreas();
       return true;
     } else {
-      boolean found = _gameLocator.locateGameArea(new ImageData("beta.bmp", null, _comparator, 0, 0), new ImageData(
+      boolean found = _gameLocator.locateGameArea(
+          null, new ImageData(
           "camp.bmp", null, _comparator, 25, 48), false);
-      if (!found) {
-        _gameLocator.setTopLeft(new Pixel(0, 0));
-        found = true;
-      }
+      notReally = true;
       if (found) {
         _tl = _gameLocator.getTopLeft();
         _br = _gameLocator.getBottomRight();
@@ -401,6 +399,9 @@ public class ScreenScanner {
         Pixel p = _comparator.findImage(id.getImage(), screen, id.getColorToBypass());
         if (p != null) {
           _br.x = _br.x + p.x + 41;
+          if (notReally) {
+            _tl.y = p.y - 43;
+          }
           _wide = false;
         } else {
           LOGGER.warning("GEMS not found!");
@@ -1240,7 +1241,7 @@ public class ScreenScanner {
         // look for main map
         Rectangle area = new Rectangle(_westButtons.x + 26, _westButtons.y - 18, _eastButtons.x - _westButtons.x - 26,
             _menuBR.y - _eastButtons.y + 18);
-        writeArea(area, "mapsArea.jpg");
+        //writeArea(area, "mapsArea.jpg");
         Pixel p = scanOne("map/mainMap.bmp", area, false);
         if (p != null) {
           p.x -= 23;

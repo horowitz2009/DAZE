@@ -91,7 +91,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.36";
+  private static String APP_TITLE = "Daze v0.37c";
 
   private Settings _settings;
   private Stats _stats;
@@ -1221,6 +1221,8 @@ public class MainFrame extends JFrame {
       _scanner.reset();
       LOGGER.info("Scanning...");
       setTitle(APP_TITLE + " ...");
+      handleTeamPopup();
+
       boolean found = _scanner.locateGameArea(false);
       if (found) {
         // _scanner.checkAndAdjustRock();
@@ -1257,6 +1259,17 @@ public class MainFrame extends JFrame {
       e1.printStackTrace();
     }
 
+  }
+
+  private void handleTeamPopup() throws RobotInterruptedException, IOException, AWTException {
+    Pixel p = _scanner.scanOneFast("team.bmp", new Rectangle(530, 300, 615, 380), false);
+    if (p != null) {
+      _mouse.click(p.x + 414, p.y + 101);
+      _mouse.click(p.x + 414, p.y + 101);
+      _mouse.delay(1000);
+      _mouse.click(p.x + 414, p.y + 101);
+      _mouse.delay(1000);
+    }
   }
 
   private void loadStats() {
@@ -1450,8 +1463,7 @@ public class MainFrame extends JFrame {
                       }
                       // LOGGER.info("tik tak... " + (System.currentTimeMillis()
                       // - _fstart) / 1000);
-                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30)
-                        * 60000);
+                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);
 
                     // THAT'S IT. STOP IT IF NOT DONE ALREADY
                     if (isRunning("RUN_MAZE")) {
@@ -1468,8 +1480,8 @@ public class MainFrame extends JFrame {
                     }
 
                     // REFRESH
-                    if (_autoRefreshToggle.isSelected() && System.currentTimeMillis()
-                        - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
+                    if (_autoRefreshToggle.isSelected()
+                        && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
                       LOGGER.info("refresh time...");
                       try {
                         refresh(false);
@@ -1603,6 +1615,7 @@ public class MainFrame extends JFrame {
   private void handlePopups(boolean wide) throws RobotInterruptedException {
     try {
       LOGGER.info("Popups...");
+      handleTeamPopup();
       boolean found = false;
       Pixel p = null;
       Rectangle area = _scanner.generateWindowedArea(204, 648);// was 486
@@ -1759,7 +1772,7 @@ public class MainFrame extends JFrame {
 
     // service.purgeOld(1000 * 60 * 60);// 1 hour old
   }
-  
+
   private void processClick(String r) {
     try {
       String[] ss = r.split("_");
