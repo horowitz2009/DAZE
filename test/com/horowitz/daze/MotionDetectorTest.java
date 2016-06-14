@@ -31,8 +31,9 @@ public class MotionDetectorTest {
     processGate("gate4");
     processGate("gate5");
     processGate("gate6");
-    FastBitmap fbAND = combineAND("gate", 1, 6);
-    FastBitmap fbXOR = combineOR("gate", 1, 6);
+    processGate("gate7");
+    FastBitmap fbAND = combineAND("gate", 1, 7);
+    FastBitmap fbXOR = combineOR("gate", 1, 7);
     
     Xor xor = new Xor(fbAND);
     xor.applyInPlace(fbXOR);

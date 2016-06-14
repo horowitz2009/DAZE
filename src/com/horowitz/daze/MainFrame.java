@@ -1221,7 +1221,7 @@ public class MainFrame extends JFrame {
       _scanner.reset();
       LOGGER.info("Scanning...");
       setTitle(APP_TITLE + " ...");
-      handleTeamPopup();
+      //handleTeamPopup();
 
       boolean found = _scanner.locateGameArea(false);
       if (found) {
@@ -1331,8 +1331,6 @@ public class MainFrame extends JFrame {
     long mandatoryRefresh = _settings.getInt("autoRefresh.mandatoryRefresh", 45) * 60 * 1000;
     long now = System.currentTimeMillis();
     _mouse.checkUserMovement();
-    // // 1. SCAN
-    handlePopups(false);
 
     // STUCK PREVENTION - 10min inactivity -> refresh
     LOGGER.info("LTA: " + (now - _lastTimeActivity) + " > " + (10 * 60 * 1000) + "? "
@@ -1391,6 +1389,9 @@ public class MainFrame extends JFrame {
     }
     // start = System.currentTimeMillis();
     // }
+
+    // // 1. SCAN
+    handlePopups(false);
 
     _mouse.mouseMove(_scanner.getParkingPoint());
 
@@ -1615,7 +1616,7 @@ public class MainFrame extends JFrame {
   private void handlePopups(boolean wide) throws RobotInterruptedException {
     try {
       LOGGER.info("Popups...");
-      handleTeamPopup();
+      //handleTeamPopup();
       boolean found = false;
       Pixel p = null;
       Rectangle area = _scanner.generateWindowedArea(204, 648);// was 486
