@@ -924,8 +924,8 @@ public class GraphMazeRunner {
     // _mouse.delay(100);
     Rectangle area = new Rectangle(pp.x + 14, pp.y + 10, 17 + 10, 12 + 12);
     BufferedImage image2 = new Robot().createScreenCapture(area);
-    image2 = filterGate(image2);
-    ImageData id = _scanner.getImageData("gate.bmp");
+    image2 = filterGate2(image2);
+    ImageData id = _scanner.getImageData("gate2.bmp");
     Pixel ppp = _comparator.findImage(id.getImage(), image2, id.getColorToBypass());
 
     return (ppp != null);
@@ -1039,6 +1039,18 @@ public class GraphMazeRunner {
       fb1.toGrayscale();
     Threshold thr = new Threshold(70);// was 80
     thr.applyInPlace(fb1);
+    return fb1.toBufferedImage();
+  }
+  
+  private BufferedImage filterGate2(BufferedImage image) {
+    FastBitmap fb1 = new FastBitmap(image);
+    
+    if (fb1.isRGB())
+      fb1.toGrayscale();
+   
+    Threshold threshold2 = new Threshold(50);
+    threshold2.applyInPlace(fb1);
+    
     return fb1.toBufferedImage();
   }
 

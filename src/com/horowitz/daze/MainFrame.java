@@ -91,7 +91,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.37d";
+  private static String APP_TITLE = "Daze v0.38";
 
   private Settings _settings;
   private Stats _stats;
@@ -1319,8 +1319,6 @@ public class MainFrame extends JFrame {
     long mandatoryRefresh = _settings.getInt("autoRefresh.mandatoryRefresh", 45) * 60 * 1000;
     long now = System.currentTimeMillis();
     _mouse.checkUserMovement();
-    // // 1. SCAN
-    handlePopups(false);
 
     // STUCK PREVENTION - 10min inactivity -> refresh
     LOGGER.info("LTA: " + (now - _lastTimeActivity) + " > " + (10 * 60 * 1000) + "? "
@@ -1379,6 +1377,9 @@ public class MainFrame extends JFrame {
     }
     // start = System.currentTimeMillis();
     // }
+
+    // // 1. SCAN
+    handlePopups(false);
 
     _mouse.mouseMove(_scanner.getParkingPoint());
 
