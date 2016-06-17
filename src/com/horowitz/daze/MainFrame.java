@@ -91,7 +91,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.37c";
+  private static String APP_TITLE = "Daze v0.37d";
 
   private Settings _settings;
   private Stats _stats;
@@ -1221,7 +1221,6 @@ public class MainFrame extends JFrame {
       _scanner.reset();
       LOGGER.info("Scanning...");
       setTitle(APP_TITLE + " ...");
-      handleTeamPopup();
 
       boolean found = _scanner.locateGameArea(false);
       if (found) {
@@ -1259,17 +1258,6 @@ public class MainFrame extends JFrame {
       e1.printStackTrace();
     }
 
-  }
-
-  private void handleTeamPopup() throws RobotInterruptedException, IOException, AWTException {
-    Pixel p = _scanner.scanOneFast("team.bmp", new Rectangle(530, 300, 615, 380), false);
-    if (p != null) {
-      _mouse.click(p.x + 414, p.y + 101);
-      _mouse.click(p.x + 414, p.y + 101);
-      _mouse.delay(1000);
-      _mouse.click(p.x + 414, p.y + 101);
-      _mouse.delay(1000);
-    }
   }
 
   private void loadStats() {
@@ -1615,7 +1603,6 @@ public class MainFrame extends JFrame {
   private void handlePopups(boolean wide) throws RobotInterruptedException {
     try {
       LOGGER.info("Popups...");
-      handleTeamPopup();
       boolean found = false;
       Pixel p = null;
       Rectangle area = _scanner.generateWindowedArea(204, 648);// was 486

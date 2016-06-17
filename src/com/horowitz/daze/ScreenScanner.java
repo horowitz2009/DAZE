@@ -400,7 +400,7 @@ public class ScreenScanner {
         if (p != null) {
           _br.x = _br.x + p.x + 41;
           if (notReally) {
-            _tl.y = p.y - 43;
+            _tl.y = p.y - 43 - 12;
           }
           _wide = false;
         } else {
