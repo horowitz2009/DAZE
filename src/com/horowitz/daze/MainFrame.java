@@ -3,15 +3,11 @@ package com.horowitz.daze;
 import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
-import java.awt.Insets;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
@@ -36,10 +32,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -65,10 +59,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import Catalano.Core.IntRange;
-import Catalano.Imaging.FastBitmap;
-import Catalano.Imaging.Filters.ColorFiltering;
-
 import com.horowitz.commons.DateUtils;
 import com.horowitz.commons.MouseRobot;
 import com.horowitz.commons.MyImageIO;
@@ -78,6 +68,7 @@ import com.horowitz.commons.RobotInterruptedException;
 import com.horowitz.commons.Service;
 import com.horowitz.commons.Settings;
 import com.horowitz.commons.TemplateMatcher;
+import com.horowitz.daze.camp.CampManager;
 import com.horowitz.daze.map.Agenda;
 import com.horowitz.daze.map.AgendaEntry;
 import com.horowitz.daze.map.MapManager;
@@ -91,7 +82,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.38";
+  private static String APP_TITLE = "Daze v0.39";
 
   private Settings _settings;
   private Stats _stats;
@@ -131,6 +122,8 @@ public class MainFrame extends JFrame {
   protected long _lastTimeActivity = 0;
 
   private MapManager mapManager;
+
+  private CampManager campManager;
 
   public static void main(String[] args) {
 
@@ -202,6 +195,9 @@ public class MainFrame extends JFrame {
 
     mapManager = new MapManager(_scanner);
     mapManager.loadMaps();
+    campManager = new CampManager(_scanner);
+    campManager.loadData();
+    
 
     initLayout();
 
@@ -274,7 +270,7 @@ public class MainFrame extends JFrame {
         long now = System.currentTimeMillis();
         DateFormat sdf = DateFormat.getDateTimeInstance();
         String ds = sdf.format(Calendar.getInstance().getTime());
-        _labels.get("LTA").setText(ds);
+        //_labels.get("LTA").setText(ds);
 
         _lastTimeActivity = now;
       }
@@ -287,7 +283,7 @@ public class MainFrame extends JFrame {
         long now = System.currentTimeMillis();
         DateFormat sdf = DateFormat.getDateTimeInstance();
         String ds = sdf.format(Calendar.getInstance().getTime());
-        _labels.get("FS").setText(ds);
+        //_labels.get("FS").setText(ds);
 
         _fstart = now;
       }
@@ -349,22 +345,22 @@ public class MainFrame extends JFrame {
     // TOOLBARS
     JToolBar mainToolbar1 = createToolbar1();
     JToolBar mainToolbar2 = createToolbar2();
-    // // List<JToolBar> mainToolbars3 = createToolbars3();
+    List<JToolBar> campToolbars = createCampToolbars();
     // JToolBar mainToolbar4 = createToolbar4();
 
     JPanel toolbars = new JPanel(new GridLayout(0, 1));
     toolbars.add(mainToolbar1);
     toolbars.add(mainToolbar2);
-    // // for (JToolBar jToolBar : mainToolbars3) {
-    // // toolbars.add(jToolBar);
-    // // }
+    for (JToolBar jToolBar : campToolbars) {
+      toolbars.add(jToolBar);
+    }
     // toolbars.add(mainToolbar4);
 
     // toolbars.add(createToolbar5());
 
     Box north = Box.createVerticalBox();
     north.add(toolbars);
-    north.add(createStatsPanel());
+    // north.add(createStatsPanel());
     north.add(createAgendaManagerPanel());
     if (_testMode) {
 
@@ -435,62 +431,62 @@ public class MainFrame extends JFrame {
     KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new MyKeyEventDispatcher());
   }
 
-  private Map<String, JLabel> _labels = new HashMap<String, JLabel>();
+  //private Map<String, JLabel> _labels = new HashMap<String, JLabel>();
 
-  private Component createStatsPanel() {
-    JPanel panel = new JPanel(new GridBagLayout());
-    GridBagConstraints gbc = new GridBagConstraints();
-    GridBagConstraints gbc2 = new GridBagConstraints();
-    JLabel l;
-    gbc.gridx = 1;
-    gbc.gridy = 1;
-    gbc2.gridx = 2;
-    gbc2.gridy = 1;
-
-    gbc.insets = new Insets(2, 2, 2, 2);
-    gbc.anchor = GridBagConstraints.WEST;
-    gbc2.insets = new Insets(2, 4, 2, 2);
-    gbc2.anchor = GridBagConstraints.EAST;
-
-    // T
-    panel.add(new JLabel("FS:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("FS", l);
-    panel.add(l, gbc2);
-
-    // IA
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("Inactivities:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("IA", l);
-    panel.add(l, gbc2);
-
-    // MR
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("Mandatory Refreshes:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("MR", l);
-    panel.add(l, gbc2);
-
-    // LTA
-    gbc.gridy++;
-    gbc2.gridy++;
-    panel.add(new JLabel("Last Time Activity:"), gbc);
-    l = new JLabel(" ");
-    _labels.put("LTA", l);
-    panel.add(l, gbc2);
-
-    // FAKE
-    gbc2.gridx++;
-    gbc2.gridy++;
-    gbc2.weightx = 1.0f;
-    gbc2.weighty = 1.0f;
-    panel.add(new JLabel(""), gbc2);
-
-    return panel;
-  }
+//  private Component createStatsPanel() {
+//    JPanel panel = new JPanel(new GridBagLayout());
+//    GridBagConstraints gbc = new GridBagConstraints();
+//    GridBagConstraints gbc2 = new GridBagConstraints();
+//    JLabel l;
+//    gbc.gridx = 1;
+//    gbc.gridy = 1;
+//    gbc2.gridx = 2;
+//    gbc2.gridy = 1;
+//
+//    gbc.insets = new Insets(2, 2, 2, 2);
+//    gbc.anchor = GridBagConstraints.WEST;
+//    gbc2.insets = new Insets(2, 4, 2, 2);
+//    gbc2.anchor = GridBagConstraints.EAST;
+//
+//    // T
+//    panel.add(new JLabel("FS:"), gbc);
+//    l = new JLabel(" ");
+//    _labels.put("FS", l);
+//    panel.add(l, gbc2);
+//
+//    // IA
+//    gbc.gridy++;
+//    gbc2.gridy++;
+//    panel.add(new JLabel("Inactivities:"), gbc);
+//    l = new JLabel(" ");
+//    _labels.put("IA", l);
+//    panel.add(l, gbc2);
+//
+//    // MR
+//    gbc.gridy++;
+//    gbc2.gridy++;
+//    panel.add(new JLabel("Mandatory Refreshes:"), gbc);
+//    l = new JLabel(" ");
+//    _labels.put("MR", l);
+//    panel.add(l, gbc2);
+//
+//    // LTA
+//    gbc.gridy++;
+//    gbc2.gridy++;
+//    panel.add(new JLabel("Last Time Activity:"), gbc);
+//    l = new JLabel(" ");
+//    _labels.put("LTA", l);
+//    panel.add(l, gbc2);
+//
+//    // FAKE
+//    gbc2.gridx++;
+//    gbc2.gridy++;
+//    gbc2.weightx = 1.0f;
+//    gbc2.weighty = 1.0f;
+//    panel.add(new JLabel(""), gbc2);
+//
+//    return panel;
+//  }
 
   private JToggleButton _pingToggle;
 
@@ -960,32 +956,221 @@ public class MainFrame extends JFrame {
   }
 
   @SuppressWarnings("serial")
-  private List<JToolBar> createToolbars3() {
+  private List<JToolBar> createCampToolbars() {
     List<JToolBar> toolbars = new ArrayList<>();
-    JToolBar toolbar = new JToolBar();
-    toolbar.setFloatable(false);
 
-    // DESTINATIONS GO HERE
-    ButtonGroup bg = new ButtonGroup();
+    // CARAVANS
+    {
+      JToolBar toolbar = new JToolBar();
+      toolbar.setFloatable(false);
+      toolbars.add(toolbar);
 
-    JToggleButton toggle;
+      // Caravan options
+      ButtonGroup bgC = new ButtonGroup();
 
-    // // COCOA 1
-    // toggle = new JToggleButton("Cocoa 1.0");
-    // toggle.addItemListener(new ItemListener() {
-    //
-    // @Override
-    // public void itemStateChanged(ItemEvent e) {
-    // LOGGER.info("Cocoa Protocol 1.0: ");
-    // LOGGER.info("Send all ships to Cocoa plant, then all to market");
-    // LOGGER.info("Time: 2h 30m ");
-    // _shipsTask.setProtocol(_cocoaProtocol1);
-    // _shipsTask.getProtocol().update();
-    // }
-    // });
-    //
-    // bg.add(toggle);
-    // toolbar.add(toggle);
+      JToggleButton toggle;
+
+      // C:OFF
+      {
+        toggle = new JToggleButton("C:OFF");
+        toggle.addItemListener(new ItemListener() {
+
+          @Override
+          public void itemStateChanged(ItemEvent e) {
+            LOGGER.info("Caravan: OFF");
+            // TODO
+          }
+        });
+
+        bgC.add(toggle);
+        toolbar.add(toggle);
+      }
+
+      // C:Coins 2h
+      {
+        toggle = new JToggleButton("C:Coins");
+        toggle.addItemListener(new ItemListener() {
+
+          @Override
+          public void itemStateChanged(ItemEvent e) {
+            LOGGER.info("Caravan: Coins 2h");
+            // TODO
+          }
+        });
+
+        bgC.add(toggle);
+        toolbar.add(toggle);
+      }
+
+      // C:Flour 30min
+      {
+        toggle = new JToggleButton("C:Flour");
+        toggle.addItemListener(new ItemListener() {
+
+          @Override
+          public void itemStateChanged(ItemEvent e) {
+            LOGGER.info("Caravan: Flour 30min");
+            // TODO
+          }
+        });
+
+        bgC.add(toggle);
+        toolbar.add(toggle);
+      }
+
+      // C:Sugar 30min
+      {
+        toggle = new JToggleButton("C:Sugar");
+        toggle.addItemListener(new ItemListener() {
+
+          @Override
+          public void itemStateChanged(ItemEvent e) {
+            LOGGER.info("Caravan: Sugar 30min");
+            // TODO
+          }
+        });
+
+        bgC.add(toggle);
+        toolbar.add(toggle);
+      }
+    }
+
+    // KITCHEN
+    {
+      JToolBar toolbar = new JToolBar();
+      toolbar.setFloatable(false);
+      toolbars.add(toolbar);
+
+      // Caravan options
+      ButtonGroup bgK = new ButtonGroup();
+
+      JToggleButton toggle;
+
+      // C:OFF
+      {
+        toggle = new JToggleButton("K:OFF");
+        toggle.addItemListener(new ItemListener() {
+
+          @Override
+          public void itemStateChanged(ItemEvent e) {
+            LOGGER.info("Kitchen: OFF");
+            // TODO
+          }
+        });
+
+        bgK.add(toggle);
+        toolbar.add(toggle);
+      }
+
+      // C:Pie 30min
+      {
+        toggle = new JToggleButton("K:Pie");
+        toggle.addItemListener(new ItemListener() {
+
+          @Override
+          public void itemStateChanged(ItemEvent e) {
+            LOGGER.info("Kitchen: Apple Pie 30min");
+            // TODO
+          }
+        });
+
+        bgK.add(toggle);
+        toolbar.add(toggle);
+      }
+
+      // K:Cake 8h
+      {
+        toggle = new JToggleButton("K:Cake");
+        toggle.addItemListener(new ItemListener() {
+
+          @Override
+          public void itemStateChanged(ItemEvent e) {
+            LOGGER.info("Kitchen: Berry Cake 8h");
+            // TODO
+          }
+        });
+
+        bgK.add(toggle);
+        toolbar.add(toggle);
+      }
+
+      // // K: Todo
+      // {
+      // toggle = new JToggleButton("K:Todo");
+      // toggle.addItemListener(new ItemListener() {
+      //
+      // @Override
+      // public void itemStateChanged(ItemEvent e) {
+      // LOGGER.info("kitchen: Atlantis somthing 2h");
+      // // TODO
+      // }
+      // });
+      //
+      // bgK.add(toggle);
+      // toolbar.add(toggle);
+      // }
+    }
+
+    // FOUNDRY
+    {
+      JToolBar toolbar = new JToolBar();
+      toolbar.setFloatable(false);
+      toolbars.add(toolbar);
+
+      // Caravan options
+      ButtonGroup bgF = new ButtonGroup();
+
+      JToggleButton toggle;
+
+      // F:OFF
+      {
+        toggle = new JToggleButton("F:OFF");
+        toggle.addItemListener(new ItemListener() {
+
+          @Override
+          public void itemStateChanged(ItemEvent e) {
+            LOGGER.info("Foundry: OFF");
+            // TODO
+          }
+        });
+
+        bgF.add(toggle);
+        toolbar.add(toggle);
+      }
+
+      // F:Bronze 1h
+      {
+        toggle = new JToggleButton("F:Bronze");
+        toggle.addItemListener(new ItemListener() {
+
+          @Override
+          public void itemStateChanged(ItemEvent e) {
+            LOGGER.info("Foundry: Bronze 1h");
+            // TODO
+          }
+        });
+
+        bgF.add(toggle);
+        toolbar.add(toggle);
+      }
+
+      // F:Iron 1h
+      {
+        toggle = new JToggleButton("F:Iron");
+        toggle.addItemListener(new ItemListener() {
+
+          @Override
+          public void itemStateChanged(ItemEvent e) {
+            LOGGER.info("Foundry: Iron 1h");
+            // TODO
+          }
+        });
+
+        bgF.add(toggle);
+        toolbar.add(toggle);
+      }
+
+    }
 
     // // COCOA 2
     // toggle = new JToggleButton("Cocoa 2.0");
@@ -1409,6 +1594,10 @@ public class MainFrame extends JFrame {
                     // do this place
                     _fstart = System.currentTimeMillis();
                     long start = System.currentTimeMillis();
+                    
+                    if (_pingToggle.isSelected())
+                      captureScreen(null);//ping
+                    
                     Thread runMazeThread = new Thread(new Runnable() {
                       public void run() {
                         try {
@@ -1452,7 +1641,8 @@ public class MainFrame extends JFrame {
                       }
                       // LOGGER.info("tik tak... " + (System.currentTimeMillis()
                       // - _fstart) / 1000);
-                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);
+                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30)
+                        * 60000);
 
                     // THAT'S IT. STOP IT IF NOT DONE ALREADY
                     if (isRunning("RUN_MAZE")) {
@@ -1469,8 +1659,8 @@ public class MainFrame extends JFrame {
                     }
 
                     // REFRESH
-                    if (_autoRefreshToggle.isSelected()
-                        && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
+                    if (_autoRefreshToggle.isSelected() && System.currentTimeMillis()
+                        - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
                       LOGGER.info("refresh time...");
                       try {
                         refresh(false);
