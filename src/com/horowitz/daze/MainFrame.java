@@ -68,7 +68,6 @@ import com.horowitz.commons.RobotInterruptedException;
 import com.horowitz.commons.Service;
 import com.horowitz.commons.Settings;
 import com.horowitz.commons.TemplateMatcher;
-import com.horowitz.daze.camp.CampManager;
 import com.horowitz.daze.map.Agenda;
 import com.horowitz.daze.map.AgendaEntry;
 import com.horowitz.daze.map.MapManager;
@@ -82,7 +81,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.39";
+  private static String APP_TITLE = "Daze v0.40";
 
   private Settings _settings;
   private Stats _stats;
@@ -123,7 +122,7 @@ public class MainFrame extends JFrame {
 
   private MapManager mapManager;
 
-  private CampManager campManager;
+  //private CampManager campManager;
 
   public static void main(String[] args) {
 
@@ -195,8 +194,8 @@ public class MainFrame extends JFrame {
 
     mapManager = new MapManager(_scanner);
     mapManager.loadMaps();
-    campManager = new CampManager(_scanner);
-    campManager.loadData();
+//    campManager = new CampManager(_scanner);
+//    campManager.loadData();
     
 
     initLayout();

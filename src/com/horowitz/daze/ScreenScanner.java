@@ -1147,7 +1147,7 @@ public class ScreenScanner {
           p.x -= 11;
           p.y -= 45;
         } else {
-          p = scanOneFast("bluepants.bmp", area, false);
+          p = scanOne("bluepants.bmp", area, false);
           if (p != null) {
             LOGGER.info("found diggy almost tired: " + p);
             p.x -= 22;

@@ -2,7 +2,7 @@
 <project default="create_run_jar" name="Create Runnable Jar for Project Mickey2">
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
 
-	<property name="versionNumber" value="39" />
+	<property name="versionNumber" value="40" />
 
 	<property name="jarname" value="Daze${versionNumber}.jar" description="" />
 	<property name="dropboxjarname" value="DropboxRemote${versionNumber}.jar" description="" />
@@ -26,7 +26,8 @@
 		<property name="spZhivko_subfolder" value="SeaportZHIVKO" />
 		<property name="spZhivko_subfolder2" value="SeaportZHIVKO2" />
 
-		<foreach list="${office_subfolder}" param="subfolder" target="copy" />
+		<copy todir="${dropbox}/${office_subfolder}" file="${jarname}" />
+		<!--<foreach list="${office_subfolder}" param="subfolder" target="copy" />-->
 		
 		<!-- from list => ,${spZhivko_subfolder},${spZhivko_subfolder2} -->
 	  
