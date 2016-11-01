@@ -179,6 +179,7 @@ public class ScreenScanner {
 
     getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
     getImageData("claim.bmp", _buttonArea, 36, 13);
+    getImageData("camp/restartu.bmp", null, 22, 15);
 
     _safePoint = new Pixel(_br.x - 15, _br.y - 15);
     _parkingPoint = new Pixel(_br);
@@ -419,6 +420,8 @@ public class ScreenScanner {
   }
 
   private Pixel _rock = null;
+
+  private Pixel _kitchen;
 
   public void reset() {
     _rock = null;
@@ -1187,6 +1190,23 @@ public class ScreenScanner {
     Pixel res = findDiggy(area);
     // LOGGER.info("Looking for diggy in " + pp + " " + res);
     return res;
+  }
+
+  public boolean gotoCamp() throws RobotInterruptedException, IOException, AWTException {
+    Rectangle area = new Rectangle(_br.x - 777, _tl.y + 64, 777, 422);
+    _mouse.click(_campButtonArea.x + 32, _mapButtonArea.y + 20);
+    int tries = 0;
+    do {
+      tries++;
+      _kitchen = scanOneFast("camp/egypt/kitchen.bmp", area, false);
+      LOGGER.info("kitchen... " + tries);
+      _mouse.delay(2000);
+    } while(_kitchen == null && tries < 5);
+    return _kitchen != null;
+  }
+  
+  public Pixel getKitchen() {
+    return _kitchen;
   }
 
   public boolean gotoMap(DMap map) throws RobotInterruptedException, IOException, AWTException {

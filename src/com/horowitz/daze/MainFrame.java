@@ -122,7 +122,7 @@ public class MainFrame extends JFrame {
 
   private MapManager mapManager;
 
-  //private CampManager campManager;
+  // private CampManager campManager;
 
   public static void main(String[] args) {
 
@@ -194,9 +194,8 @@ public class MainFrame extends JFrame {
 
     mapManager = new MapManager(_scanner);
     mapManager.loadMaps();
-//    campManager = new CampManager(_scanner);
-//    campManager.loadData();
-    
+    // campManager = new CampManager(_scanner);
+    // campManager.loadData();
 
     initLayout();
 
@@ -269,7 +268,7 @@ public class MainFrame extends JFrame {
         long now = System.currentTimeMillis();
         DateFormat sdf = DateFormat.getDateTimeInstance();
         String ds = sdf.format(Calendar.getInstance().getTime());
-        //_labels.get("LTA").setText(ds);
+        // _labels.get("LTA").setText(ds);
 
         _lastTimeActivity = now;
       }
@@ -282,7 +281,7 @@ public class MainFrame extends JFrame {
         long now = System.currentTimeMillis();
         DateFormat sdf = DateFormat.getDateTimeInstance();
         String ds = sdf.format(Calendar.getInstance().getTime());
-        //_labels.get("FS").setText(ds);
+        // _labels.get("FS").setText(ds);
 
         _fstart = now;
       }
@@ -312,6 +311,10 @@ public class MainFrame extends JFrame {
     _settings.setProperty("slow", "false");
     _settings.setProperty("ping", "false");
     _settings.setProperty("ping2", "false");
+    _settings.setProperty("caravan", "false");
+    _settings.setProperty("kitchen", "true");
+    _settings.setProperty("foundry", "true");
+
     // _settings.setProperty("industries", "true");
     // _settings.setProperty("slow", "false");
     // _settings.setProperty("autoSailors", "false");
@@ -344,16 +347,16 @@ public class MainFrame extends JFrame {
     // TOOLBARS
     JToolBar mainToolbar1 = createToolbar1();
     JToolBar mainToolbar2 = createToolbar2();
-    List<JToolBar> campToolbars = createCampToolbars();
-    // JToolBar mainToolbar4 = createToolbar4();
+    // List<JToolBar> campToolbars = createCampToolbars();
+    JToolBar mainToolbar4 = createToolbar4();
 
     JPanel toolbars = new JPanel(new GridLayout(0, 1));
     toolbars.add(mainToolbar1);
     toolbars.add(mainToolbar2);
-    for (JToolBar jToolBar : campToolbars) {
-      toolbars.add(jToolBar);
-    }
-    // toolbars.add(mainToolbar4);
+    // for (JToolBar jToolBar : campToolbars) {
+    // toolbars.add(jToolBar);
+    // }
+    toolbars.add(mainToolbar4);
 
     // toolbars.add(createToolbar5());
 
@@ -430,62 +433,62 @@ public class MainFrame extends JFrame {
     KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new MyKeyEventDispatcher());
   }
 
-  //private Map<String, JLabel> _labels = new HashMap<String, JLabel>();
+  // private Map<String, JLabel> _labels = new HashMap<String, JLabel>();
 
-//  private Component createStatsPanel() {
-//    JPanel panel = new JPanel(new GridBagLayout());
-//    GridBagConstraints gbc = new GridBagConstraints();
-//    GridBagConstraints gbc2 = new GridBagConstraints();
-//    JLabel l;
-//    gbc.gridx = 1;
-//    gbc.gridy = 1;
-//    gbc2.gridx = 2;
-//    gbc2.gridy = 1;
-//
-//    gbc.insets = new Insets(2, 2, 2, 2);
-//    gbc.anchor = GridBagConstraints.WEST;
-//    gbc2.insets = new Insets(2, 4, 2, 2);
-//    gbc2.anchor = GridBagConstraints.EAST;
-//
-//    // T
-//    panel.add(new JLabel("FS:"), gbc);
-//    l = new JLabel(" ");
-//    _labels.put("FS", l);
-//    panel.add(l, gbc2);
-//
-//    // IA
-//    gbc.gridy++;
-//    gbc2.gridy++;
-//    panel.add(new JLabel("Inactivities:"), gbc);
-//    l = new JLabel(" ");
-//    _labels.put("IA", l);
-//    panel.add(l, gbc2);
-//
-//    // MR
-//    gbc.gridy++;
-//    gbc2.gridy++;
-//    panel.add(new JLabel("Mandatory Refreshes:"), gbc);
-//    l = new JLabel(" ");
-//    _labels.put("MR", l);
-//    panel.add(l, gbc2);
-//
-//    // LTA
-//    gbc.gridy++;
-//    gbc2.gridy++;
-//    panel.add(new JLabel("Last Time Activity:"), gbc);
-//    l = new JLabel(" ");
-//    _labels.put("LTA", l);
-//    panel.add(l, gbc2);
-//
-//    // FAKE
-//    gbc2.gridx++;
-//    gbc2.gridy++;
-//    gbc2.weightx = 1.0f;
-//    gbc2.weighty = 1.0f;
-//    panel.add(new JLabel(""), gbc2);
-//
-//    return panel;
-//  }
+  // private Component createStatsPanel() {
+  // JPanel panel = new JPanel(new GridBagLayout());
+  // GridBagConstraints gbc = new GridBagConstraints();
+  // GridBagConstraints gbc2 = new GridBagConstraints();
+  // JLabel l;
+  // gbc.gridx = 1;
+  // gbc.gridy = 1;
+  // gbc2.gridx = 2;
+  // gbc2.gridy = 1;
+  //
+  // gbc.insets = new Insets(2, 2, 2, 2);
+  // gbc.anchor = GridBagConstraints.WEST;
+  // gbc2.insets = new Insets(2, 4, 2, 2);
+  // gbc2.anchor = GridBagConstraints.EAST;
+  //
+  // // T
+  // panel.add(new JLabel("FS:"), gbc);
+  // l = new JLabel(" ");
+  // _labels.put("FS", l);
+  // panel.add(l, gbc2);
+  //
+  // // IA
+  // gbc.gridy++;
+  // gbc2.gridy++;
+  // panel.add(new JLabel("Inactivities:"), gbc);
+  // l = new JLabel(" ");
+  // _labels.put("IA", l);
+  // panel.add(l, gbc2);
+  //
+  // // MR
+  // gbc.gridy++;
+  // gbc2.gridy++;
+  // panel.add(new JLabel("Mandatory Refreshes:"), gbc);
+  // l = new JLabel(" ");
+  // _labels.put("MR", l);
+  // panel.add(l, gbc2);
+  //
+  // // LTA
+  // gbc.gridy++;
+  // gbc2.gridy++;
+  // panel.add(new JLabel("Last Time Activity:"), gbc);
+  // l = new JLabel(" ");
+  // _labels.put("LTA", l);
+  // panel.add(l, gbc2);
+  //
+  // // FAKE
+  // gbc2.gridx++;
+  // gbc2.gridy++;
+  // gbc2.weightx = 1.0f;
+  // gbc2.weighty = 1.0f;
+  // panel.add(new JLabel(""), gbc2);
+  //
+  // return panel;
+  // }
 
   private JToggleButton _pingToggle;
 
@@ -496,6 +499,12 @@ public class MainFrame extends JFrame {
   private JTextField _tileTF;
 
   private JToggleButton _slowToggle;
+
+  private JToggleButton _caravanToggle;
+
+  private JToggleButton _kitchenToggle;
+
+  private JToggleButton _foundryToggle;
 
   private Container buildConsole() {
     final JTextArea outputConsole = new JTextArea(8, 14);
@@ -742,11 +751,37 @@ public class MainFrame extends JFrame {
       };
       mainToolbar1.add(action);
     }
+
     // TEST GO TO MAP
     {
       AbstractAction action = new AbstractAction("Do Agenda") {
         public void actionPerformed(ActionEvent e) {
           doAgenda();
+        }
+
+      };
+      mainToolbar1.add(action);
+    }
+
+    // TEST DO CAMP
+    {
+      AbstractAction action = new AbstractAction("Do Camp") {
+        public void actionPerformed(ActionEvent e) {
+          Thread t = new Thread(new Runnable() {
+            public void run() {
+              try {
+                doCamp();
+              } catch (RobotInterruptedException e) {
+                e.printStackTrace();
+              } catch (IOException e) {
+                e.printStackTrace();
+              } catch (AWTException e) {
+                e.printStackTrace();
+              }
+
+            }
+          });
+          t.start();
         }
 
       };
@@ -950,6 +985,57 @@ public class MainFrame extends JFrame {
         }
       });
     }
+
+    return toolbar;
+  }
+
+  @SuppressWarnings("serial")
+  private JToolBar createToolbar4() {
+    JToolBar toolbar = new JToolBar();
+    toolbar.setFloatable(false);
+
+    // Caravan
+    _caravanToggle = new JToggleButton("Caravan");
+    toolbar.add(_caravanToggle);
+    _caravanToggle.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(ItemEvent e) {
+        boolean b = e.getStateChange() == ItemEvent.SELECTED;
+        LOGGER.info("Caravan: " + (b ? "on" : "off"));
+        _settings.setProperty("caravan", "" + b);
+        _settings.saveSettingsSorted();
+
+      }
+    });
+
+    // Kitchen
+    _kitchenToggle = new JToggleButton("Kitchen");
+    toolbar.add(_kitchenToggle);
+    _kitchenToggle.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(ItemEvent e) {
+        boolean b = e.getStateChange() == ItemEvent.SELECTED;
+        LOGGER.info("Kitchen: " + (b ? "on" : "off"));
+        _settings.setProperty("kitchen", "" + b);
+        _settings.saveSettingsSorted();
+
+      }
+    });
+
+    // Foundry
+    _foundryToggle = new JToggleButton("Foundry");
+    toolbar.add(_foundryToggle);
+
+    _foundryToggle.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(ItemEvent e) {
+        boolean b = e.getStateChange() == ItemEvent.SELECTED;
+        LOGGER.info("Foundry: " + (b ? "on" : "off"));
+        _settings.setProperty("foundry", "" + b);
+        _settings.saveSettingsSorted();
+
+      }
+    });
 
     return toolbar;
   }
@@ -1593,10 +1679,10 @@ public class MainFrame extends JFrame {
                     // do this place
                     _fstart = System.currentTimeMillis();
                     long start = System.currentTimeMillis();
-                    
+
                     if (_pingToggle.isSelected())
-                      captureScreen(null);//ping
-                    
+                      captureScreen(null);// ping
+
                     Thread runMazeThread = new Thread(new Runnable() {
                       public void run() {
                         try {
@@ -1633,15 +1719,16 @@ public class MainFrame extends JFrame {
                     // sleep
                     do {
                       _mouse.delay(1000, false);// DO NOT INTTERRUPT!!!
+
                       if (false)
                         scanEnergy();// EXPERIMENTAL!!!
+
                       if (!isRunning("RUN_MAZE")) {
                         break;
                       }
                       // LOGGER.info("tik tak... " + (System.currentTimeMillis()
                       // - _fstart) / 1000);
-                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30)
-                        * 60000);
+                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);
 
                     // THAT'S IT. STOP IT IF NOT DONE ALREADY
                     if (isRunning("RUN_MAZE")) {
@@ -1658,8 +1745,8 @@ public class MainFrame extends JFrame {
                     }
 
                     // REFRESH
-                    if (_autoRefreshToggle.isSelected() && System.currentTimeMillis()
-                        - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
+                    if (_autoRefreshToggle.isSelected()
+                        && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
                       LOGGER.info("refresh time...");
                       try {
                         refresh(false);
@@ -1670,6 +1757,8 @@ public class MainFrame extends JFrame {
                       }
                       _fstart = System.currentTimeMillis();
                     }
+
+                    doCamp();
 
                     LOGGER.info("MOVE TO NEXT PLACE...");
                   }
@@ -1688,9 +1777,33 @@ public class MainFrame extends JFrame {
             e.printStackTrace();
           }
         }
+
       }, "MAGIC");
 
       myThread.start();
+    }
+  }
+
+  private void doCamp() throws RobotInterruptedException, IOException, AWTException {
+    if (_caravanToggle.isSelected() || _kitchenToggle.isSelected() || _foundryToggle.isSelected()) {
+      // goto camp and ensure visibility
+      if (mapManager.gotoCamp()) {
+
+        if (_kitchenToggle.isSelected()) {
+          LOGGER.info("kitchen...");
+          mapManager.doKitchen();
+        }
+
+        if (_foundryToggle.isSelected()) {
+          LOGGER.info("foundry...");
+        }
+
+        LOGGER.info("CAMP DUTIES...");
+        if (_caravanToggle.isSelected()) {
+          LOGGER.info("caravans...");
+        }
+
+      }
     }
   }
 
@@ -1889,6 +2002,21 @@ public class MainFrame extends JFrame {
     boolean ping2 = "true".equalsIgnoreCase(_settings.getProperty("ping2"));
     if (ping2 != _ping2Toggle.isSelected()) {
       _ping2Toggle.setSelected(ping2);
+    }
+
+    boolean caravan = "true".equalsIgnoreCase(_settings.getProperty("caravan"));
+    if (caravan != _caravanToggle.isSelected()) {
+      _caravanToggle.setSelected(caravan);
+    }
+
+    boolean kitchen = "true".equalsIgnoreCase(_settings.getProperty("kitchen"));
+    if (kitchen != _kitchenToggle.isSelected()) {
+      _kitchenToggle.setSelected(kitchen);
+    }
+
+    boolean foundry = "true".equalsIgnoreCase(_settings.getProperty("foundry"));
+    if (foundry != _foundryToggle.isSelected()) {
+      _foundryToggle.setSelected(foundry);
     }
 
     boolean ar = "true".equalsIgnoreCase(_settings.getProperty("autoRefresh"));
