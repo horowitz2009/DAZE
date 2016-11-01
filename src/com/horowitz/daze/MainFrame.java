@@ -81,7 +81,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.40";
+  private static String APP_TITLE = "Daze v0.40e";
 
   private Settings _settings;
   private Stats _stats;
@@ -1795,7 +1795,7 @@ public class MainFrame extends JFrame {
       LOGGER.info("Popups...");
       boolean found = false;
       Pixel p = null;
-      Rectangle area = _scanner.generateWindowedArea(204, 648);// was 486
+      Rectangle area = _scanner.generateWindowedArea(290, 648);// was 486
       if (_scanner.isOptimized()) {
         _mouse.mouseMove(_scanner.getParkingPoint());
         _mouse.delay(300);
@@ -1810,6 +1810,37 @@ public class MainFrame extends JFrame {
         area = _scanner.generateWindowedArea(800, _scanner.getGameHeight());
       }
 
+
+      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+      if (p != null) {
+        _mouse.click(p.x + 16, p.y + 16);
+        _mouse.delay(200);
+      }
+      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+      if (p != null) {
+        _mouse.click(p.x + 16, p.y + 16);
+        _mouse.delay(200);
+      }
+
+      
+      
+      p = _scanner.scanOneFast("awesome.bmp", area, false);
+      if (p != null) {
+        _mouse.click(p.x + 40, p.y + 7);
+        _mouse.delay(300);
+        p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+        if (p != null) {
+          _mouse.click(p.x + 16, p.y + 16);
+          _mouse.delay(200);
+        }
+      }
+      
+      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+      if (p != null) {
+        _mouse.click(p.x + 16, p.y + 16);
+        _mouse.delay(200);
+      }
+      
       p = _scanner.scanOneFast("share.bmp", area, false);
       if (p != null) {
         _mouse.click(p.x + 34, p.y + 11);

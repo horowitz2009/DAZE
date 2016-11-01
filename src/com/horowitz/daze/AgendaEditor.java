@@ -319,7 +319,8 @@ public class AgendaEditor extends JPanel {
       });
 
       _mapCB.setSelectedIndex(-1);
-      _mapCB.setSelectedIndex(0);
+      if (_mapCB.getModel().getSize() > 0)
+        _mapCB.setSelectedIndex(0);
 
       add(Box.createHorizontalStrut(6));
 

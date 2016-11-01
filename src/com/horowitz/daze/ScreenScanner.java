@@ -137,7 +137,7 @@ public class ScreenScanner {
 
       _tl = new Pixel(0, 0);
       _br = new Pixel(screenSize.width - 3, screenSize.height - 3);
-
+      _popupAreaX = new Rectangle(650, 150, 760, 400);
     } catch (Exception e) {
       e.printStackTrace();
     }
