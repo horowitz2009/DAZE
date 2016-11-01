@@ -166,7 +166,7 @@ public class MapManager {
   private boolean checkPlaceIsPlayable(Pixel p) throws RobotInterruptedException, IOException, AWTException {
     _mouse.mouseMove(_scanner.getSafePoint());
     _mouse.delay(100);
-    
+
     Rectangle area = new Rectangle(p.x + -35, p.y - 35, 70, 70);
     Pixel pd = _scanner.scanOne("map/placeDone.bmp", area, false);
     if (pd != null) {
@@ -206,6 +206,40 @@ public class MapManager {
       }
     }
     return false;
+  }
+
+  public boolean gotoCamp() throws RobotInterruptedException, IOException, AWTException {
+    return _scanner.gotoCamp();
+  }
+
+  public void doKitchen() throws RobotInterruptedException, IOException, AWTException {
+    _mouse.click(_scanner.getKitchen());
+    _mouse.delay(1000);
+    Rectangle area = _scanner.generateWindowedArea(621, 415);
+    area.y = _scanner.getTopLeft().y + 149;
+    area.x += 506;
+    area.width = 95;
+
+    Rectangle buttonArea = new Rectangle();
+    buttonArea.x = area.x;
+    buttonArea.width = area.width;
+    buttonArea.height = 60;
+    buttonArea.y = area.y + 49;
+
+    for (int i = 0; i < 6; i++) {
+      Pixel p = _scanner.scanOne("camp/restartu.bmp", buttonArea, true);
+      if (p != null) {
+        _mouse.delay(300);
+      }
+      _scanner.writeArea(buttonArea, "kitchen" + i + ".jpg");
+      buttonArea.y += 60;
+    }
+
+    _scanner.writeArea(area, "kitchen.jpg");
+
+    // close the window
+    _mouse.click(area.x + 87, area.y + 5);
+    LOGGER.info("Kitchen done.");
   }
 
 }
