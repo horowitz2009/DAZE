@@ -215,31 +215,65 @@ public class MapManager {
   public void doKitchen() throws RobotInterruptedException, IOException, AWTException {
     _mouse.click(_scanner.getKitchen());
     _mouse.delay(1000);
+    doMenu("camp/restartu.bmp");
+    LOGGER.info("Kitchen done.");
+  }
+  
+  public void doCaravans() throws RobotInterruptedException, IOException, AWTException {
+    Pixel p = _scanner.getKitchen();
+    p.x -= 686;
+    _mouse.click(p);
+    _mouse.delay(1000);
+    doMenu("camp/restartu.bmp");
+    LOGGER.info("Caravans done.");
+  }
+
+  public void doFoundry() throws RobotInterruptedException, IOException, AWTException {
+    Pixel p = _scanner.getKitchen();
+    p.x += 211;
+    int xlim = _scanner.getBottomRight().x - 143;
+    if (p.x > xlim) {
+      int y = p.y + 205;
+      int dist =  p.x - xlim;
+      int x1 = p.x - 211;
+      _mouse.drag(x1, y, x1 - dist, y);
+      _mouse.delay(200);
+      _scanner.gotoCamp();
+      p = _scanner.getKitchen();
+      p.x += 211;
+    }
+    _mouse.click(p);
+    _mouse.delay(1000);
+    doMenu("camp/restartF.bmp");
+    LOGGER.info("Foundry done.");
+  }
+  
+  public void doMenu(String imageName) throws RobotInterruptedException, IOException, AWTException {
     Rectangle area = _scanner.generateWindowedArea(621, 415);
     area.y = _scanner.getTopLeft().y + 149;
     area.x += 506;
     area.width = 95;
-
+    
     Rectangle buttonArea = new Rectangle();
     buttonArea.x = area.x;
     buttonArea.width = area.width;
     buttonArea.height = 60;
     buttonArea.y = area.y + 49;
-
+    
     for (int i = 0; i < 6; i++) {
-      Pixel p = _scanner.scanOne("camp/restartu.bmp", buttonArea, true);
+      Pixel p = _scanner.scanOne(imageName, buttonArea, true);
       if (p != null) {
         _mouse.delay(300);
       }
-      _scanner.writeArea(buttonArea, "kitchen" + i + ".jpg");
+      //_scanner.writeArea(buttonArea, "kitchen" + i + ".jpg");
       buttonArea.y += 60;
     }
-
-    _scanner.writeArea(area, "kitchen.jpg");
-
+    
+    //_scanner.writeArea(area, "kitchen.jpg");
+    
     // close the window
     _mouse.click(area.x + 87, area.y + 5);
-    LOGGER.info("Kitchen done.");
+    _mouse.delay(1000);
   }
-
+  
 }

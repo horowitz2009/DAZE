@@ -81,7 +81,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.40e";
+  private static String APP_TITLE = "Daze v0.41";
 
   private Settings _settings;
   private Stats _stats;
@@ -1758,7 +1758,6 @@ public class MainFrame extends JFrame {
                       _fstart = System.currentTimeMillis();
                     }
 
-                    doCamp();
 
                     LOGGER.info("MOVE TO NEXT PLACE...");
                   }
@@ -1766,6 +1765,9 @@ public class MainFrame extends JFrame {
                   LOGGER.warning(e.getMessage());
                   refresh(false);
                 }
+                
+                doCamp();
+                
               }
               LOGGER.info("stop all threads: " + _stopAllThreads);
             } while (!_stopAllThreads);
@@ -1794,13 +1796,14 @@ public class MainFrame extends JFrame {
           mapManager.doKitchen();
         }
 
-        if (_foundryToggle.isSelected()) {
-          LOGGER.info("foundry...");
-        }
-
-        LOGGER.info("CAMP DUTIES...");
         if (_caravanToggle.isSelected()) {
           LOGGER.info("caravans...");
+          mapManager.doCaravans();
+        }
+        
+        if (_foundryToggle.isSelected()) {
+          LOGGER.info("foundry...");
+          mapManager.doFoundry();
         }
 
       }

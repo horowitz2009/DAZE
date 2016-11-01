@@ -1194,10 +1194,10 @@ public class ScreenScanner {
 
   public boolean gotoCamp() throws RobotInterruptedException, IOException, AWTException {
     Rectangle area = new Rectangle(_br.x - 777, _tl.y + 64, 777, 422);
-    _mouse.click(_campButtonArea.x + 32, _mapButtonArea.y + 20);
     int tries = 0;
     do {
       tries++;
+      _mouse.click(_campButtonArea.x + 32, _mapButtonArea.y + 20);
       _kitchen = scanOneFast("camp/egypt/kitchen.bmp", area, false);
       LOGGER.info("kitchen... " + tries);
       _mouse.delay(2000);
@@ -1206,7 +1206,7 @@ public class ScreenScanner {
   }
   
   public Pixel getKitchen() {
-    return _kitchen;
+    return new Pixel(_kitchen);
   }
 
   public boolean gotoMap(DMap map) throws RobotInterruptedException, IOException, AWTException {
