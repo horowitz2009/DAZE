@@ -1230,15 +1230,21 @@ public class ScreenScanner {
         // HARDCODED 4 worlds. I'm too lazy to make it right
         int y = 282;
         int slot = 0;
-        if ("egypt".equalsIgnoreCase(map.getWorld())) {
+        String w = map.getWorld();
+        if (w == null)
+          w = "temp";
+        w = w.toLowerCase();
+        
+        if (w.startsWith("eg")) {
           slot = 0;
-        } else if ("scandinavia".equalsIgnoreCase(map.getWorld())) {
+        } else if (w.startsWith("sc")) {
           slot = 1;
-        } else if ("china".equalsIgnoreCase(map.getWorld())) {
+        } else if (w.startsWith("ch")) {
           slot = 2;
-        } else if ("atlantis".equalsIgnoreCase(map.getWorld())) {
+        } else if (w.startsWith("at")) {
           slot = 3;
-        }
+        } else
+          slot = 4;
         _mouse.click(_br.x - 37, _tl.y + y + 36 * slot);
         _mouse.delay(2000);
       }
