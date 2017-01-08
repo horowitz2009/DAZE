@@ -162,6 +162,9 @@ public class GraphMazeRunner {
             for (Direction direction : _directions) {
               checkNeighbor(_graph, vertex, direction.getxOff(), direction.getyOff());
             }
+          } else if (vertex._state == State.VISITED) {
+            LOGGER.info("Already visited..." + vertex);
+            return false;
           } else {
 
             // _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
@@ -382,8 +385,8 @@ public class GraphMazeRunner {
       return neighbor._state != State.VISITED && neighbor._state != State.OBSTACLE;
     }
 
-    private void ensureArea(Position pos, int rowOffset, int colOffset) throws RobotInterruptedException, IOException,
-        AWTException {
+    private void ensureArea(Position pos, int rowOffset, int colOffset)
+        throws RobotInterruptedException, IOException, AWTException {
       pos._coords = new Pixel(_start._coords.x + pos._row * 60, _start._coords.y + pos._col * 60);
       int xx = _start._coords.x + (pos._row + rowOffset) * 60;
       int yy = _start._coords.y + (pos._col + colOffset) * 60;
@@ -541,8 +544,8 @@ public class GraphMazeRunner {
         throws RobotInterruptedException, IOException, AWTException {
       Position neighborPos = new Position(vertex._row + rowOffset, vertex._col + colOffset);
       if (!isAlreadyChecked(graph, neighborPos)) {
-        neighborPos._coords = new Pixel(_start._coords.x + neighborPos._row * 60, _start._coords.y + neighborPos._col
-            * 60);
+        neighborPos._coords = new Pixel(_start._coords.x + neighborPos._row * 60,
+            _start._coords.y + neighborPos._col * 60);
 
         if (graph.canBeVisited(neighborPos, this)) {
 
@@ -575,7 +578,7 @@ public class GraphMazeRunner {
           }
           if (!contains) {
             graph.addEdge(vertex, neighborPos);
-            // graph.addEdge(newPos, vertex);
+            // graph.addEdge(neighborPos, vertex);
           } else {
             LOGGER.info("FUNNY: " + vertex + " contains " + neighborPos);
           }
@@ -733,8 +736,8 @@ public class GraphMazeRunner {
                 cnt++;
               if (cnt > 3) {
                 // BINGOOO
-                fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_"
-                    + System.currentTimeMillis() + ".png");
+                fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x + "_" + System.currentTimeMillis()
+                    + ".png");
                 break;
               }
             }
@@ -995,8 +998,8 @@ public class GraphMazeRunner {
     return newPos;
   }
 
-  private Pixel lookForDiggyAroundHere(Pixel pp, int cellRange) throws IOException, RobotInterruptedException,
-      AWTException {
+  private Pixel lookForDiggyAroundHere(Pixel pp, int cellRange)
+      throws IOException, RobotInterruptedException, AWTException {
     Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 + 120 + 60,
         cellRange * 60 + 120 + 60);
     Pixel res = _scanner.findDiggy(area);
@@ -1041,16 +1044,16 @@ public class GraphMazeRunner {
     thr.applyInPlace(fb1);
     return fb1.toBufferedImage();
   }
-  
+
   private BufferedImage filterGate2(BufferedImage image) {
     FastBitmap fb1 = new FastBitmap(image);
-    
+
     if (fb1.isRGB())
       fb1.toGrayscale();
-   
+
     Threshold threshold2 = new Threshold(50);
     threshold2.applyInPlace(fb1);
-    
+
     return fb1.toBufferedImage();
   }
 
@@ -1059,8 +1062,8 @@ public class GraphMazeRunner {
       BufferedImage image = ImageIO.read(new File("temp/mud.bmp"));
       FastBitmap fb1 = new FastBitmap(image);
 
-      ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240), new IntRange(5,
-          85));
+      ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240),
+          new IntRange(5, 85));
       colorFiltering.applyInPlace(fb1);
 
       if (fb1.isRGB())
@@ -1077,8 +1080,8 @@ public class GraphMazeRunner {
   private BufferedImage filterArrows(BufferedImage image) {
     FastBitmap fb1 = new FastBitmap(image);
 
-    ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240), new IntRange(5,
-        85));
+    ColorFiltering colorFiltering = new ColorFiltering(new IntRange(54, 155), new IntRange(100, 240),
+        new IntRange(5, 85));
     colorFiltering.applyInPlace(fb1);
 
     if (fb1.isRGB())
