@@ -1716,9 +1716,14 @@ public class MainFrame extends JFrame {
                     runMazeThread.start();
 
                     // sleep
+                    int turn = 0;
                     do {
                       _mouse.delay(1000, false);// DO NOT INTTERRUPT!!!
-
+                      turn++;
+                      if (turn > 30) {
+                        turn = 1;
+                        LOGGER.info("ETA: " + (System.currentTimeMillis() - start)/60000);
+                      }
                       if (false)
                         scanEnergy();// EXPERIMENTAL!!!
 
@@ -1787,6 +1792,7 @@ public class MainFrame extends JFrame {
 
   private void doCamp() throws RobotInterruptedException, IOException, AWTException {
     if (_caravanToggle.isSelected() || _kitchenToggle.isSelected() || _foundryToggle.isSelected()) {
+      handlePopups(false);
       // goto camp and ensure visibility
       if (mapManager.gotoCamp()) {
 

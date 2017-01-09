@@ -1201,7 +1201,10 @@ public class ScreenScanner {
       _kitchen = scanOneFast("camp/egypt/kitchen.bmp", area, false);
       LOGGER.info("kitchen... " + tries);
       _mouse.delay(2000);
-    } while(_kitchen == null && tries < 5);
+      if (_kitchen == null) {
+        handlePopups();
+      }
+    } while(_kitchen == null && tries < 8);
     return _kitchen != null;
   }
   
