@@ -174,11 +174,12 @@ public class ScreenScanner {
         : 0), getGameHeight() / 2 + 50);
     _diggyCaveArea = new Rectangle(_tl.x + getGameWidth() / 2 - 114, _tl.y + 53, 228, 171);
 
-    xx = (getGameWidth() - 200 - (_wide ? 400 : 0)) / 2;
-    _buttonArea = new Rectangle(_tl.x + xx, _br.y - (70 + 87), xx, 87);
-
+    _buttonArea = generateWindowedArea(576, 600);
+    _buttonArea.y = _tl.y + getGameHeight()/2;
+    _buttonArea.height = getGameHeight()/2;
     getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
     getImageData("claim.bmp", _buttonArea, 36, 13);
+    getImageData("claim2.bmp", _buttonArea, 36, 13);
     getImageData("camp/restartu.bmp", null, 22, 15);
 
     _safePoint = new Pixel(_br.x - 15, _br.y - 15);

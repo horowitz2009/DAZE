@@ -81,7 +81,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.43";
+  private static String APP_TITLE = "Daze v0.44";
 
   private Settings _settings;
   private Stats _stats;
@@ -1945,21 +1945,32 @@ public class MainFrame extends JFrame {
 
       
       
-      p = _scanner.scanOneFast("awesome.bmp", area, false);
-      if (p != null) {
-        _mouse.click(p.x + 40, p.y + 7);
-        _mouse.delay(300);
-        p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
-        if (p != null) {
-          _mouse.click(p.x + 16, p.y + 16);
-          _mouse.delay(200);
-        }
-      }
+//      p = _scanner.scanOneFast("awesome.bmp", area, false);
+//      if (p != null) {
+//        _mouse.click(p.x + 40, p.y + 7);
+//        _mouse.delay(300);
+//        p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+//        if (p != null) {
+//          _mouse.click(p.x + 16, p.y + 16);
+//          _mouse.delay(200);
+//        }
+//      }
       
       p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
       if (p != null) {
         _mouse.click(p.x + 16, p.y + 16);
         _mouse.delay(200);
+      }
+      
+      //CLAIM
+      area = _scanner.generateWindowedArea(800, _scanner.getGameHeight());
+      area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
+      area.height = _scanner.getGameHeight() / 2;
+      p = _scanner.scanOneFast("claim2.bmp", area, false);
+      if (p != null) {
+        LOGGER.info("claim1...");
+        _mouse.click(p.x + 34, p.y + 11);
+        _mouse.delay(2200);
       }
       
       p = _scanner.scanOneFast("share.bmp", area, false);
@@ -1973,7 +1984,13 @@ public class MainFrame extends JFrame {
         _mouse.click(p.x + 16, p.y + 16);
         _mouse.delay(200);
       } else {
-        p = _scanner.scanOneFast("claim.bmp", null, true);
+        p = _scanner.scanOneFast("claim2.bmp", null, false);
+        if (p!= null) {
+          LOGGER.info("claim2...");
+          _mouse.click(p);
+          _mouse.delay(3200);
+          handlePopups(wide);
+        }
       }
     } catch (IOException e) {
       e.printStackTrace();

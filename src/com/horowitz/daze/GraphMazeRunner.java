@@ -834,7 +834,12 @@ public class GraphMazeRunner {
     Rectangle area = _scanner.generateWindowedArea(204, 648);// was 486
     area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
     area.width = _scanner.getGameHeight() / 2;
-    Pixel p = _scanner.scanOneFast("share.bmp", area, false);
+    Pixel p = _scanner.scanOneFast("claim.bmp", area, false);
+    if (p != null) {
+      _mouse.click(p.x + 34, p.y + 11);
+      _mouse.delay(2200);
+    }
+    p = _scanner.scanOneFast("share.bmp", area, false);
     if (p != null) {
       _mouse.click(p.x + 34, p.y + 11);
       _mouse.delay(200);
