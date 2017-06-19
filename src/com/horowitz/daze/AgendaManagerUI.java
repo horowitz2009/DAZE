@@ -191,7 +191,7 @@ public class AgendaManagerUI extends JPanel {
   private void initLayout2() {
     _editor = new AgendaEditor(_mapManager);
   _editor.setMinimumSize(new Dimension(300, 300));
-  _editor.setPreferredSize(new Dimension(260, 300));
+  _editor.setPreferredSize(new Dimension(260, 480));
 //  add(new JScrollPane(_editor), BorderLayout.CENTER);
     add(_editor, BorderLayout.CENTER);
 

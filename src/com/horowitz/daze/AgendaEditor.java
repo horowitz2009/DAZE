@@ -84,18 +84,20 @@ public class AgendaEditor extends JPanel {
     // CENTER
     // //////////
     JPanel root = new JPanel(new BorderLayout());
-    mainRoot.add(new JScrollPane(root), BorderLayout.CENTER);
+    JScrollPane scrollPane = new JScrollPane(root);
+    scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+    mainRoot.add(scrollPane, BorderLayout.CENTER);
 
     _box = Box.createVerticalBox();
     DragMouseAdapter dmAdapter = new DragMouseAdapter(JFrame.getFrames()[0]);
     _box.addMouseListener(dmAdapter);
     _box.addMouseMotionListener(dmAdapter);
     mainRoot.setMinimumSize(new Dimension(50, 100));
-    mainRoot.setMaximumSize(new Dimension(100, 300));
-    mainRoot.setPreferredSize(new Dimension(90, 300));
+    //mainRoot.setMaximumSize(new Dimension(100, 800));
+    mainRoot.setPreferredSize(new Dimension(90, 480));
 
     _box.setMinimumSize(new Dimension(100, 20));
-    _box.setMaximumSize(new Dimension(200, 300));
+    //_box.setMaximumSize(new Dimension(200, 800));
     // _box.setPreferredSize(new Dimension(200, 280));
     root.add(_box, BorderLayout.NORTH);
 
