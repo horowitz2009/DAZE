@@ -81,7 +81,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.45";
+  private static String APP_TITLE = "Daze v0.46a";
 
   private Settings _settings;
   private Stats _stats;
@@ -290,8 +290,23 @@ public class MainFrame extends JFrame {
 
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
-        if (_ping2Toggle.isSelected())
-          captureArea(_scanner.getPing2Area(), "ping/diggy ");
+        if (_ping2Toggle.isSelected()) {
+          long now = System.currentTimeMillis();
+          if (now - lastPing > _settings.getInt("ping2.waitSeconds", 30) * 1000) {
+            captureArea(_scanner.getPing2Area(), "ping/diggy ");
+            lastPing = System.currentTimeMillis();
+          }
+          if (_settings.getBoolean("ping2.deleteOlder", true)) {
+            if (!isRunning("DELETE_FILES")) {
+              Thread t = new Thread(new Runnable() {
+                public void run() {
+                  deleteOlder("ping/diggy", -1, _settings.getInt("ping2.deleteOlder.timeHours", 24));
+                }
+              }, "DELETE_FILES");
+              t.start();
+            }
+          }
+        }
       }
     });
 
@@ -304,6 +319,8 @@ public class MainFrame extends JFrame {
     runSettingsListener();
 
   }
+
+  private long lastPing = System.currentTimeMillis();
 
   private void setDefaultSettings() {
     _settings.setProperty("popups", "false");
@@ -1722,7 +1739,7 @@ public class MainFrame extends JFrame {
                       turn++;
                       if (turn > 30) {
                         turn = 1;
-                        LOGGER.info("ETA: " + (System.currentTimeMillis() - start)/60000);
+                        LOGGER.info("ETA: " + (System.currentTimeMillis() - start) / 60000);
                       }
                       if (false)
                         scanEnergy();// EXPERIMENTAL!!!
@@ -1762,16 +1779,15 @@ public class MainFrame extends JFrame {
                       _fstart = System.currentTimeMillis();
                     }
 
-
                     LOGGER.info("MOVE TO NEXT PLACE...");
                   }
                 } catch (PlaceUnreachableException e) {
                   LOGGER.warning(e.getMessage());
                   refresh(false);
                 }
-                
+
                 doCamp();
-                
+
               }
               LOGGER.info("stop all threads: " + _stopAllThreads);
             } while (!_stopAllThreads);
@@ -1805,7 +1821,7 @@ public class MainFrame extends JFrame {
           LOGGER.info("caravans...");
           mapManager.doCaravans();
         }
-        
+
         if (_foundryToggle.isSelected()) {
           LOGGER.info("foundry...");
           mapManager.doFoundry();
@@ -1816,7 +1832,7 @@ public class MainFrame extends JFrame {
   }
 
   private void refresh(boolean bookmark) throws AWTException, IOException, RobotInterruptedException {
-    deleteOlder("refresh", 5);
+    deleteOlder("refresh", 5, -1);
     LOGGER.info("Time to refresh...");
     _scanner.captureGameArea("refresh ");
     Pixel p;
@@ -1931,7 +1947,6 @@ public class MainFrame extends JFrame {
         area = _scanner.generateWindowedArea(800, _scanner.getGameHeight());
       }
 
-
       p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
       if (p != null) {
         _mouse.click(p.x + 16, p.y + 16);
@@ -1943,26 +1958,24 @@ public class MainFrame extends JFrame {
         _mouse.delay(200);
       }
 
-      
-      
-//      p = _scanner.scanOneFast("awesome.bmp", area, false);
-//      if (p != null) {
-//        _mouse.click(p.x + 40, p.y + 7);
-//        _mouse.delay(300);
-//        p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
-//        if (p != null) {
-//          _mouse.click(p.x + 16, p.y + 16);
-//          _mouse.delay(200);
-//        }
-//      }
-      
+      // p = _scanner.scanOneFast("awesome.bmp", area, false);
+      // if (p != null) {
+      // _mouse.click(p.x + 40, p.y + 7);
+      // _mouse.delay(300);
+      // p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+      // if (p != null) {
+      // _mouse.click(p.x + 16, p.y + 16);
+      // _mouse.delay(200);
+      // }
+      // }
+
       p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
       if (p != null) {
         _mouse.click(p.x + 16, p.y + 16);
         _mouse.delay(200);
       }
-      
-      //CLAIM
+
+      // CLAIM
       area = _scanner.generateWindowedArea(800, _scanner.getGameHeight());
       area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
       area.height = _scanner.getGameHeight() / 2;
@@ -1972,7 +1985,7 @@ public class MainFrame extends JFrame {
         _mouse.click(p.x + 34, p.y + 11);
         _mouse.delay(2200);
       }
-      
+
       p = _scanner.scanOneFast("share.bmp", area, false);
       if (p != null) {
         _mouse.click(p.x + 34, p.y + 11);
@@ -1985,7 +1998,7 @@ public class MainFrame extends JFrame {
         _mouse.delay(200);
       } else {
         p = _scanner.scanOneFast("claim2.bmp", null, false);
-        if (p!= null) {
+        if (p != null) {
           LOGGER.info("claim2...");
           _mouse.click(p);
           _mouse.delay(3200);
@@ -2179,19 +2192,21 @@ public class MainFrame extends JFrame {
 
   }
 
-  private void deleteOlder(String prefix, int amountFiles) {
+  private void deleteOlder(String prefix, int amountFiles, int hours) {
     File f = new File(".");
     File[] files = f.listFiles();
     List<File> targetFiles = new ArrayList<File>(6);
     int cnt = 0;
     for (File file : files) {
       if (!file.isDirectory() && file.getName().startsWith(prefix)) {
-        targetFiles.add(file);
-        cnt++;
+        if (hours < 0 || (hours > 0 && System.currentTimeMillis() - file.lastModified() > hours * 60 * 60000)) {
+          targetFiles.add(file);
+          cnt++;
+        }
       }
     }
 
-    if (cnt > amountFiles) {
+    if (amountFiles < 0 || (amountFiles > 0 && cnt > amountFiles)) {
       // delete some files
       Collections.sort(targetFiles, new Comparator<File>() {
         public int compare(File o1, File o2) {
@@ -2223,7 +2238,7 @@ public class MainFrame extends JFrame {
       area = new Rectangle(0, 0, screenSize.width, screenSize.height);
     }
     writeImage(area, filename + DateUtils.formatDateForFile(System.currentTimeMillis()) + ".jpg");
-    deleteOlder("ping", 8);
+    deleteOlder("ping", 8, -1);
   }
 
   public void writeImage(Rectangle rect, String filename) {
