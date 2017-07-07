@@ -81,7 +81,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.46a";
+  private static String APP_TITLE = "Daze v0.46b";
 
   private Settings _settings;
   private Stats _stats;
@@ -300,7 +300,7 @@ public class MainFrame extends JFrame {
             if (!isRunning("DELETE_FILES")) {
               Thread t = new Thread(new Runnable() {
                 public void run() {
-                  deleteOlder("ping/diggy", -1, _settings.getInt("ping2.deleteOlder.timeHours", 24));
+                  deleteOlder("ping", "diggy", -1, _settings.getInt("ping2.deleteOlder.timeHours", 24));
                 }
               }, "DELETE_FILES");
               t.start();
@@ -1832,7 +1832,7 @@ public class MainFrame extends JFrame {
   }
 
   private void refresh(boolean bookmark) throws AWTException, IOException, RobotInterruptedException {
-    deleteOlder("refresh", 5, -1);
+    deleteOlder(".", "refresh", 5, -1);
     LOGGER.info("Time to refresh...");
     _scanner.captureGameArea("refresh ");
     Pixel p;
@@ -2192,8 +2192,8 @@ public class MainFrame extends JFrame {
 
   }
 
-  private void deleteOlder(String prefix, int amountFiles, int hours) {
-    File f = new File(".");
+  private void deleteOlder(String folder, String prefix, int amountFiles, int hours) {
+    File f = new File(folder);
     File[] files = f.listFiles();
     List<File> targetFiles = new ArrayList<File>(6);
     int cnt = 0;
@@ -2206,8 +2206,8 @@ public class MainFrame extends JFrame {
       }
     }
 
-    if (amountFiles < 0 || (amountFiles > 0 && cnt > amountFiles)) {
-      // delete some files
+    if (amountFiles > 0 && cnt > amountFiles) {
+      //sort them before delete them
       Collections.sort(targetFiles, new Comparator<File>() {
         public int compare(File o1, File o2) {
           if (o1.lastModified() > o2.lastModified())
@@ -2219,7 +2219,15 @@ public class MainFrame extends JFrame {
       });
 
       int c = cnt - 5;
+      // delete some files
       for (int i = 0; i < c; i++) {
+        File fd = targetFiles.get(i);
+        fd.delete();
+      }
+      
+    } else if (amountFiles < 0) {
+      //delete all 
+      for (int i = 0; i < targetFiles.size(); i++) {
         File fd = targetFiles.get(i);
         fd.delete();
       }
@@ -2238,7 +2246,7 @@ public class MainFrame extends JFrame {
       area = new Rectangle(0, 0, screenSize.width, screenSize.height);
     }
     writeImage(area, filename + DateUtils.formatDateForFile(System.currentTimeMillis()) + ".jpg");
-    deleteOlder("ping", 8, -1);
+    deleteOlder(".", "ping", 8, -1);
   }
 
   public void writeImage(Rectangle rect, String filename) {
