@@ -222,6 +222,7 @@ public class AgendaManagerUI extends JPanel {
 
       public void run() {
         try {
+          _mapManager.loadMaps();
           JsonStorage js = new JsonStorage();
           List<Agenda> agendas = js.loadAgendas();
           _model.clear();

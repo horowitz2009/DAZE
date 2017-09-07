@@ -295,7 +295,7 @@ public class GraphMazeRunner {
         BufferedImage areaFiltered = new Robot().createScreenCapture(area);
         areaFiltered = filterLogo(areaFiltered, 2 + tries);
 
-        p = _scanner._matcher.findMatch(logoFiltered, areaFiltered, null);
+        p = _scanner.getMatcher().findMatch(logoFiltered, areaFiltered, null);
         // p = _comparator.findImage(logoFiltered, areaFiltered, null);
 
         tries++;

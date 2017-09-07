@@ -81,7 +81,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.46b";
+  private static String APP_TITLE = "Daze v0.47";
 
   private Settings _settings;
   private Stats _stats;
@@ -107,10 +107,6 @@ public class MainFrame extends JFrame {
   private List<Task> _tasks;
 
   private Task _mazeTask;
-
-  private Task _shipsTask;
-
-  private Task _buildingsTask;
 
   private boolean _testMode;
 
@@ -169,7 +165,7 @@ public class MainFrame extends JFrame {
 
       _stats = new Stats();
       _scanner = new ScreenScanner(_settings);
-      ocrEnergy = new OCREnergy(_scanner.getComparator());
+      ocrEnergy = new OCREnergy(_scanner.getImageComparator());
       _scanner.setDebugMode(_testMode);
       _matcher = _scanner.getMatcher();
       _mouse = _scanner.getMouse();
@@ -178,7 +174,6 @@ public class MainFrame extends JFrame {
 
       _tasks = new ArrayList<Task>();
 
-      // FISHING TASK
       _mazeTask = new Task("Maze Runner", 1);
       _mazeProtocol = new MazeProtocol(_scanner, _mouse, _mazeRunner);
       _mazeTask.setProtocol(_mazeProtocol);
@@ -559,48 +554,6 @@ public class MainFrame extends JFrame {
     return new JScrollPane(outputConsole);
   }
 
-  /**
-   * 
-   * @param click
-   * @param attempt
-   * @throws RobotInterruptedException
-   * @deprecated
-   */
-  private void recalcPositions(boolean click, int attempt) throws RobotInterruptedException {
-    try {
-      if (!_scanner.isOptimized()) {
-        scan();
-      }
-
-      if (_scanner.isOptimized()) {
-        _mouse.click(_scanner.getSafePoint());
-        _mouse.delay(200);
-        _mouse.mouseMove(_scanner.getParkingPoint());
-
-        _scanner.checkAndAdjustRock();
-      }
-      Pixel r = _scanner.getRock();
-      if (r != null) {
-
-        LOGGER.info("Recalc positions... ");
-        for (Task task : _tasks) {
-          task.update();
-        }
-      } else {
-        LOGGER.info("CAN'T FIND THE ROCK!!!");
-        handlePopups(false);
-        if (attempt <= 2)
-          recalcPositions(false, ++attempt);
-        else
-          r = null; // reset the hell
-      }
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (AWTException e) {
-      e.printStackTrace();
-    }
-  }
 
   private void record() {
     try {
@@ -1830,7 +1783,7 @@ public class MainFrame extends JFrame {
       }
     }
   }
-
+  
   private void refresh(boolean bookmark) throws AWTException, IOException, RobotInterruptedException {
     deleteOlder(".", "refresh", 5, -1);
     LOGGER.info("Time to refresh...");
@@ -1930,6 +1883,7 @@ public class MainFrame extends JFrame {
   private void handlePopups(boolean wide) throws RobotInterruptedException {
     try {
       LOGGER.info("Popups...");
+      
       boolean found = false;
       Pixel p = null;
       Rectangle area = _scanner.generateWindowedArea(290, 648);// was 486
@@ -1940,6 +1894,8 @@ public class MainFrame extends JFrame {
         wide = true;
       }
 
+      _scanner.handleFBMessages(true);
+      
       long start = System.currentTimeMillis();
       area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
 
@@ -2122,6 +2078,9 @@ public class MainFrame extends JFrame {
       } else if (r.startsWith("click")) {
         service.inProgress(r);
         processClick(r);
+      } else if (r.startsWith("reload")) {
+        service.inProgress(r);
+        _agendaManagerUI.reload();
 
       } else if (r.startsWith("refresh")) {
         service.inProgress(r);
@@ -2178,7 +2137,7 @@ public class MainFrame extends JFrame {
             t.printStackTrace();
           }
           try {
-            Thread.sleep(20000);
+            Thread.sleep(10000);
           } catch (InterruptedException e) {
             e.printStackTrace();
           }
