@@ -244,12 +244,12 @@ public class MapManager {
     }
     _mouse.click(p);
     _mouse.delay(2000);
-    doMenu("camp/restartF.bmp");
+    doMenu("camp/restartF2.bmp");
     LOGGER.info("Foundry done.");
   }
   
   public void doMenu(String imageName) throws RobotInterruptedException, IOException, AWTException {
-    Rectangle area = _scanner.generateWindowedArea(621, 415);
+    Rectangle area = _scanner.generateWindowedArea(621, 425);
     area.y = _scanner.getTopLeft().y + 149;
     area.x += 506;
     area.width = 95;
@@ -269,7 +269,7 @@ public class MapManager {
       buttonArea.y += 60;
     }
     
-    //_scanner.writeArea(area, "kitchen.jpg");
+    //_scanner.writeArea(area, "foundry.jpg");
     
     // close the window
     _mouse.click(area.x + 87, area.y + 5);
