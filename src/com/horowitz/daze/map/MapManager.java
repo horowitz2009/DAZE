@@ -244,7 +244,7 @@ public class MapManager {
     }
     _mouse.click(p);
     _mouse.delay(2000);
-    doMenu("camp/restartF2.bmp");
+    doMenu("camp/restartF.bmp");
     LOGGER.info("Foundry done.");
   }
   
