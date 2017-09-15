@@ -221,7 +221,7 @@ public class MapManager {
   
   public void doCaravans() throws RobotInterruptedException, IOException, AWTException {
     Pixel p = _scanner.getKitchen();
-    p.x -= 686;
+    p.x -= 716;
     _mouse.click(p);
     _mouse.delay(2000);
     doMenu("camp/restartu.bmp");
@@ -244,7 +244,9 @@ public class MapManager {
     }
     _mouse.click(p);
     _mouse.delay(2000);
-    doMenu("camp/restartF.bmp");
+    doMenu("camp/restartF2.bmp");
+    //doMenu("camp/restartF.bmp");
+    
     LOGGER.info("Foundry done.");
   }
   
