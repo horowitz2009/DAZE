@@ -21,9 +21,7 @@ public class JsonStorage {
 
   public DMap loadMap(File mapFile) throws IOException {
     String json = FileUtils.readFileToString(mapFile);
-
     DMap map = gson.fromJson(json, DMap.class);
-
     return map;
   }
 

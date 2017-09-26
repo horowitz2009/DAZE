@@ -23,25 +23,31 @@ public class MapManager {
     super();
     _scanner = scanner;
     _mouse = _scanner.getMouse();
+    _maps = new ArrayList<DMap>();
   }
 
-  public void loadMaps() {
-    _maps = new ArrayList<DMap>();
+  public synchronized void loadMaps() {
+    _maps.clear();
     File mapsFolder = new File("storage/maps");
     if (mapsFolder.exists()) {
       LOGGER.info("Loading maps...");
-
+      System.out.println("loading maps...");
       File[] mapFiles = mapsFolder.listFiles();
       for (File f : mapFiles) {
         try {
-          DMap map = new JsonStorage().loadMap(f);
-          _maps.add(map);
-          LOGGER.info(map.getName());
+          if (f.isFile() && f.canRead()) {
+            System.out.println(f.getName());
+            DMap map = new JsonStorage().loadMap(f);
+            _maps.add(map);
+            LOGGER.info(map.getName());
+          }
         } catch (IOException e) {
           LOGGER.warning("Failed to load " + f.getAbsolutePath());
+          e.printStackTrace();
         }
       }
-
+      
+      System.out.println("Total " + _maps.size() + " maps loaded.");
       LOGGER.info("Total " + _maps.size() + " maps loaded.");
     }
   }
@@ -218,7 +224,7 @@ public class MapManager {
     doMenu("camp/restartu.bmp");
     LOGGER.info("Kitchen done.");
   }
-  
+
   public void doCaravans() throws RobotInterruptedException, IOException, AWTException {
     Pixel p = _scanner.getKitchen();
     p.x -= 716;
@@ -234,7 +240,7 @@ public class MapManager {
     int xlim = _scanner.getBottomRight().x - 143;
     if (p.x > xlim) {
       int y = p.y + 205;
-      int dist =  p.x - xlim;
+      int dist = p.x - xlim;
       int x1 = p.x - 211;
       _mouse.drag(x1, y, x1 - dist, y);
       _mouse.delay(200);
@@ -245,37 +251,37 @@ public class MapManager {
     _mouse.click(p);
     _mouse.delay(2000);
     doMenu("camp/restartF2.bmp");
-    //doMenu("camp/restartF.bmp");
-    
+    // doMenu("camp/restartF.bmp");
+
     LOGGER.info("Foundry done.");
   }
-  
+
   public void doMenu(String imageName) throws RobotInterruptedException, IOException, AWTException {
     Rectangle area = _scanner.generateWindowedArea(621, 425);
     area.y = _scanner.getTopLeft().y + 149;
     area.x += 506;
     area.width = 95;
-    
+
     Rectangle buttonArea = new Rectangle();
     buttonArea.x = area.x;
     buttonArea.width = area.width;
     buttonArea.height = 60;
     buttonArea.y = area.y + 49;
-    
+
     for (int i = 0; i < 6; i++) {
       Pixel p = _scanner.scanOne(imageName, buttonArea, true);
       if (p != null) {
         _mouse.delay(300);
       }
-      //_scanner.writeArea(buttonArea, "kitchen" + i + ".jpg");
+      // _scanner.writeArea(buttonArea, "kitchen" + i + ".jpg");
       buttonArea.y += 60;
     }
-    
-    //_scanner.writeArea(area, "foundry.jpg");
-    
+
+    // _scanner.writeArea(area, "foundry.jpg");
+
     // close the window
     _mouse.click(area.x + 87, area.y + 5);
     _mouse.delay(1000);
   }
-  
+
 }

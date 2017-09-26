@@ -54,6 +54,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -81,7 +82,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.47f";
+  private static String APP_TITLE = "Daze v0.47";
 
   private Settings _settings;
   private Stats _stats;
@@ -134,16 +135,6 @@ public class MainFrame extends JFrame {
         }
       }
       MainFrame frame = new MainFrame(isTestmode);
-      frame.pack();
-      frame.setSize(new Dimension(frame.getSize().width + 8, frame.getSize().height + 8));
-      int w = 450;// frame.getSize().width;
-      final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-      int h = (int) (screenSize.height * 0.9);
-      int x = screenSize.width - w;
-      int y = (screenSize.height - h) / 2;
-      frame.setBounds(x, y, w, h);
-
-      frame.setVisible(true);
     } catch (Throwable e) {
       e.printStackTrace();
     }
@@ -188,7 +179,7 @@ public class MainFrame extends JFrame {
     }
 
     mapManager = new MapManager(_scanner);
-    mapManager.loadMaps();
+    //mapManager.loadMaps();
     // campManager = new CampManager(_scanner);
     // campManager.loadData();
 
@@ -307,12 +298,25 @@ public class MainFrame extends JFrame {
 
     // ///////////////////////
 
-    loadStats();
+    // loadStats();
 
+  }
+
+  private void load() {
+    _agendaManagerUI.reload();
     reapplySettings();
 
-    runSettingsListener();
-
+    Thread t = new Thread(new Runnable() {
+      public void run() {
+        try {
+          Thread.sleep(20000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        runSettingsListener();
+      }
+    });
+    t.start();
   }
 
   private long lastPing = System.currentTimeMillis();
@@ -553,7 +557,6 @@ public class MainFrame extends JFrame {
 
     return new JScrollPane(outputConsole);
   }
-
 
   private void record() {
     try {
@@ -1532,6 +1535,19 @@ public class MainFrame extends JFrame {
     _testMode = isTestmode;
     setupLogger();
     init();
+
+    pack();
+    setSize(new Dimension(getSize().width + 8, getSize().height + 8));
+    int w = 450;// frame.getSize().width;
+    final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    int h = (int) (screenSize.height * 0.9);
+    int x = screenSize.width - w;
+    int y = (screenSize.height - h) / 2;
+    setBounds(x, y, w, h);
+
+    setVisible(true);
+
+    load();
   }
 
   private void doMagic() {
@@ -1783,7 +1799,7 @@ public class MainFrame extends JFrame {
       }
     }
   }
-  
+
   private void refresh(boolean bookmark) throws AWTException, IOException, RobotInterruptedException {
     deleteOlder(".", "refresh", 5, -1);
     LOGGER.info("Time to refresh...");
@@ -1883,7 +1899,7 @@ public class MainFrame extends JFrame {
   private void handlePopups(boolean wide) throws RobotInterruptedException {
     try {
       LOGGER.info("Popups...");
-      
+
       boolean found = false;
       Pixel p = null;
       Rectangle area = _scanner.generateWindowedArea(290, 648);// was 486
@@ -1895,7 +1911,7 @@ public class MainFrame extends JFrame {
       }
 
       _scanner.handleFBMessages(true);
-      
+
       long start = System.currentTimeMillis();
       area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
 
@@ -2166,7 +2182,7 @@ public class MainFrame extends JFrame {
     }
 
     if (amountFiles > 0 && cnt > amountFiles) {
-      //sort them before delete them
+      // sort them before delete them
       Collections.sort(targetFiles, new Comparator<File>() {
         public int compare(File o1, File o2) {
           if (o1.lastModified() > o2.lastModified())
@@ -2183,9 +2199,9 @@ public class MainFrame extends JFrame {
         File fd = targetFiles.get(i);
         fd.delete();
       }
-      
+
     } else if (amountFiles < 0) {
-      //delete all 
+      // delete all
       for (int i = 0; i < targetFiles.size(); i++) {
         File fd = targetFiles.get(i);
         fd.delete();

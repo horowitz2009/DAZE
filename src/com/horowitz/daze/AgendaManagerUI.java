@@ -45,7 +45,7 @@ public class AgendaManagerUI extends JPanel {
     _mapManager = mapManager;
     initLayout();
     initLayout2();
-    reload();
+    //reload();
   }
 
   class MyListModel extends DefaultListModel<Agenda> {
@@ -218,9 +218,9 @@ public class AgendaManagerUI extends JPanel {
   private MyListModel _model;
 
   public void reload() {
-    SwingUtilities.invokeLater(new Runnable() {
-
-      public void run() {
+//    SwingUtilities.invokeLater(new Runnable() {
+//
+//      public void run() {
         try {
           _mapManager.loadMaps();
           JsonStorage js = new JsonStorage();
@@ -230,14 +230,13 @@ public class AgendaManagerUI extends JPanel {
           for (Agenda agenda : agendas) {
             _model.addElement(agenda);
           }
-
-          revalidate();
+//          revalidate();
 
         } catch (IOException e) {
           e.printStackTrace();
         }
-      }
-    });
+//      }
+//    });
 
   }
 
