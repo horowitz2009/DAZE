@@ -82,7 +82,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.47";
+  private static String APP_TITLE = "Daze v0.48";
 
   private Settings _settings;
   private Stats _stats;
@@ -179,7 +179,7 @@ public class MainFrame extends JFrame {
     }
 
     mapManager = new MapManager(_scanner);
-    //mapManager.loadMaps();
+    // mapManager.loadMaps();
     // campManager = new CampManager(_scanner);
     // campManager.loadData();
 
@@ -1779,7 +1779,12 @@ public class MainFrame extends JFrame {
     if (_caravanToggle.isSelected() || _kitchenToggle.isSelected() || _foundryToggle.isSelected()) {
       handlePopups(false);
       // goto camp and ensure visibility
-      if (mapManager.gotoCamp()) {
+      boolean camp = mapManager.gotoCamp();
+      if (!camp) {
+        handlePopups(false);
+        camp = mapManager.gotoCamp();
+      }
+      if (camp) {
 
         if (_kitchenToggle.isSelected()) {
           LOGGER.info("kitchen...");
@@ -1796,6 +1801,8 @@ public class MainFrame extends JFrame {
           mapManager.doFoundry();
         }
 
+      } else {
+        refresh(false);
       }
     }
   }
