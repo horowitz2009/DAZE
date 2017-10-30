@@ -82,7 +82,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.48";
+  private static String APP_TITLE = "Daze v0.49";
 
   private Settings _settings;
   private Stats _stats;
@@ -1673,7 +1673,9 @@ public class MainFrame extends JFrame {
                         try {
                           int tries = 0;
                           Pixel p;
+                          _mouse.delay(5000);//loading
                           do {
+                            //TODO check is loading
                             tries++;
                             LOGGER.info("Looking for diggy... " + tries);
                             p = _scanner.findDiggy(_scanner.getScanArea());
@@ -1808,7 +1810,6 @@ public class MainFrame extends JFrame {
   }
 
   private void refresh(boolean bookmark) throws AWTException, IOException, RobotInterruptedException {
-    deleteOlder(".", "refresh", 5, -1);
     LOGGER.info("Time to refresh...");
     _scanner.captureGameArea("refresh ");
     Pixel p;
@@ -1818,7 +1819,7 @@ public class MainFrame extends JFrame {
         p.y += 4;
         p.x -= 4;
       } else {
-        p = new Pixel(0, 510);
+        p = new Pixel(5, 875);
       }
       _mouse.click(p.x, p.y);
       try {
@@ -1834,7 +1835,7 @@ public class MainFrame extends JFrame {
       // _scanner.reset();
 
       boolean done = false;
-      for (int i = 0; i < 17 && !done; i++) {
+      for (int i = 0; i < 10 && !done; i++) {
         LOGGER.info("after refresh recovery try " + (i + 1));
 
         handlePopups(i > 10);
@@ -1857,13 +1858,16 @@ public class MainFrame extends JFrame {
       if (done) {
         // runMagic();
         captureScreen("refresh done ");
+        reapplySettings();
+        deleteOlder(".", "refresh", 5, -1);
       } else {
         // blah
         // try bookmark
+        //try again
+        refresh(false);
       }
 
       // not sure why shipsTasks gets off after refresh
-      reapplySettings();
 
     } else {
       // try {

@@ -221,12 +221,12 @@ public class ScreenScanner extends BaseScreenScanner {
   public boolean locateGameArea(boolean fullScreen) throws AWTException, IOException, RobotInterruptedException {
     LOGGER.fine("Locating game area ... ");
 
-    _tl = new Pixel(0, 0);
 
     final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    _br = new Pixel(screenSize.width - 3, screenSize.height - 130);
     boolean notReally = false;
     if (fullScreen) {
+      _tl = new Pixel(0, 0);
+      _br = new Pixel(screenSize.width - 3, screenSize.height - 130);
       // use default
       setKeyAreas();
       return true;
