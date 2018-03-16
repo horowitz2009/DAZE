@@ -120,14 +120,14 @@ public class ScreenScanner extends BaseScreenScanner {
     _ping2Area = new Rectangle(_tl.x + 120, _tl.y + 19, getGameWidth() - 120 - 120, getGameHeight() - 85 - 19);
     _energyArea = new Rectangle(_tl.x + getGameWidth() / 2 - 18, _tl.y + 21, 200, 17);
 
-    _scampArea = new Rectangle(_scanArea.x + 280, _scanArea.y + 415, getGameWidth() - 120 - 120 - 280, 65);
+    _scampArea = new Rectangle(_scanArea.x + 25, _scanArea.y + 415, getGameWidth() / 2, 65);
     // writeArea(_scanArea, "scanArea.png");
 
     xx = (getGameWidth() - 140) / 2;
     _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
 
-    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144 - (_wide ? 200 : 0), _tl.y, 400 - 144 + (_wide ? 400
-        : 0), getGameHeight() / 2 + 50);
+    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144 - (_wide ? 200 : 0), _tl.y,
+        400 - 144 + (_wide ? 400 : 0), getGameHeight() / 2 + 50);
     _diggyCaveArea = new Rectangle(_tl.x + getGameWidth() / 2 - 114, _tl.y + 53, 228, 171);
 
     _buttonArea = generateWindowedArea(576, 600);
@@ -220,7 +220,6 @@ public class ScreenScanner extends BaseScreenScanner {
 
   public boolean locateGameArea(boolean fullScreen) throws AWTException, IOException, RobotInterruptedException {
     LOGGER.fine("Locating game area ... ");
-
 
     final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     boolean notReally = false;
@@ -466,8 +465,8 @@ public class ScreenScanner extends BaseScreenScanner {
    * @throws RobotInterruptedException
    * @throws AWTException
    */
-  public Pixel lookForDiggyAroundHere(Pixel pp, int cellRange) throws IOException, RobotInterruptedException,
-      AWTException {
+  public Pixel lookForDiggyAroundHere(Pixel pp, int cellRange)
+      throws IOException, RobotInterruptedException, AWTException {
     Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 * 2 + 60,
         cellRange * 60 * 2 + 60);
     Pixel res = findDiggy(area);
@@ -483,8 +482,8 @@ public class ScreenScanner extends BaseScreenScanner {
       _mouse.click(_campButtonArea.x + 32, _mapButtonArea.y + 20);
       _kitchen = scanOneFast("camp/egypt/kitchen.bmp", area, false);
       LOGGER.info("kitchen... " + tries);
-      _mouse.delay(2000);
       if (_kitchen == null) {
+        _mouse.delay(100);
         handlePopups();
       }
     } while (_kitchen == null && tries < 8);
@@ -493,6 +492,37 @@ public class ScreenScanner extends BaseScreenScanner {
 
   public Pixel getKitchen() {
     return new Pixel(_kitchen);
+  }
+
+  public boolean checkIsStillInMap() throws RobotInterruptedException, IOException, AWTException {
+    boolean mapMode = false;
+    int tries = 0;
+    do {
+      tries++;
+      _mouse.delay(300);
+      mapMode = scanForMapButtons();
+    } while (mapMode && tries < 15);
+    return mapMode;
+  }
+
+  public long checkIsLoading() throws RobotInterruptedException, IOException, AWTException {
+    _mouse.delay(750);
+    long start = System.currentTimeMillis();
+    int xx = getGameWidth() / 2;
+    int yy = getGameHeight() / 3;
+    Rectangle area = new Rectangle(_tl.x + xx, _tl.y + yy, 400, yy);
+    boolean found = false;
+    do {
+      _mouse.delay(300);
+      found = scanOne("map/loadingG.png", area, false) != null;
+      if (!found && System.currentTimeMillis() - start < 2000) {
+        LOGGER.info("not found, but it's too early");
+        found = true;
+      }
+
+    } while (found && (System.currentTimeMillis() - start < 9000));
+    
+    return (System.currentTimeMillis() - start);
   }
 
   public boolean gotoMap(DMap map) throws RobotInterruptedException, IOException, AWTException {
@@ -612,4 +642,9 @@ public class ScreenScanner extends BaseScreenScanner {
     return _ping2Area;
   }
 
+  @Override
+  public void reset() {
+    _imageDataCache.clear();
+    super.reset();
+  }
 }

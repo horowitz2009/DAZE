@@ -82,7 +82,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.49";
+  private static String APP_TITLE = "Daze v0.52";
 
   private Settings _settings;
   private Stats _stats;
@@ -742,9 +742,9 @@ public class MainFrame extends JFrame {
           Thread t = new Thread(new Runnable() {
             public void run() {
               try {
-                doCamp();
+                doCamp(false);
               } catch (RobotInterruptedException e) {
-                e.printStackTrace();
+                LOGGER.info("INTERRUPTED");
               } catch (IOException e) {
                 e.printStackTrace();
               } catch (AWTException e) {
@@ -1008,6 +1008,31 @@ public class MainFrame extends JFrame {
 
       }
     });
+    
+    {
+      AbstractAction action = new AbstractAction("Do Camp AUTO") {
+        public void actionPerformed(ActionEvent e) {
+          Thread t = new Thread(new Runnable() {
+            public void run() {
+              try {
+                doCamp(true);
+              } catch (RobotInterruptedException e) {
+                LOGGER.info("INTERRUPTED");
+                //e.printStackTrace();
+              } catch (IOException e) {
+                e.printStackTrace();
+              } catch (AWTException e) {
+                e.printStackTrace();
+              }
+
+            }
+          });
+          t.start();
+        }
+
+      };
+      toolbar.add(action);
+    }
 
     return toolbar;
   }
@@ -1673,7 +1698,19 @@ public class MainFrame extends JFrame {
                         try {
                           int tries = 0;
                           Pixel p;
-                          _mouse.delay(5000);//loading
+                          
+                          
+                          //check is still in map mode
+                          boolean b = _scanner.checkIsStillInMap();
+                          LOGGER.info("still in map? " + b);
+                          long howLong = _scanner.checkIsLoading();
+                          LOGGER.info("loading? " + howLong);
+                          _mouse.delay(500);
+                          if (_pingToggle.isSelected())
+                            captureScreen(null);// ping
+                          
+                          
+                          //_mouse.delay(11000);//loading
                           do {
                             //TODO check is loading
                             tries++;
@@ -1757,7 +1794,7 @@ public class MainFrame extends JFrame {
                   refresh(false);
                 }
 
-                doCamp();
+                doCamp(false);
 
               }
               LOGGER.info("stop all threads: " + _stopAllThreads);
@@ -1777,7 +1814,7 @@ public class MainFrame extends JFrame {
     }
   }
 
-  private void doCamp() throws RobotInterruptedException, IOException, AWTException {
+  private void doCampOnce() throws RobotInterruptedException, IOException, AWTException {
     if (_caravanToggle.isSelected() || _kitchenToggle.isSelected() || _foundryToggle.isSelected()) {
       handlePopups(false);
       // goto camp and ensure visibility
@@ -1806,6 +1843,18 @@ public class MainFrame extends JFrame {
       } else {
         refresh(false);
       }
+    }
+  }
+
+  
+  private void doCamp(boolean auto) throws RobotInterruptedException, IOException, AWTException {
+    if (auto) {
+      while(true) {
+        doCampOnce();
+        _mouse.delay(1000);
+      }
+    } else {
+      doCampOnce();
     }
   }
 

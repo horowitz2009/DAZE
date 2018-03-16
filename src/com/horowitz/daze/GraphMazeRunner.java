@@ -171,8 +171,8 @@ public class GraphMazeRunner {
             // _mouse.delay(6000);
             BufferedImage preClick = captureBlock(vertex._coords);
             if (checkIsSafeToClick(vertex._coords.x + 30, vertex._coords.y + 30)) {
-              _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
-              if (isWalkable(vertex, preClick) || (isSlow() && isWalkable(vertex, preClick))) {
+              // _mouse.click(vertex._coords.x + 30, vertex._coords.y + 30);
+              if (isWalkable(vertex, preClick)) {
                 // wait until diggy arrives
                 int tries = 0;
                 boolean diggyHere = false;
@@ -309,46 +309,69 @@ public class GraphMazeRunner {
     }
 
     private boolean isWalkable(Position vertex, BufferedImage preClick) throws AWTException, RobotInterruptedException {
-      int number = 20;
       Pixel p = vertex._coords;
+
+      // first click
+      _mouse.click(p.x + 30, p.y + 30);
+
+      int number = 15;
       List<BufferedImage> images = new ArrayList<>();
       images.add(preClick);
-      long start = System.currentTimeMillis();
-      _mouse.delay(30);
+      //long start = System.currentTimeMillis();
+      _mouse.delay(60);
       for (int i = 0; i < number; i++) {
-        // _mouse.delay(25);
-        if (i == 4) {
+        if (i == 3 || i == 5 || i == 10) {
           _mouse.click(p.x + 30, p.y + 30);
-          // LOGGER.info("click isWalkable");
         }
+        _mouse.delay(30);
         images.add(captureBlock(p));
       }
-      long end = System.currentTimeMillis();
-
-      for (int i = 2; i < images.size(); i++) {
-        BufferedImage image = images.get(i);
-        List<Blob> blobs = new MotionDetector().detect(images.get(i - 2), image, -1);
-        for (Blob blob : blobs) {
+      //long end = System.currentTimeMillis();
+      if (false) {
+        for (int i = 0; i < images.size(); i++) {
+          BufferedImage image = images.get(i);
           FastBitmap fb2 = new FastBitmap(image);
+          fb2.saveAsPNG("walking" + i + ".png");
+        }
+      }
 
-          int cnt = 0;
-          for (IntPoint point : blob.getPoints()) {
-            if (fb2.getRed(point) == 151 && fb2.getGreen(point) == 235 && fb2.getBlue(point) == 81)
-              cnt++;
-            if (cnt > 3) {
-              // BINGOOO
-              // fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" +
-              // blob.getCenter().x + "_" + System.currentTimeMillis()
-              // + ".png");
-              LOGGER.info("isWalkable: true " + (end - start));
-              return true;
-            }
+      List<Blob> blobs = new MotionDetector().detect(images.get(0), images.get(12), -1);
+      boolean walkable = false;
+      if (examineBlobs(blobs, images.get(0))) {
+        walkable = true;
+      } else {
+
+        for (int i = 2; i < images.size(); i++) {
+          BufferedImage image = images.get(i);
+          blobs = new MotionDetector().detect(images.get(0), image, -1);
+          if (examineBlobs(blobs, image)) {
+            walkable = true;
+            break;
           }
+        }
+      }
+      LOGGER.info("isWalkable: " + walkable);
+      return walkable;
+    }
 
+    private boolean examineBlobs(List<Blob> blobs, BufferedImage image) {
+      for (Blob blob : blobs) {
+        FastBitmap fb2 = new FastBitmap(image);
+
+        int cnt = 0;
+        for (IntPoint point : blob.getPoints()) {
+          if (fb2.getRed(point) == 151 && fb2.getGreen(point) == 235 && fb2.getBlue(point) == 81)
+            cnt++;
+          if (cnt > 3) {
+            // BINGOOO
+            // fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" +
+            // blob.getCenter().x + "_" + System.currentTimeMillis()
+            // + ".png");
+            return true;
+          }
         }
 
       }
-      LOGGER.info("isWalkable: FALSE " + (end - start));
       return false;
     }
 

@@ -220,23 +220,23 @@ public class MapManager {
 
   public void doKitchen() throws RobotInterruptedException, IOException, AWTException {
     _mouse.click(_scanner.getKitchen());
-    _mouse.delay(2000);
+    _mouse.delay(500);
     doMenu("camp/restartu.bmp");
     LOGGER.info("Kitchen done.");
   }
 
   public void doCaravans() throws RobotInterruptedException, IOException, AWTException {
     Pixel p = _scanner.getKitchen();
-    p.x -= 716;
+    p.x -= 750;
     _mouse.click(p);
-    _mouse.delay(2000);
+    _mouse.delay(500);
     doMenu("camp/restartu.bmp");
     LOGGER.info("Caravans done.");
   }
 
   public void doFoundry() throws RobotInterruptedException, IOException, AWTException {
     Pixel p = _scanner.getKitchen();
-    p.x += 211;
+    p.x += 181;
     int xlim = _scanner.getBottomRight().x - 143;
     if (p.x > xlim) {
       int y = p.y + 205;
@@ -246,10 +246,12 @@ public class MapManager {
       _mouse.delay(200);
       _scanner.gotoCamp();
       p = _scanner.getKitchen();
-      p.x += 211;
+      p.x += 181;
     }
     _mouse.click(p);
-    _mouse.delay(2000);
+    _mouse.delay(100);
+    _mouse.click(p);
+    _mouse.delay(500);
     doMenu("camp/restartF2.bmp");
     // doMenu("camp/restartF.bmp");
 

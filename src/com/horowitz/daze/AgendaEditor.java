@@ -270,6 +270,7 @@ public class AgendaEditor extends JPanel {
     private static final long serialVersionUID = -1413464832208854042L;
 
     RemoveAction _removeAction;
+    DuplicateAction _duplicateAction;
 
     JComboBox<DMap> _mapCB;
     JComboBox<Place> _placeCB;
@@ -280,12 +281,18 @@ public class AgendaEditor extends JPanel {
       super(BoxLayout.LINE_AXIS);
       // remove
       _removeAction = new RemoveAction(AgendaEntryView.this);
+      _duplicateAction = new DuplicateAction(AgendaEntryView.this);
       JButton removeButton = new JButton(_removeAction);
       shrinkFont(removeButton, -1);
       removeButton.setMargin(new Insets(2, 2, 2, 2));
-      _anchor = new JLabel(" ► ");
+      JButton duplicateButton = new JButton(_duplicateAction);
+      shrinkFont(duplicateButton, -1);
+      duplicateButton.setMargin(new Insets(2, 2, 2, 2));
+      _anchor = new JLabel("► ");
+      shrinkFont(_anchor, -4);
       add(_anchor);
       add(removeButton);
+      add(duplicateButton);
       add(Box.createHorizontalStrut(6));
       // map
       List<DMap> maps = new ArrayList<DMap>(_mapManager.getMaps());
@@ -296,15 +303,17 @@ public class AgendaEditor extends JPanel {
         }
       });
       _mapCB = new JComboBox<DMap>(maps.toArray(new DMap[0]));
-      shrinkFont(_mapCB, -1);
+      shrinkFont(_mapCB, -4);
       add(_mapCB);
       add(Box.createHorizontalStrut(6));
 
       // Place
       _placeCB = new JComboBox<Place>();
+      shrinkFont(_placeCB, -4);
       add(_placeCB);
       // dest
       _directionsTF = new JTextField(5);
+      shrinkFont(_directionsTF, -4);
 
       add(_directionsTF);
 
@@ -364,9 +373,30 @@ public class AgendaEditor extends JPanel {
   class RemoveAction extends AbstractAction {
     private static final long serialVersionUID = -632649060095568382L;
     Component _comp;
-
+    
     public RemoveAction(Component comp) {
-      super("  -  ");
+      super(" - ");
+      _comp = comp;
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          _box.remove(_comp);
+          revalidate();
+        }
+      });
+      
+    }
+  }
+  
+  class DuplicateAction extends AbstractAction {
+    private static final long serialVersionUID = -632649060095568382L;
+    Component _comp;
+
+    public DuplicateAction(Component comp) {
+      super("c");
       _comp = comp;
     }
 
@@ -374,7 +404,27 @@ public class AgendaEditor extends JPanel {
     public void actionPerformed(ActionEvent e) {
       SwingUtilities.invokeLater(new Runnable() {
         public void run() {
-          _box.remove(_comp);
+          //_box.remove(_comp);
+          AgendaEntryView copy = new AgendaEntryView();
+          AgendaEntryView src = (AgendaEntryView) _comp;
+          copy._mapCB.setSelectedItem(src._mapCB.getSelectedItem());
+          copy._placeCB.setSelectedItem(src._placeCB.getSelectedItem());
+          copy._directionsTF.setText(src._directionsTF.getText());
+          
+          //find the position
+          int pos = -1;
+          for (int i = 0; i < _box.getComponentCount(); i++) {
+            Component component = _box.getComponent(i);
+            if (component == _comp) {
+              pos = i;
+              break;
+            }
+          }
+          if (pos < 0)
+            _box.add(copy);
+          else
+            _box.add(copy, pos + 1);
+          
           revalidate();
         }
       });
