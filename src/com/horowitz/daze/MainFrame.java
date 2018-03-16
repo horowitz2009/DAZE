@@ -54,7 +54,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -82,7 +81,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.52";
+  private static String APP_TITLE = "Daze v0.53";
 
   private Settings _settings;
   private Stats _stats;
@@ -178,7 +177,7 @@ public class MainFrame extends JFrame {
       System.exit(1);
     }
 
-    mapManager = new MapManager(_scanner);
+    mapManager = new MapManager(_scanner, _settings);
     // mapManager.loadMaps();
     // campManager = new CampManager(_scanner);
     // campManager.loadData();

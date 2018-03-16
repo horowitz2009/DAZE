@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import com.horowitz.commons.MouseRobot;
 import com.horowitz.commons.Pixel;
 import com.horowitz.commons.RobotInterruptedException;
+import com.horowitz.commons.Settings;
 import com.horowitz.daze.ScreenScanner;
 
 public class MapManager {
@@ -18,10 +19,12 @@ public class MapManager {
   private List<DMap> _maps;
   private ScreenScanner _scanner;
   private MouseRobot _mouse;
+  private Settings _settings;
 
-  public MapManager(ScreenScanner scanner) {
+  public MapManager(ScreenScanner scanner, Settings settings) {
     super();
     _scanner = scanner;
+    _settings = settings;
     _mouse = _scanner.getMouse();
     _maps = new ArrayList<DMap>();
   }
@@ -220,7 +223,7 @@ public class MapManager {
 
   public void doKitchen() throws RobotInterruptedException, IOException, AWTException {
     _mouse.click(_scanner.getKitchen());
-    _mouse.delay(500);
+    _mouse.delay(_settings.getInt("camp.delay", 850));
     doMenu("camp/restartu.bmp");
     LOGGER.info("Kitchen done.");
   }
@@ -229,7 +232,7 @@ public class MapManager {
     Pixel p = _scanner.getKitchen();
     p.x -= 750;
     _mouse.click(p);
-    _mouse.delay(500);
+    _mouse.delay(_settings.getInt("camp.delay", 850));
     doMenu("camp/restartu.bmp");
     LOGGER.info("Caravans done.");
   }
@@ -251,7 +254,7 @@ public class MapManager {
     _mouse.click(p);
     _mouse.delay(100);
     _mouse.click(p);
-    _mouse.delay(500);
+    _mouse.delay(_settings.getInt("camp.delay", 850));
     doMenu("camp/restartF2.bmp");
     // doMenu("camp/restartF.bmp");
 
