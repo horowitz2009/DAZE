@@ -25,6 +25,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.horowitz.commons.Settings;
 import com.horowitz.daze.map.Agenda;
 import com.horowitz.daze.map.AgendaEntry;
 import com.horowitz.daze.map.JsonStorage;
@@ -327,7 +328,7 @@ public class AgendaManagerUI extends JPanel {
   public static void main(String[] args) {
     try {
       JFrame frame = new JFrame("TEST");
-      MapManager mapManager = new MapManager(new ScreenScanner(null));
+      MapManager mapManager = new MapManager(new ScreenScanner(null), new Settings("daze.properties"));
       // mapManager.loadData();
       AgendaManagerUI panel = new AgendaManagerUI(mapManager);
       frame.getContentPane().add(panel);

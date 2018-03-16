@@ -37,6 +37,7 @@ import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
 
+import com.horowitz.commons.Settings;
 import com.horowitz.daze.map.Agenda;
 import com.horowitz.daze.map.AgendaEntry;
 import com.horowitz.daze.map.DMap;
@@ -465,7 +466,7 @@ public class AgendaEditor extends JPanel {
 
     try {
       JFrame frame = new JFrame("TEST");
-      MapManager mapManager = new MapManager(new ScreenScanner(null));
+      MapManager mapManager = new MapManager(new ScreenScanner(null), new Settings("daze.properties"));
       // mapManager.loadData();
       AgendaEditor panel = new AgendaEditor(mapManager);
       frame.getContentPane().add(panel);
