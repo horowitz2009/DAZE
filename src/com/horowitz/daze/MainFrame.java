@@ -2396,12 +2396,12 @@ public class MainFrame extends JFrame {
       energyArea.y = p.y - 1;
       energyArea.width = 191;
       energyArea.height = 19;
-      energyArea.x += 160;
-      energyArea.width -= 160;
+      energyArea.x += 100;
+      energyArea.width -= 100;
     }
 
 
-    return p != null && _scanner.findImage("energy/energyNotFull.png", energyArea, Color.red) == null;
+    return p != null && _scanner.findImage("energy/energyNotFull2.png", energyArea, Color.red) == null;
   }
 
 }
