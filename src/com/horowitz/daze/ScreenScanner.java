@@ -87,6 +87,8 @@ public class ScreenScanner extends BaseScreenScanner {
 
   private boolean _wide;
 
+  public String campLayout;
+  
   public boolean isWide() {
     return _wide;
   }
@@ -98,6 +100,7 @@ public class ScreenScanner extends BaseScreenScanner {
   public ScreenScanner(Settings settings) {
     super(settings);
     _popupAreaX = new Rectangle(650, 150, 760, 400);
+    campLayout = settings.getProperty("camp.layout", "greece");
   }
 
   public Rectangle generateWindowedArea(int width, int height) {
@@ -136,7 +139,7 @@ public class ScreenScanner extends BaseScreenScanner {
     getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
     getImageData("claim.bmp", _buttonArea, 36, 13);
     getImageData("claim2.bmp", _buttonArea, 36, 13);
-    getImageData("camp/restartu.bmp", null, 22, 15);
+    //getImageData("camp/restartC.png", null, 22, 15);
 
     // _safePoint = new Pixel(_br.x - 15, _br.y - 15);
     // _parkingPoint = new Pixel(_br);
@@ -480,7 +483,8 @@ public class ScreenScanner extends BaseScreenScanner {
     do {
       tries++;
       _mouse.click(_campButtonArea.x + 32, _mapButtonArea.y + 20);
-      _kitchen = scanOneFast("camp/greece/kitchen.png", area, false);
+      
+      _kitchen = scanOneFast("camp/" + campLayout + "/kitchen.png", area, false);
       LOGGER.info("kitchen... " + tries);
       if (_kitchen == null) {
         _mouse.delay(100);

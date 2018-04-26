@@ -224,7 +224,7 @@ public class MapManager {
   public void doKitchen() throws RobotInterruptedException, IOException, AWTException {
     _mouse.click(_scanner.getKitchen());
     _mouse.delay(_settings.getInt("camp.delay", 850));
-    doMenu("camp/restartu.bmp");
+    doMenu("camp/egypt/restartC.png");
     LOGGER.info("Kitchen done.");
   }
 
@@ -233,7 +233,7 @@ public class MapManager {
     p.x -= 750;
     _mouse.click(p);
     _mouse.delay(_settings.getInt("camp.delay", 850));
-    doMenu("camp/greece/restartC.png");
+    doMenu("camp/" +_scanner.campLayout +  "/restartC.png");
     LOGGER.info("Caravans done.");
   }
 
