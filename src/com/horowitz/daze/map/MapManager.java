@@ -233,14 +233,15 @@ public class MapManager {
     p.x -= 750;
     _mouse.click(p);
     _mouse.delay(_settings.getInt("camp.delay", 850));
-    doMenu("camp/restartu.bmp");
+    doMenu("camp/greece/restartC.png");
     LOGGER.info("Caravans done.");
   }
 
   public void doFoundry() throws RobotInterruptedException, IOException, AWTException {
     Pixel p = _scanner.getKitchen();
-    p.x += 181;
-    int xlim = _scanner.getBottomRight().x - 143;
+    p.x += 183;
+    p.y += 24;
+    int xlim = _scanner.getBottomRight().x - 98;
     if (p.x > xlim) {
       int y = p.y + 205;
       int dist = p.x - xlim;
@@ -249,7 +250,8 @@ public class MapManager {
       _mouse.delay(200);
       _scanner.gotoCamp();
       p = _scanner.getKitchen();
-      p.x += 181;
+      p.x += 183;
+      p.y += 24;
     }
     _mouse.click(p);
     _mouse.delay(100);

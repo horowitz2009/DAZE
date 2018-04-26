@@ -480,7 +480,7 @@ public class ScreenScanner extends BaseScreenScanner {
     do {
       tries++;
       _mouse.click(_campButtonArea.x + 32, _mapButtonArea.y + 20);
-      _kitchen = scanOneFast("camp/egypt/kitchen.bmp", area, false);
+      _kitchen = scanOneFast("camp/greece/kitchen.png", area, false);
       LOGGER.info("kitchen... " + tries);
       if (_kitchen == null) {
         _mouse.delay(100);
