@@ -81,7 +81,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.55";
+  private static String APP_TITLE = "Daze v0.57";
 
   private Settings _settings;
   private Stats _stats;
@@ -725,11 +725,20 @@ public class MainFrame extends JFrame {
 
     // TEST GO TO MAP
     {
-      AbstractAction action = new AbstractAction("Do Agenda") {
+      AbstractAction action = new AbstractAction("Agenda") {
         public void actionPerformed(ActionEvent e) {
-          doAgenda();
+          doAgenda(true);
         }
 
+      };
+      mainToolbar1.add(action);
+    }
+    {
+      AbstractAction action = new AbstractAction("Cont") {
+        public void actionPerformed(ActionEvent e) {
+          doAgenda(false);
+        }
+        
       };
       mainToolbar1.add(action);
     }
@@ -785,6 +794,29 @@ public class MainFrame extends JFrame {
       };
       mainToolbar1.add(action);
     }
+    // TEST scan energy
+    {
+      AbstractAction action = new AbstractAction("CC") {
+        public void actionPerformed(ActionEvent e) {
+          Thread t = new Thread(new Runnable() {
+            public void run() {
+              try {
+                int c = checkCamp();
+                LOGGER.info ("CAMP: " + c);
+
+              } catch (Exception e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+              }
+
+            }
+          });
+          t.start();
+        }
+
+      };
+      mainToolbar1.add(action);
+    }
     // // STOP MAGIC
     // {
     // AbstractAction action = new AbstractAction("Stop") {
@@ -806,7 +838,7 @@ public class MainFrame extends JFrame {
 
     {
       _regenTF = new JTextField("2335");
-      mainToolbar1.add(_regenTF);
+      //mainToolbar1.add(_regenTF);
       _regenTF.getDocument().addDocumentListener(new DocumentListener() {
 
         @Override
@@ -826,7 +858,7 @@ public class MainFrame extends JFrame {
     }
     {
       _tileTF = new JTextField("100");
-      mainToolbar1.add(_tileTF);
+      //mainToolbar1.add(_tileTF);
       _tileTF.getDocument().addDocumentListener(new DocumentListener() {
 
         @Override
@@ -846,7 +878,7 @@ public class MainFrame extends JFrame {
     }
     {
       _timeTF = new JTextField("5");
-      mainToolbar1.add(_timeTF);
+      //mainToolbar1.add(_timeTF);
     }
 
     return mainToolbar1;
@@ -1567,7 +1599,7 @@ public class MainFrame extends JFrame {
 
     pack();
     setSize(new Dimension(getSize().width + 8, getSize().height + 8));
-    int w = 450;// frame.getSize().width;
+    int w = 290;// frame.getSize().width;
     final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     int h = (int) (screenSize.height * 0.9);
     int x = screenSize.width - w;
@@ -1669,20 +1701,38 @@ public class MainFrame extends JFrame {
 
     _mouse.delay(200);
   }
-
-  private void doAgenda() {
+  
+  private int lastAgendaEntry = 0;
+  
+  private void doAgenda(boolean startover) {
+    if (startover) {
+      lastAgendaEntry = 0;
+      _agendaManagerUI.setEntryIndex(lastAgendaEntry);
+    } else {
+      lastAgendaEntry = _agendaManagerUI.getEntryIndex();
+    }
+    
     if (_agenda != null && !_agenda.getEntries().isEmpty()) {
       Thread myThread = new Thread(new Runnable() {
         @Override
         public void run() {
           _mazeRunner.setStopIt(false);
           try {
+            
             do {
               List<AgendaEntry> agendas = _agenda.getEntries();
-              for (AgendaEntry agenda : agendas) {
-                executeAgenda(agenda, false);
+              for (int i = lastAgendaEntry; i < agendas.size(); i++) {
+                lastAgendaEntry = i;
+                _agendaManagerUI.setEntryIndex(lastAgendaEntry);
+                executeAgenda(agendas.get(lastAgendaEntry), 0, false);
+                doCampOnce();
+                LOGGER.info("MOVE TO NEXT PLACE...");
               }
-              LOGGER.info("stop all threads: " + _stopAllThreads);
+              
+              //reset
+              lastAgendaEntry = 0;
+              _agendaManagerUI.setEntryIndex(lastAgendaEntry);
+              //LOGGER.info("stop all threads: " + _stopAllThreads);
             } while (!_stopAllThreads);
           } catch (RobotInterruptedException e) {
             LOGGER.info("INTERRUPTED!");
@@ -1693,7 +1743,7 @@ public class MainFrame extends JFrame {
           }
         }
 
-        private void executeAgenda(AgendaEntry agenda, boolean emergency)
+        private void executeAgenda(final AgendaEntry agenda, final long time, boolean emergency)
             throws RobotInterruptedException, IOException, AWTException {
           if (_stopAllThreads)
             return;
@@ -1707,6 +1757,7 @@ public class MainFrame extends JFrame {
               // do this place
               _fstart = System.currentTimeMillis();
               long start = System.currentTimeMillis();
+              long limit = time <= 0 ? _settings.getInt("agenda.inactiveTimeOut", 30) * 60000 : time * 60000;
 
               if (_pingToggle.isSelected())
                 captureScreen(null);// ping
@@ -1718,9 +1769,9 @@ public class MainFrame extends JFrame {
               do {
                 _mouse.delay(1000, false);// DO NOT INTTERRUPT!!!
                 turn++;
-                if (turn > 30) {
+                if (turn > 20) {
                   turn = 1;
-                  LOGGER.info("ETA: " + (System.currentTimeMillis() - start) / 60000);
+                  LOGGER.info("ETA: " + ((System.currentTimeMillis() - start) / 60000) + " of " + (limit / 60000));
                 }
                 if (_settings.getBoolean("autoEnergy", false) && !emergency) {
                   boolean energyFull = scanEnergy();// EXPERIMENTAL!!!
@@ -1730,9 +1781,25 @@ public class MainFrame extends JFrame {
                     Agenda energyAgenda = _agendaManagerUI.getEnergyAgenda();
                     if (energyAgenda != null && !energyAgenda.getEntries().isEmpty()) {
                       for (AgendaEntry ae : energyAgenda.getEntries()) {
-                        executeAgenda(ae, true);
+                        executeAgenda(ae, 12, true);
                       }
                     }
+                  }
+                }
+                if (!emergency) {
+                  int camp = checkCamp();
+                  if (camp > 1) {
+                    LOGGER.info("CAMP: " + camp);
+                    LOGGER.info("STOP THE MAZE AND DO CAMP");
+                    stopMaze();
+                    doCampOnce();
+                    long etal = System.currentTimeMillis() - start;
+                    if (etal / limit < 0.85) {
+                      long rest = limit - etal;
+                      rest /= 60000;
+                      executeAgenda(_agenda.getEntries().get(lastAgendaEntry), rest, false);
+                    }
+
                   }
                 }
 
@@ -1741,14 +1808,14 @@ public class MainFrame extends JFrame {
                 }
                 // LOGGER.info("tik tak... " + (System.currentTimeMillis()
                 // - _fstart) / 1000);
-              } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);
+              } while (System.currentTimeMillis() - start < limit);
 
               // THAT'S IT. STOP IT IF NOT DONE ALREADY
               stopMaze();
 
               // REFRESH
               if (_autoRefreshToggle.isSelected()
-                  && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
+                  && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 60000) {
                 LOGGER.info("refresh time...");
                 try {
                   refresh(false);
@@ -1759,15 +1826,11 @@ public class MainFrame extends JFrame {
                 }
                 _fstart = System.currentTimeMillis();
               }
-
-              LOGGER.info("MOVE TO NEXT PLACE...");
             }
           } catch (PlaceUnreachableException e) {
             LOGGER.warning(e.getMessage());
             refresh(false);
           }
-
-          doCamp(false);
         }
 
         private void stopMaze() {
@@ -1779,8 +1842,8 @@ public class MainFrame extends JFrame {
                 Thread.sleep(500);
               } catch (InterruptedException e) {
               }
-              if (isRunning("RUN_MAZE"))
-                LOGGER.info("maze runner still running...");
+//              if (isRunning("RUN_MAZE"))
+//                LOGGER.info("maze runner still running...");
             }
           }
           _mazeRunner.setStopIt(false);
@@ -1838,6 +1901,11 @@ public class MainFrame extends JFrame {
 
       myThread.start();
     }
+  }
+
+  protected int checkCamp() throws AWTException, RobotInterruptedException, IOException {
+    int c = _scanner.checkCamp();
+    return c;
   }
 
   private void doCampOnce() throws RobotInterruptedException, IOException, AWTException {
@@ -2174,7 +2242,7 @@ public class MainFrame extends JFrame {
       } else if (r.startsWith("agenda")) {
         service.inProgress(r);
         stopMagic();
-        doAgenda();
+        doAgenda(true);
         captureScreen(null);
       } else if (r.startsWith("click")) {
         service.inProgress(r);

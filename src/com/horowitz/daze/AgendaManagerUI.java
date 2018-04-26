@@ -374,4 +374,12 @@ public class AgendaManagerUI extends JPanel {
 
   }
 
+  public void setEntryIndex(int i) {
+    _editor.setEntryIndex(i);
+  }
+  
+  public int getEntryIndex() {
+    return _editor.getEntryIndex();
+  }
+
 }

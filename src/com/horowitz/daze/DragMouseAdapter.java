@@ -75,7 +75,6 @@ class DragMouseAdapter extends MouseAdapter {
 
     updateWindowLocation(pt, parent);
     window.setVisible(true);
-    System.err.println("started...");
   }
 
   private void updateWindowLocation(Point pt, JComponent parent) {

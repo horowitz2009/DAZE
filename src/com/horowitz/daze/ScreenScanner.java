@@ -1,6 +1,7 @@
 package com.horowitz.daze;
 
 import java.awt.AWTException;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.Point;
@@ -88,7 +89,7 @@ public class ScreenScanner extends BaseScreenScanner {
   private boolean _wide;
 
   public String campLayout;
-  
+
   public boolean isWide() {
     return _wide;
   }
@@ -122,7 +123,7 @@ public class ScreenScanner extends BaseScreenScanner {
     _scanArea = new Rectangle(_tl.x + 120, _tl.y + 85, getGameWidth() - 120 - 120, getGameHeight() - 85 - 85);
     _ping2Area = new Rectangle(_tl.x + 120, _tl.y + 19, getGameWidth() - 120 - 120, getGameHeight() - 85 - 19);
     _energyArea = new Rectangle(_tl.x + getGameWidth() / 2 - 100, _tl.y + 19, 300, 22);
-    
+
     _scampArea = new Rectangle(_scanArea.x + 25, _scanArea.y + 415, getGameWidth() / 2, 65);
     // writeArea(_scanArea, "scanArea.png");
 
@@ -139,7 +140,7 @@ public class ScreenScanner extends BaseScreenScanner {
     getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
     getImageData("claim.bmp", _buttonArea, 36, 13);
     getImageData("claim2.bmp", _buttonArea, 36, 13);
-    //getImageData("camp/restartC.png", null, 22, 15);
+    // getImageData("camp/restartC.png", null, 22, 15);
 
     // _safePoint = new Pixel(_br.x - 15, _br.y - 15);
     // _parkingPoint = new Pixel(_br);
@@ -483,7 +484,7 @@ public class ScreenScanner extends BaseScreenScanner {
     do {
       tries++;
       _mouse.click(_campButtonArea.x + 32, _mapButtonArea.y + 20);
-      
+
       _kitchen = scanOneFast("camp/" + campLayout + "/kitchen.png", area, false);
       LOGGER.info("kitchen... " + tries);
       if (_kitchen == null) {
@@ -492,6 +493,30 @@ public class ScreenScanner extends BaseScreenScanner {
       }
     } while (_kitchen == null && tries < 8);
     return _kitchen != null;
+  }
+
+  public int checkCamp() throws AWTException, RobotInterruptedException, IOException {
+    //LOGGER.info("checkCamp...");
+    Rectangle carea = new Rectangle(_campButtonArea);
+    carea.width -= 30;
+    carea.x += 35;
+    //writeArea(carea, "camparea.png");
+    
+    Pixel p = findImage("camp/camp1.png", carea, null);
+    if (p != null)
+      return 1;
+    p = findImage("camp/camp2.png", carea, null);
+    if (p != null)
+      return 2;
+    p = findImage("camp/camp3.png", carea, null);
+    if (p != null)
+      return 3;
+    p = findImage("camp/camp4.png", carea, null);
+    if (p != null)
+      return 4;
+    
+    
+    return 0;
   }
 
   public Pixel getKitchen() {
@@ -525,7 +550,7 @@ public class ScreenScanner extends BaseScreenScanner {
       }
 
     } while (found && (System.currentTimeMillis() - start < 9000));
-    
+
     return (System.currentTimeMillis() - start);
   }
 

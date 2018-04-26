@@ -3,6 +3,8 @@ package com.horowitz.daze;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -51,6 +53,7 @@ public class AgendaEditor extends JPanel {
   private Box _box;
   private MapManager _mapManager;
   private JTextField _titleTF;
+  private JTextField _entryIndexTF;
 
   public AgendaEditor(MapManager mapManager) {
     super(new BorderLayout());
@@ -64,14 +67,18 @@ public class AgendaEditor extends JPanel {
     // headerPanel.setBackground(Color.LIGHT_GRAY);
     headerPanel.setBorder(BorderFactory.createEmptyBorder(6, 3, 6, 3));
     // NAME
-    _titleTF = new JTextField(25);
+    _titleTF = new JTextField(15);
     _titleTF.setFont(_titleTF.getFont().deriveFont(18f));
     // _titleTF.setMargin(new Insets(3,3,3,3));
     // _titleTF.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(6,
     // 3, 6, 3),
     // _titleTF.getBorder()));
     // _titleTF.setBackground(Color.LIGHT_GRAY);
-    headerPanel.add(_titleTF);
+    JPanel titlePanel = new JPanel(new GridLayout(1, 2));
+    titlePanel.add(_titleTF);
+    _entryIndexTF = new JTextField(5);
+    titlePanel.add(_entryIndexTF);
+    headerPanel.add(titlePanel);
 
     // // fake label
     // gbc.gridy++;
@@ -93,12 +100,18 @@ public class AgendaEditor extends JPanel {
     DragMouseAdapter dmAdapter = new DragMouseAdapter(JFrame.getFrames()[0]);
     _box.addMouseListener(dmAdapter);
     _box.addMouseMotionListener(dmAdapter);
+    _box.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseReleased(MouseEvent e) {
+        resetNumbers();
+      }
+    });
     mainRoot.setMinimumSize(new Dimension(50, 100));
-    //mainRoot.setMaximumSize(new Dimension(100, 800));
+    // mainRoot.setMaximumSize(new Dimension(100, 800));
     mainRoot.setPreferredSize(new Dimension(90, 480));
 
     _box.setMinimumSize(new Dimension(100, 20));
-    //_box.setMaximumSize(new Dimension(200, 800));
+    // _box.setMaximumSize(new Dimension(200, 800));
     // _box.setPreferredSize(new Dimension(200, 280));
     root.add(_box, BorderLayout.NORTH);
 
@@ -177,7 +190,7 @@ public class AgendaEditor extends JPanel {
         dd = "NESW";
 
       dd = dd.toUpperCase();
-      
+
       String res = dd;
       if (dd.length() > 0 && dd.length() != 4) {
         res = "";
@@ -191,7 +204,6 @@ public class AgendaEditor extends JPanel {
         }
         res += ss;
       }
-      
 
       ae.setDirections(res);
       aev._directionsTF.setText(res);
@@ -228,42 +240,31 @@ public class AgendaEditor extends JPanel {
         aev._directionsTF.setText(ae.getDirections());
         _box.add(aev);
       }
+      resetNumbers();
     } else {
       setVisible(false);
     }
   }
 
+  private void resetNumbers() {
+    for(int i = 0; i < _box.getComponentCount(); i++) {
+      Component comp = _box.getComponent(i);
+      if (comp instanceof AgendaEntryView) {
+        AgendaEntryView aev = (AgendaEntryView) comp;
+        aev.setIndex(i);
+      }
+    }
+  }
+
   private void addRow() {
     _box.add(new AgendaEntryView());
+    resetNumbers();
   }
 
   void shrinkFont(Component comp, float size) {
     if (size < 0)
       size = comp.getFont().getSize() - 2;
     comp.setFont(comp.getFont().deriveFont(size));
-  }
-
-  class MyMouseListener extends MouseAdapter implements MouseListener, MouseMotionListener {
-    @Override
-    public void mousePressed(MouseEvent e) {
-      System.err.println("PRESSED");
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-      System.err.println("DRAGGED");
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-      System.err.println("MOVED");
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-      System.err.println("RELEASED");
-    }
-
   }
 
   class AgendaEntryView extends Box {
@@ -289,7 +290,7 @@ public class AgendaEditor extends JPanel {
       JButton duplicateButton = new JButton(_duplicateAction);
       shrinkFont(duplicateButton, -1);
       duplicateButton.setMargin(new Insets(2, 2, 2, 2));
-      _anchor = new JLabel("► ");
+      _anchor = new JLabel("- ");
       shrinkFont(_anchor, -4);
       add(_anchor);
       add(removeButton);
@@ -339,6 +340,10 @@ public class AgendaEditor extends JPanel {
       setBorder(new EmptyBorder(3, 3, 3, 0));
     }
 
+    public void setIndex(int i) {
+      _anchor.setText(i + " ");
+    }
+
     protected void loadPlaces(DMap map) {
       final DefaultComboBoxModel<Place> model = (DefaultComboBoxModel<Place>) _placeCB.getModel();
       model.removeAllElements();
@@ -374,24 +379,25 @@ public class AgendaEditor extends JPanel {
   class RemoveAction extends AbstractAction {
     private static final long serialVersionUID = -632649060095568382L;
     Component _comp;
-    
+
     public RemoveAction(Component comp) {
       super(" - ");
       _comp = comp;
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       SwingUtilities.invokeLater(new Runnable() {
         public void run() {
           _box.remove(_comp);
+          resetNumbers();
           revalidate();
         }
       });
-      
+
     }
   }
-  
+
   class DuplicateAction extends AbstractAction {
     private static final long serialVersionUID = -632649060095568382L;
     Component _comp;
@@ -405,14 +411,14 @@ public class AgendaEditor extends JPanel {
     public void actionPerformed(ActionEvent e) {
       SwingUtilities.invokeLater(new Runnable() {
         public void run() {
-          //_box.remove(_comp);
+          // _box.remove(_comp);
           AgendaEntryView copy = new AgendaEntryView();
           AgendaEntryView src = (AgendaEntryView) _comp;
           copy._mapCB.setSelectedItem(src._mapCB.getSelectedItem());
           copy._placeCB.setSelectedItem(src._placeCB.getSelectedItem());
           copy._directionsTF.setText(src._directionsTF.getText());
-          
-          //find the position
+
+          // find the position
           int pos = -1;
           for (int i = 0; i < _box.getComponentCount(); i++) {
             Component component = _box.getComponent(i);
@@ -425,7 +431,8 @@ public class AgendaEditor extends JPanel {
             _box.add(copy);
           else
             _box.add(copy, pos + 1);
-          
+
+          resetNumbers();
           revalidate();
         }
       });
@@ -500,6 +507,14 @@ public class AgendaEditor extends JPanel {
 
     private static final long serialVersionUID = 4516670732589078627L;
 
+  }
+
+  public void setEntryIndex(int i) {
+    _entryIndexTF.setText("" + i);
+  }
+  
+  public int getEntryIndex() {
+    return Integer.parseInt(_entryIndexTF.getText());
   }
 
 }
