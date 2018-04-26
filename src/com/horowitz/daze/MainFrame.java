@@ -155,7 +155,7 @@ public class MainFrame extends JFrame {
 
       _stats = new Stats();
       _scanner = new ScreenScanner(_settings);
-      ocrEnergy = new OCREnergy(_scanner.getImageComparator());
+      // ocrEnergy = new OCREnergy(_scanner.getImageComparator());
       _scanner.setDebugMode(_testMode);
       _matcher = _scanner.getMatcher();
       _mouse = _scanner.getMouse();
@@ -766,8 +766,13 @@ public class MainFrame extends JFrame {
           Thread t = new Thread(new Runnable() {
             public void run() {
               try {
-                scanEnergy();
-              } catch (AWTException e1) {
+                boolean energyFull = scanEnergy();
+                if (energyFull)
+                  LOGGER.info("ENERGY FULL ");
+                else
+                  LOGGER.info("energy not full ");
+
+              } catch (Exception e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
               }
@@ -1007,7 +1012,7 @@ public class MainFrame extends JFrame {
 
       }
     });
-    
+
     {
       AbstractAction action = new AbstractAction("Do Camp AUTO") {
         public void actionPerformed(ActionEvent e) {
@@ -1017,7 +1022,7 @@ public class MainFrame extends JFrame {
                 doCamp(true);
               } catch (RobotInterruptedException e) {
                 LOGGER.info("INTERRUPTED");
-                //e.printStackTrace();
+                // e.printStackTrace();
               } catch (IOException e) {
                 e.printStackTrace();
               } catch (AWTException e) {
@@ -1675,126 +1680,7 @@ public class MainFrame extends JFrame {
             do {
               List<AgendaEntry> agendas = _agenda.getEntries();
               for (AgendaEntry agenda : agendas) {
-                if (_stopAllThreads)
-                  break;
-
-                final String directions = agenda.getDirections();
-                handlePopups(false);
-                try {
-                  boolean success = mapManager.gotoPlace(agenda.getWorldName(), agenda.getMapName(),
-                      agenda.getPlaceName());
-                  if (success && !_stopAllThreads) {
-                    LOGGER.info("WORKING ON " + agenda.toString());
-                    // do this place
-                    _fstart = System.currentTimeMillis();
-                    long start = System.currentTimeMillis();
-
-                    if (_pingToggle.isSelected())
-                      captureScreen(null);// ping
-
-                    Thread runMazeThread = new Thread(new Runnable() {
-                      public void run() {
-                        try {
-                          int tries = 0;
-                          Pixel p;
-                          
-                          
-                          //check is still in map mode
-                          boolean b = _scanner.checkIsStillInMap();
-                          LOGGER.info("still in map? " + b);
-                          long howLong = _scanner.checkIsLoading();
-                          LOGGER.info("loading? " + howLong);
-                          _mouse.delay(500);
-                          if (_pingToggle.isSelected())
-                            captureScreen(null);// ping
-                          
-                          
-                          //_mouse.delay(11000);//loading
-                          do {
-                            //TODO check is loading
-                            tries++;
-                            LOGGER.info("Looking for diggy... " + tries);
-                            p = _scanner.findDiggy(_scanner.getScanArea());
-                            _mouse.delay(700);
-                          } while (p == null && tries < 22);
-                          if (p != null) {
-                            LOGGER.info("TRAVERSE START!");
-                            if (directions != null && directions.length() == 4) {
-                              _mazeRunner.setDirections(Direction.buildDirections(directions));
-                            }
-                            _mazeRunner.traverse(p);
-                            LOGGER.info("TARVERSE DONE!");
-                          }
-
-                        } catch (RobotInterruptedException e) {
-                          LOGGER.info("INTERRUPTED...");
-                        } catch (IOException e) {
-                          e.printStackTrace();
-                        } catch (AWTException e) {
-                          e.printStackTrace();
-                        } catch (Exception e) {
-                          e.printStackTrace();
-                        }
-                      }
-                    }, "RUN_MAZE");
-                    runMazeThread.start();
-
-                    // sleep
-                    int turn = 0;
-                    do {
-                      _mouse.delay(1000, false);// DO NOT INTTERRUPT!!!
-                      turn++;
-                      if (turn > 30) {
-                        turn = 1;
-                        LOGGER.info("ETA: " + (System.currentTimeMillis() - start) / 60000);
-                      }
-                      if (false)
-                        scanEnergy();// EXPERIMENTAL!!!
-
-                      if (!isRunning("RUN_MAZE")) {
-                        break;
-                      }
-                      // LOGGER.info("tik tak... " + (System.currentTimeMillis()
-                      // - _fstart) / 1000);
-                    } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);
-
-                    // THAT'S IT. STOP IT IF NOT DONE ALREADY
-                    if (isRunning("RUN_MAZE")) {
-                      LOGGER.info("STOPPING maze runner...");
-                      _mazeRunner.setStopIt(true);
-                      while (isRunning("RUN_MAZE")) {
-                        try {
-                          Thread.sleep(5000);
-                        } catch (InterruptedException e) {
-                        }
-                        if (isRunning("RUN_MAZE"))
-                          LOGGER.info("maze runner still running...");
-                      }
-                    }
-
-                    // REFRESH
-                    if (_autoRefreshToggle.isSelected()
-                        && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
-                      LOGGER.info("refresh time...");
-                      try {
-                        refresh(false);
-                      } catch (AWTException e) {
-                        LOGGER.info("FAILED TO refresh: " + e.getMessage());
-                      } catch (IOException e) {
-                        LOGGER.info("FAILED TO refresh: " + e.getMessage());
-                      }
-                      _fstart = System.currentTimeMillis();
-                    }
-
-                    LOGGER.info("MOVE TO NEXT PLACE...");
-                  }
-                } catch (PlaceUnreachableException e) {
-                  LOGGER.warning(e.getMessage());
-                  refresh(false);
-                }
-
-                doCamp(false);
-
+                executeAgenda(agenda, false);
               }
               LOGGER.info("stop all threads: " + _stopAllThreads);
             } while (!_stopAllThreads);
@@ -1805,6 +1691,147 @@ public class MainFrame extends JFrame {
           } catch (AWTException e) {
             e.printStackTrace();
           }
+        }
+
+        private void executeAgenda(AgendaEntry agenda, boolean emergency)
+            throws RobotInterruptedException, IOException, AWTException {
+          if (_stopAllThreads)
+            return;
+
+          final String directions = agenda.getDirections();
+          handlePopups(false);
+          try {
+            boolean success = mapManager.gotoPlace(agenda.getWorldName(), agenda.getMapName(), agenda.getPlaceName());
+            if (success && !_stopAllThreads) {
+              LOGGER.info("WORKING ON " + agenda.toString());
+              // do this place
+              _fstart = System.currentTimeMillis();
+              long start = System.currentTimeMillis();
+
+              if (_pingToggle.isSelected())
+                captureScreen(null);// ping
+
+              runMazeThread(directions);
+
+              // sleep
+              int turn = 0;
+              do {
+                _mouse.delay(1000, false);// DO NOT INTTERRUPT!!!
+                turn++;
+                if (turn > 30) {
+                  turn = 1;
+                  LOGGER.info("ETA: " + (System.currentTimeMillis() - start) / 60000);
+                }
+                if (_settings.getBoolean("autoEnergy", false) && !emergency) {
+                  boolean energyFull = scanEnergy();// EXPERIMENTAL!!!
+                  if (energyFull) {
+                    LOGGER.info("WARNING! ENERGY FULL!");
+                    stopMaze();
+                    Agenda energyAgenda = _agendaManagerUI.getEnergyAgenda();
+                    if (energyAgenda != null && !energyAgenda.getEntries().isEmpty()) {
+                      for (AgendaEntry ae : energyAgenda.getEntries()) {
+                        executeAgenda(ae, true);
+                      }
+                    }
+                  }
+                }
+
+                if (!isRunning("RUN_MAZE")) {
+                  break;
+                }
+                // LOGGER.info("tik tak... " + (System.currentTimeMillis()
+                // - _fstart) / 1000);
+              } while (System.currentTimeMillis() - start < _settings.getInt("agenda.inactiveTimeOut", 30) * 60000);
+
+              // THAT'S IT. STOP IT IF NOT DONE ALREADY
+              stopMaze();
+
+              // REFRESH
+              if (_autoRefreshToggle.isSelected()
+                  && System.currentTimeMillis() - start >= _settings.getInt("agenda.inactiveTimeOut", 30) * 30000) {
+                LOGGER.info("refresh time...");
+                try {
+                  refresh(false);
+                } catch (AWTException e) {
+                  LOGGER.info("FAILED TO refresh: " + e.getMessage());
+                } catch (IOException e) {
+                  LOGGER.info("FAILED TO refresh: " + e.getMessage());
+                }
+                _fstart = System.currentTimeMillis();
+              }
+
+              LOGGER.info("MOVE TO NEXT PLACE...");
+            }
+          } catch (PlaceUnreachableException e) {
+            LOGGER.warning(e.getMessage());
+            refresh(false);
+          }
+
+          doCamp(false);
+        }
+
+        private void stopMaze() {
+          if (isRunning("RUN_MAZE")) {
+            LOGGER.info("STOPPING maze runner...");
+            while (isRunning("RUN_MAZE")) {
+              _mazeRunner.setStopIt(true);
+              try {
+                Thread.sleep(500);
+              } catch (InterruptedException e) {
+              }
+              if (isRunning("RUN_MAZE"))
+                LOGGER.info("maze runner still running...");
+            }
+          }
+          _mazeRunner.setStopIt(false);
+        }
+
+        private void runMazeThread(final String directions) {
+          Thread runMazeThread = new Thread(new Runnable() {
+            public void run() {
+              try {
+                int tries = 0;
+                Pixel p;
+
+                // check is still in map mode
+                boolean b = _scanner.checkIsStillInMap();
+                LOGGER.info("still in map? " + b);
+                long howLong = _scanner.checkIsLoading();
+                LOGGER.info("loading? " + howLong);
+                _mouse.delay(500);
+                if (_pingToggle.isSelected())
+                  captureScreen(null);// ping
+
+                // _mouse.delay(11000);//loading
+                do {
+                  // TODO check is loading
+                  tries++;
+                  LOGGER.info("Looking for diggy... " + tries);
+                  p = _scanner.findDiggy(_scanner.getScanArea());
+                  _mouse.delay(700);
+                } while (p == null && tries < 22);
+                if (p != null) {
+                  LOGGER.info("TRAVERSE START!");
+                  if (directions != null && directions.length() == 4) {
+                    _mazeRunner.setDirections(Direction.buildDirections(directions));
+                  }
+                  _mazeRunner.traverse(p);
+                  // end the thread
+                  LOGGER.info("TRAVERSE DONE!");
+                }
+
+              } catch (RobotInterruptedException e) {
+                LOGGER.info("INTERRUPTED...");
+              } catch (IOException e) {
+                e.printStackTrace();
+              } catch (AWTException e) {
+                e.printStackTrace();
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
+            }
+          }, "RUN_MAZE");
+          runMazeThread.start();
         }
 
       }, "MAGIC");
@@ -1845,10 +1872,9 @@ public class MainFrame extends JFrame {
     }
   }
 
-  
   private void doCamp(boolean auto) throws RobotInterruptedException, IOException, AWTException {
     if (auto) {
-      while(true) {
+      while (true) {
         doCampOnce();
         _mouse.delay(1000);
       }
@@ -1911,7 +1937,7 @@ public class MainFrame extends JFrame {
       } else {
         // blah
         // try bookmark
-        //try again
+        // try again
         refresh(false);
       }
 
@@ -2359,16 +2385,23 @@ public class MainFrame extends JFrame {
     return _agendaManagerUI;
   }
 
-  private OCREnergy ocrEnergy;
+  // private OCREnergy ocrEnergy;
 
-  private void scanEnergy() throws AWTException {
-    Rectangle energyArea = _scanner.getEnergyArea();
-    if (energyArea != null) {
-      BufferedImage image = new Robot().createScreenCapture(energyArea);
-
-      String res = ocrEnergy.scanImage(image);
-      LOGGER.info("ENERGY: " + res);
+  private boolean scanEnergy() throws AWTException, RobotInterruptedException, IOException {
+    Rectangle energyArea = new Rectangle(_scanner.getEnergyArea());
+    Pixel p = _scanner.findImage("energy/energyAnchor.png", energyArea, null);
+    if (p != null) {
+      p.y -= 2;
+      energyArea.x = p.x;
+      energyArea.y = p.y - 1;
+      energyArea.width = 191;
+      energyArea.height = 19;
+      energyArea.x += 160;
+      energyArea.width -= 160;
     }
+
+
+    return p != null && _scanner.findImage("energy/energyNotFull.png", energyArea, Color.red) == null;
   }
 
 }

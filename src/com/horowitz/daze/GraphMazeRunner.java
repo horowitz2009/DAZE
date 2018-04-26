@@ -624,6 +624,7 @@ public class GraphMazeRunner {
   private Direction[] _directions;
 
   private int _pauseTime = 2;
+  public boolean done;
 
   public GraphMazeRunner(ScreenScanner scanner) {
     super();
@@ -799,14 +800,14 @@ public class GraphMazeRunner {
   public void traverse(Pixel p) throws Exception {
     clearMatrix();
     setStopIt(false);
-
+    done = false;
     final Position start = new Position(0, 0, null, State.START);
     start._coords = p;
     final Graph<Position> graph = new Graph<>(_explored);
 
     graph.preOrderTraversal(start, new Visitor(start, graph));
     LOGGER.info("DONE!");
-
+    done = true;
   }
 
   public void doSomething(boolean clearMatrix, int seconds) {
@@ -1236,6 +1237,7 @@ public class GraphMazeRunner {
   }
 
   public void setStopIt(boolean stopIt) {
+    System.err.println("STOP IT is now " + stopIt);
     _stopIt = stopIt;
   }
 }

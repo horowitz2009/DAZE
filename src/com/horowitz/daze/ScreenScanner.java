@@ -121,8 +121,8 @@ public class ScreenScanner extends BaseScreenScanner {
 
     _scanArea = new Rectangle(_tl.x + 120, _tl.y + 85, getGameWidth() - 120 - 120, getGameHeight() - 85 - 85);
     _ping2Area = new Rectangle(_tl.x + 120, _tl.y + 19, getGameWidth() - 120 - 120, getGameHeight() - 85 - 19);
-    _energyArea = new Rectangle(_tl.x + getGameWidth() / 2 - 18, _tl.y + 21, 200, 17);
-
+    _energyArea = new Rectangle(_tl.x + getGameWidth() / 2 - 100, _tl.y + 19, 300, 22);
+    
     _scampArea = new Rectangle(_scanArea.x + 25, _scanArea.y + 415, getGameWidth() / 2, 65);
     // writeArea(_scanArea, "scanArea.png");
 

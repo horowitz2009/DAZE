@@ -239,8 +239,10 @@ public class MapManager {
 
   public void doFoundry() throws RobotInterruptedException, IOException, AWTException {
     Pixel p = _scanner.getKitchen();
-    p.x += 183;
-    p.y += 24;
+    int xOff = _scanner.campLayout.equals("greece") ? 183 : 127;
+    int yOff = _scanner.campLayout.equals("greece") ? 25 : 55;
+    p.x += xOff;
+    p.y += yOff;
     int xlim = _scanner.getBottomRight().x - 98;
     if (p.x > xlim) {
       int y = p.y + 205;
@@ -250,8 +252,8 @@ public class MapManager {
       _mouse.delay(200);
       _scanner.gotoCamp();
       p = _scanner.getKitchen();
-      p.x += 183;
-      p.y += 24;
+      p.x += xOff;
+      p.y += yOff;
     }
     _mouse.click(p);
     _mouse.delay(100);
