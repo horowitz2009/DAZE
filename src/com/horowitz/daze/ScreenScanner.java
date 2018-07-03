@@ -90,6 +90,8 @@ public class ScreenScanner extends BaseScreenScanner {
 
   public String campLayout;
 
+  public Rectangle _lastMatZone;
+
   public boolean isWide() {
     return _wide;
   }
@@ -119,8 +121,13 @@ public class ScreenScanner extends BaseScreenScanner {
     Rectangle area;
     int xx;
     int yy;
-
-    _scanArea = new Rectangle(_tl.x + 120, _tl.y + 85, getGameWidth() - 120 - 120, getGameHeight() - 85 - 85);
+    int westOffset = _settings.getInt("scanArea.westOffset", 132);
+    int eastOffset = _settings.getInt("scanArea.eastOffset", 85);
+    int northOffset = _settings.getInt("scanArea.northOffset", 76);
+    int southOffset = _settings.getInt("scanArea.southOffset", 85);
+    _scanArea = new Rectangle(_tl.x + westOffset, _tl.y + northOffset, getGameWidth() - westOffset - eastOffset, getGameHeight() - northOffset - southOffset);
+    _lastMatZone = new Rectangle(_br.x - 148, _tl.y + 87, 148, 32);
+    
     _ping2Area = new Rectangle(_tl.x + 120, _tl.y + 19, getGameWidth() - 120 - 120, getGameHeight() - 85 - 19);
     _energyArea = new Rectangle(_tl.x + getGameWidth() / 2 - 100, _tl.y + 19, 300, 22);
 

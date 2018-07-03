@@ -73,6 +73,7 @@ import com.horowitz.daze.map.AgendaEntry;
 import com.horowitz.daze.map.MapManager;
 import com.horowitz.daze.map.PlaceUnreachableException;
 import com.horowitz.daze.ocr.OCREnergy;
+import com.horowitz.daze.scan.EnhancedScanner;
 import com.horowitz.ocr.OCRB;
 
 public class MainFrame extends JFrame {
@@ -81,7 +82,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.57";
+  private static String APP_TITLE = "Daze v0.58";
 
   private Settings _settings;
   private Stats _stats;
@@ -513,6 +514,7 @@ public class MainFrame extends JFrame {
   private JTextField _tileTF;
 
   private JToggleButton _slowToggle;
+  private JToggleButton _autoCampToggle;
 
   private JToggleButton _caravanToggle;
 
@@ -794,16 +796,21 @@ public class MainFrame extends JFrame {
       };
       mainToolbar1.add(action);
     }
-    // TEST scan energy
+    
+    // TEST enhanced scanner
     {
-      AbstractAction action = new AbstractAction("CC") {
+      AbstractAction action = new AbstractAction("ES") {
         public void actionPerformed(ActionEvent e) {
           Thread t = new Thread(new Runnable() {
             public void run() {
               try {
-                int c = checkCamp();
-                LOGGER.info ("CAMP: " + c);
-
+//                int c = checkCamp();
+//                LOGGER.info ("CAMP: " + c);
+                  EnhancedScanner escanner = new EnhancedScanner(_scanner, _settings, _mazeRunner);
+                  escanner.scanCurrentArea();
+                  
+              } catch (RobotInterruptedException e1) {
+                LOGGER.info("interrupted");
               } catch (Exception e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
@@ -978,7 +985,29 @@ public class MainFrame extends JFrame {
 
       _slowToggle = new JToggleButton("Slow");
       // _shipsToggle.setSelected(true);
-      toolbar.add(_slowToggle);
+      //toolbar.add(_slowToggle);
+      
+      
+      //AUTOCAMP
+      _autoCampToggle = new JToggleButton("AC");
+      _autoCampToggle.setToolTipText("Auto Camp toggle");
+      _autoCampToggle.addItemListener(new ItemListener() {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+          boolean b = e.getStateChange() == ItemEvent.SELECTED;
+          LOGGER.info("Auto Camp: " + (b ? "on" : "off"));
+          _settings.setProperty("autoCamp", "" + b);
+          _settings.saveSettingsSorted();
+
+        }
+      });
+
+      toolbar.add(_autoCampToggle);
+
+      
+      
+      
     }
     {
       final JLabel greens = new JLabel("0");
@@ -1786,7 +1815,7 @@ public class MainFrame extends JFrame {
                     }
                   }
                 }
-                if (!emergency) {
+                if (_settings.getBoolean("autoCamp", true) && !emergency) {
                   int camp = checkCamp();
                   if (camp > 1) {
                     LOGGER.info("CAMP: " + camp);
@@ -2165,6 +2194,11 @@ public class MainFrame extends JFrame {
     boolean ping2 = "true".equalsIgnoreCase(_settings.getProperty("ping2"));
     if (ping2 != _ping2Toggle.isSelected()) {
       _ping2Toggle.setSelected(ping2);
+    }
+    
+    boolean ac = "true".equalsIgnoreCase(_settings.getProperty("autoCamp"));
+    if (ac != _autoCampToggle.isSelected()) {
+      _autoCampToggle.setSelected(ac);
     }
 
     boolean caravan = "true".equalsIgnoreCase(_settings.getProperty("caravan"));
