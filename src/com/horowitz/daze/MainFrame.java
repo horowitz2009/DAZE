@@ -54,6 +54,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -75,6 +76,7 @@ import com.horowitz.daze.map.PlaceUnreachableException;
 import com.horowitz.daze.ocr.OCREnergy;
 import com.horowitz.daze.scan.EnhancedScanner;
 import com.horowitz.ocr.OCRB;
+import com.horowitz.ziggy.DiggyFinder;
 
 public class MainFrame extends JFrame {
 
@@ -82,7 +84,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.58";
+  private static String APP_TITLE = "Daze v0.01";
 
   private Settings _settings;
   private Stats _stats;
@@ -90,6 +92,7 @@ public class MainFrame extends JFrame {
   private ScreenScanner _scanner;
 
   private JLabel _mouseInfoLabel;
+  private DiggyFinder diggyFinder;
 
   private CaptureDialog captureDialog;
 
@@ -134,7 +137,7 @@ public class MainFrame extends JFrame {
           }
         }
       }
-      MainFrame frame = new MainFrame(isTestmode);
+      new MainFrame(isTestmode);
     } catch (Throwable e) {
       e.printStackTrace();
     }
@@ -163,6 +166,7 @@ public class MainFrame extends JFrame {
 
       _mazeRunner = new GraphMazeRunner(_scanner);
 
+      diggyFinder = new DiggyFinder(_scanner, _settings);
       _tasks = new ArrayList<Task>();
 
       _mazeTask = new Task("Maze Runner", 1);
@@ -618,48 +622,100 @@ public class MainFrame extends JFrame {
       if (!e.isConsumed()) {
         // LOGGER.info("pressed " + e.getKeyCode());
         // e.consume();
-        if (e.getKeyCode() == 119 || e.getKeyCode() == 65) {// F8 or a
-          // LOGGER.info("pressed " + e.getKeyCode());
+        // if (e.getKeyCode() == 119 || e.getKeyCode() == 65) {// F8 or a
+        // // LOGGER.info("pressed " + e.getKeyCode());
+        // if (!isRunning("HMM")) {
+        // Thread t = new Thread(new Runnable() {
+        // public void run() {
+        // // //addNewBuilding();
+        // scanDiggyFromHere(true);
+        // }
+        // }, "HMM");
+        // t.start();
+        // }
+        // }
+        //
+        // if (e.getKeyCode() == 120) {// F9
+        // if (!isRunning("HMM")) {
+        // Thread t = new Thread(new Runnable() {
+        // public void run() {
+        // // //addNewBuilding();
+        // scanDiggyFromHere(false);
+        // }
+        // }, "HMM");
+        // t.start();
+        // }
+        // }
+        //
+        // if (e.getKeyCode() == 121) {// F10
+        // if (!isRunning("HMM")) {
+        // Thread t = new Thread(new Runnable() {
+        // public void run() {
+        // _mazeRunner.testPosition();
+        // }
+        // }, "HMM");
+        // t.start();
+        // }
+        //
+        // }
+        //
+        // if (e.getKeyCode() == 65 || e.getKeyCode() == 18) {// A or Alt
+        // // massClick(2, true);
+        // }
+        if (e.getKeyCode() == 118) {// F7
+          // e.consume();
           if (!isRunning("HMM")) {
             Thread t = new Thread(new Runnable() {
               public void run() {
-                // //addNewBuilding();
-                scanDiggyFromHere(true);
+                Point position = _scanner.getMouse().getPosition();
+                int xx = position.x - 120;
+                if (xx < 0)
+                  xx = 0;
+                int yy = position.y - 120;
+                if (yy < 0)
+                  yy = 0;
+                Rectangle area = new Rectangle(xx, yy, 240, 240);
+
+                LOGGER.info("start");
+                try {
+                  BufferedImage image = new Robot().createScreenCapture(area);
+                  _scanner.writeImageTS(image, "image.png");
+                } catch (AWTException e) {
+                  e.printStackTrace();
+                }
+                LOGGER.info("end");
+                try {
+                  Thread.sleep(500);
+                } catch (InterruptedException e1) {
+                }
+
               }
             }, "HMM");
             t.start();
           }
-        }
 
+        }
+        if (e.getKeyCode() == 119) {// F8
+          if (!isRunning("HMM")) {
+            Thread t = new Thread(new Runnable() {
+              public void run() {
+                scanAreaAroundMouse();
+              }
+            }, "HMM");
+            t.start();
+          }
+
+        }
         if (e.getKeyCode() == 120) {// F9
           if (!isRunning("HMM")) {
             Thread t = new Thread(new Runnable() {
               public void run() {
-                // //addNewBuilding();
-                scanDiggyFromHere(false);
+                lookForDiggyAroundMouse();
               }
+
             }, "HMM");
             t.start();
           }
-        }
-
-        if (e.getKeyCode() == 121) {// F10
-          if (!isRunning("HMM")) {
-            Thread t = new Thread(new Runnable() {
-              public void run() {
-                _mazeRunner.testPosition();
-              }
-            }, "HMM");
-            t.start();
-          }
-
-        }
-
-        if (e.getKeyCode() == 65 || e.getKeyCode() == 18) {// A or Alt
-          // massClick(2, true);
-        }
-        if (e.getKeyCode() == 83) {// S
-          // massClick(2, (int) (_scanner.getXOffset() * 1.6), true);
 
         }
         if (e.getKeyCode() == 68) {// D
@@ -740,7 +796,7 @@ public class MainFrame extends JFrame {
         public void actionPerformed(ActionEvent e) {
           doAgenda(false);
         }
-        
+
       };
       mainToolbar1.add(action);
     }
@@ -796,7 +852,7 @@ public class MainFrame extends JFrame {
       };
       mainToolbar1.add(action);
     }
-    
+
     // TEST enhanced scanner
     {
       AbstractAction action = new AbstractAction("ES") {
@@ -804,11 +860,11 @@ public class MainFrame extends JFrame {
           Thread t = new Thread(new Runnable() {
             public void run() {
               try {
-//                int c = checkCamp();
-//                LOGGER.info ("CAMP: " + c);
-                  EnhancedScanner escanner = new EnhancedScanner(_scanner, _settings, _mazeRunner);
-                  escanner.scanCurrentArea();
-                  
+                // int c = checkCamp();
+                // LOGGER.info ("CAMP: " + c);
+                EnhancedScanner escanner = new EnhancedScanner(_scanner, _settings, _mazeRunner);
+                escanner.scanCurrentArea();
+
               } catch (RobotInterruptedException e1) {
                 LOGGER.info("interrupted");
               } catch (Exception e1) {
@@ -845,7 +901,7 @@ public class MainFrame extends JFrame {
 
     {
       _regenTF = new JTextField("2335");
-      //mainToolbar1.add(_regenTF);
+      // mainToolbar1.add(_regenTF);
       _regenTF.getDocument().addDocumentListener(new DocumentListener() {
 
         @Override
@@ -865,7 +921,7 @@ public class MainFrame extends JFrame {
     }
     {
       _tileTF = new JTextField("100");
-      //mainToolbar1.add(_tileTF);
+      // mainToolbar1.add(_tileTF);
       _tileTF.getDocument().addDocumentListener(new DocumentListener() {
 
         @Override
@@ -885,10 +941,71 @@ public class MainFrame extends JFrame {
     }
     {
       _timeTF = new JTextField("5");
-      //mainToolbar1.add(_timeTF);
+      // mainToolbar1.add(_timeTF);
     }
 
     return mainToolbar1;
+  }
+
+  private void lookForDiggyAroundMouse() {
+    try {
+      Point position = _scanner.getMouse().getPosition();
+      int xx = position.x - 120 * 2;
+      if (xx < 0)
+        xx = 0;
+      int yy = position.y - 120 * 2;
+      if (yy < 0)
+        yy = 0;
+      Rectangle area = new Rectangle(xx, yy, 240 * 2, 240 * 2);
+      BufferedImage image = new Robot().createScreenCapture(area);
+      _scanner.writeImage(image, "biggerArea.png");
+      Pixel p = diggyFinder.findDiggy(area);
+      if (p != null)
+        _mouse.mouseMove(p);
+      LOGGER.info("diggy: " + p);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    LOGGER.info("done");
+  }
+
+  private void scanAreaAroundMouse() {
+    int frames = Integer.parseInt(framesTF.getText());
+    int time = Integer.parseInt(timeTF.getText());
+    Point position = _scanner.getMouse().getPosition();
+    int xx = position.x - 120;
+    if (xx < 0)
+      xx = 0;
+    int yy = position.y - 120;
+    if (yy < 0)
+      yy = 0;
+    Rectangle area = new Rectangle(xx, yy, 240, 240);
+
+    LOGGER.info("start");
+    try {
+      _mouse.delay(300, false);
+      int allTime = time * 1000;
+      long start = System.currentTimeMillis();
+      List<BufferedImage> images = new ArrayList<>();
+      int d = 1000 / frames;
+      do {
+        BufferedImage image = new Robot().createScreenCapture(area);
+        images.add(image);
+        _mouse.delay(d, false);
+      } while (System.currentTimeMillis() - start < allTime);
+
+      int fr = 1;
+      for (BufferedImage image : images) {
+        _scanner.writeImage(image, "area" + fr + ".png");
+        fr++;
+      }
+
+    } catch (AWTException | RobotInterruptedException e) {
+      LOGGER.info("INTERRUPTED");
+    }
+
+    LOGGER.info("end");
   }
 
   protected void recalcTime() {
@@ -985,10 +1102,9 @@ public class MainFrame extends JFrame {
 
       _slowToggle = new JToggleButton("Slow");
       // _shipsToggle.setSelected(true);
-      //toolbar.add(_slowToggle);
-      
-      
-      //AUTOCAMP
+      // toolbar.add(_slowToggle);
+
+      // AUTOCAMP
       _autoCampToggle = new JToggleButton("AC");
       _autoCampToggle.setToolTipText("Auto Camp toggle");
       _autoCampToggle.addItemListener(new ItemListener() {
@@ -1005,9 +1121,6 @@ public class MainFrame extends JFrame {
 
       toolbar.add(_autoCampToggle);
 
-      
-      
-      
     }
     {
       final JLabel greens = new JLabel("0");
@@ -1392,7 +1505,7 @@ public class MainFrame extends JFrame {
     JToolBar toolbar = new JToolBar();
     toolbar.setFloatable(false);
     {
-      Action action = new AbstractAction("Test") {
+      Action action = new AbstractAction("scan") {
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -1403,6 +1516,8 @@ public class MainFrame extends JFrame {
               if (!_scanner.isOptimized()) {
                 try {
                   scan();
+                  LOGGER.info("scanArea: " + _scanner.getScanArea());
+                  _scanner.writeArea(_scanner.getScanArea(), "scanArea.png");
                 } catch (RobotInterruptedException e) {
                   e.printStackTrace();
                 }
@@ -1421,10 +1536,74 @@ public class MainFrame extends JFrame {
         }
       };
 
+      // toolbar.add(action);
+    }
+    {
+      Action action = new AbstractAction("run") {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          Thread myThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              LOGGER.info("run...");
+              if (!_scanner.isOptimized()) {
+                try {
+                  scan();
+                } catch (RobotInterruptedException e) {
+                }
+              }
+              try {
+                LOGGER.info("scanArea: " + _scanner.getScanArea());
+                _scanner.writeArea(_scanner.getScanArea(), "scanArea.png");
+                Pixel p = diggyFinder.findDiggy(_scanner.getScanArea());
+                if (p != null) {
+                  LOGGER.info("diggy found...");
+                  //p.x -= 30;
+                  //p.y -= 30;
+                  _mouse.mouseMove(p);
+
+                  //_mazeRunner.traverse(p);
+                } else
+                  LOGGER.info("CAN'T FIND DIGGY!");
+
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
+
+              if (_scanner.isOptimized()) {
+                // DO THE JOB
+                // ////test();
+              } else {
+                LOGGER.info("I need to know where the game is!");
+              }
+            }
+          });
+
+          myThread.start();
+        }
+      };
+
       toolbar.add(action);
+    }
+
+    {
+      toolbar.add(new JLabel("frames:"));
+      framesTF = new JTextField();
+      framesTF.setText("60");
+      toolbar.add(framesTF);
+    }
+    {
+      toolbar.add(new JLabel("time:"));
+      timeTF = new JTextField();
+      timeTF.setText("10");
+      toolbar.add(timeTF);
     }
     return toolbar;
   }
+
+  private JTextField framesTF;
+  private JTextField timeTF;
 
   private void setupLogger() {
     try {
@@ -1554,7 +1733,7 @@ public class MainFrame extends JFrame {
       LOGGER.info("Scanning...");
       setTitle(APP_TITLE + " ...");
 
-      boolean found = _scanner.locateGameArea(false);
+      boolean found = _scanner.locateGameAreaNew(false);
       if (found) {
         // _scanner.checkAndAdjustRock();
         // _mapManager.update();
@@ -1730,9 +1909,9 @@ public class MainFrame extends JFrame {
 
     _mouse.delay(200);
   }
-  
+
   private int lastAgendaEntry = 0;
-  
+
   private void doAgenda(boolean startover) {
     if (startover) {
       lastAgendaEntry = 0;
@@ -1740,14 +1919,14 @@ public class MainFrame extends JFrame {
     } else {
       lastAgendaEntry = _agendaManagerUI.getEntryIndex();
     }
-    
+
     if (_agenda != null && !_agenda.getEntries().isEmpty()) {
       Thread myThread = new Thread(new Runnable() {
         @Override
         public void run() {
           _mazeRunner.setStopIt(false);
           try {
-            
+
             do {
               List<AgendaEntry> agendas = _agenda.getEntries();
               for (int i = lastAgendaEntry; i < agendas.size(); i++) {
@@ -1757,11 +1936,11 @@ public class MainFrame extends JFrame {
                 doCampOnce();
                 LOGGER.info("MOVE TO NEXT PLACE...");
               }
-              
-              //reset
+
+              // reset
               lastAgendaEntry = 0;
               _agendaManagerUI.setEntryIndex(lastAgendaEntry);
-              //LOGGER.info("stop all threads: " + _stopAllThreads);
+              // LOGGER.info("stop all threads: " + _stopAllThreads);
             } while (!_stopAllThreads);
           } catch (RobotInterruptedException e) {
             LOGGER.info("INTERRUPTED!");
@@ -1871,8 +2050,8 @@ public class MainFrame extends JFrame {
                 Thread.sleep(500);
               } catch (InterruptedException e) {
               }
-//              if (isRunning("RUN_MAZE"))
-//                LOGGER.info("maze runner still running...");
+              // if (isRunning("RUN_MAZE"))
+              // LOGGER.info("maze runner still running...");
             }
           }
           _mazeRunner.setStopIt(false);
@@ -2195,7 +2374,7 @@ public class MainFrame extends JFrame {
     if (ping2 != _ping2Toggle.isSelected()) {
       _ping2Toggle.setSelected(ping2);
     }
-    
+
     boolean ac = "true".equalsIgnoreCase(_settings.getProperty("autoCamp"));
     if (ac != _autoCampToggle.isSelected()) {
       _autoCampToggle.setSelected(ac);
@@ -2501,7 +2680,6 @@ public class MainFrame extends JFrame {
       energyArea.x += 100;
       energyArea.width -= 100;
     }
-
 
     return p != null && _scanner.findImage("energy/energyNotFull2.png", energyArea, Color.red) == null;
   }

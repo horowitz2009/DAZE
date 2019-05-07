@@ -34,6 +34,7 @@ import com.horowitz.commons.RobotInterruptedException;
 import com.horowitz.commons.Settings;
 import com.horowitz.commons.TemplateMatcher;
 import com.horowitz.daze.map.DMap;
+import com.horowitz.ziggy.DiggyFinder;
 
 public class ScreenScanner extends BaseScreenScanner {
 
@@ -99,11 +100,14 @@ public class ScreenScanner extends BaseScreenScanner {
   public Pixel[] getShipLocations() {
     return _shipLocations;
   }
-
+  
+  private DiggyFinder diggyFinder;
+  
   public ScreenScanner(Settings settings) {
     super(settings);
     _popupAreaX = new Rectangle(650, 150, 760, 400);
     campLayout = settings.getProperty("camp.layout", "greece");
+    diggyFinder = new DiggyFinder(this, settings);
   }
 
   public Rectangle generateWindowedArea(int width, int height) {
@@ -126,40 +130,40 @@ public class ScreenScanner extends BaseScreenScanner {
     int northOffset = _settings.getInt("scanArea.northOffset", 76);
     int southOffset = _settings.getInt("scanArea.southOffset", 85);
     _scanArea = new Rectangle(_tl.x + westOffset, _tl.y + northOffset, getGameWidth() - westOffset - eastOffset, getGameHeight() - northOffset - southOffset);
-    _lastMatZone = new Rectangle(_br.x - 148, _tl.y + 87, 148, 32);
-    
-    _ping2Area = new Rectangle(_tl.x + 120, _tl.y + 19, getGameWidth() - 120 - 120, getGameHeight() - 85 - 19);
-    _energyArea = new Rectangle(_tl.x + getGameWidth() / 2 - 100, _tl.y + 19, 300, 22);
-
-    _scampArea = new Rectangle(_scanArea.x + 25, _scanArea.y + 415, getGameWidth() / 2, 65);
-    // writeArea(_scanArea, "scanArea.png");
-
-    xx = (getGameWidth() - 140) / 2;
-    _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
-
-    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144 - (_wide ? 200 : 0), _tl.y,
-        400 - 144 + (_wide ? 400 : 0), getGameHeight() / 2 + 50);
-    _diggyCaveArea = new Rectangle(_tl.x + getGameWidth() / 2 - 114, _tl.y + 53, 228, 171);
-
-    _buttonArea = generateWindowedArea(576, 600);
-    _buttonArea.y = _tl.y + getGameHeight() / 2;
-    _buttonArea.height = getGameHeight() / 2;
-    getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
-    getImageData("claim.bmp", _buttonArea, 36, 13);
-    getImageData("claim2.bmp", _buttonArea, 36, 13);
-    // getImageData("camp/restartC.png", null, 22, 15);
-
-    // _safePoint = new Pixel(_br.x - 15, _br.y - 15);
-    // _parkingPoint = new Pixel(_br);
-
-    _lastLocationButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 38, 60, 36);
-    _mapButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 75, 60, 36);
-    _campButtonArea = new Rectangle(_menuBR.x - 169, _menuBR.y - 75, 60, 36);
-
-    getImageData("greenArrow.bmp", _lastLocationButtonArea, 17, 22);
-
-    getImageData("map/diggyCave.bmp", _diggyCaveArea, -186, 49);
-    getImageData("map/placeEntry.bmp", _scanArea, 28, 20);
+//    _lastMatZone = new Rectangle(_br.x - 148, _tl.y + 87, 148, 32);
+//    
+//    _ping2Area = new Rectangle(_tl.x + 120, _tl.y + 19, getGameWidth() - 120 - 120, getGameHeight() - 85 - 19);
+//    _energyArea = new Rectangle(_tl.x + getGameWidth() / 2 - 100, _tl.y + 19, 300, 22);
+//
+//    _scampArea = new Rectangle(_scanArea.x + 25, _scanArea.y + 415, getGameWidth() / 2, 65);
+//    // writeArea(_scanArea, "scanArea.png");
+//
+//    xx = (getGameWidth() - 140) / 2;
+//    _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
+//
+//    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144 - (_wide ? 200 : 0), _tl.y,
+//        400 - 144 + (_wide ? 400 : 0), getGameHeight() / 2 + 50);
+//    _diggyCaveArea = new Rectangle(_tl.x + getGameWidth() / 2 - 114, _tl.y + 53, 228, 171);
+//
+//    _buttonArea = generateWindowedArea(576, 600);
+//    _buttonArea.y = _tl.y + getGameHeight() / 2;
+//    _buttonArea.height = getGameHeight() / 2;
+//    getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
+//    getImageData("claim.bmp", _buttonArea, 36, 13);
+//    getImageData("claim2.bmp", _buttonArea, 36, 13);
+//    // getImageData("camp/restartC.png", null, 22, 15);
+//
+//    // _safePoint = new Pixel(_br.x - 15, _br.y - 15);
+//    // _parkingPoint = new Pixel(_br);
+//
+//    _lastLocationButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 38, 60, 36);
+//    _mapButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 75, 60, 36);
+//    _campButtonArea = new Rectangle(_menuBR.x - 169, _menuBR.y - 75, 60, 36);
+//
+//    getImageData("greenArrow.bmp", _lastLocationButtonArea, 17, 22);
+//
+//    getImageData("map/diggyCave.bmp", _diggyCaveArea, -186, 49);
+//    getImageData("map/placeEntry.bmp", _scanArea, 28, 20);
   }
 
   public boolean scanForMapButtons() throws RobotInterruptedException, IOException, AWTException {
@@ -228,7 +232,24 @@ public class ScreenScanner extends BaseScreenScanner {
       return imageData;
     }
   }
-
+  
+  public boolean locateGameAreaNew(boolean fullScreen) throws AWTException, IOException, RobotInterruptedException {
+    boolean found = _gameLocator.locateGameArea(null, getImageData("images/shopAnchor.png", null, 60, 54), false);
+    if (found) {
+      _tl = _gameLocator.getTopLeft();
+      _br = _gameLocator.getBottomRight();
+      Rectangle area = new Rectangle(_br.x - 220, _br.y - 715, 220, 145);
+      Pixel p = scanOneFast(getImageData("images/gemAnchor.png", null, 140, -14), area, false);
+      if (p != null) {
+        _tl.y = p.y;
+        setKeyAreas();
+        return true;
+      }
+    }    
+    
+    return false;  
+  }
+  
   public boolean locateGameArea(boolean fullScreen) throws AWTException, IOException, RobotInterruptedException {
     LOGGER.fine("Locating game area ... ");
 
@@ -425,39 +446,45 @@ public class ScreenScanner extends BaseScreenScanner {
   }
 
   public Pixel findDiggy(Rectangle area) throws IOException, AWTException, RobotInterruptedException {
-    Pixel p = scanOneFast("diggy2.bmp", area, false);
+    Pixel p = diggyFinder.findDiggy(area);
     if (p != null) {
-      LOGGER.info("found diggy: " + p);
-      p.x -= 12;
-      p.y -= 45;
-    } else {
-      p = scanOneFast("diggy3.bmp", area, false);
-      if (p != null) {
-        LOGGER.info("found diggy happy: " + p);
-      } else {
-
-        p = scanOneFast("diggy_tired.bmp", area, false);
-
-        if (p != null) {
-          LOGGER.info("found diggy tired: " + p);
-          p.x -= 11;
-          p.y -= 45;
-        } else {
-          p = scanOne("bluepants.bmp", area, false);
-          if (p != null) {
-            LOGGER.info("found diggy almost tired: " + p);
-            p.x -= 22;
-            p.y -= 47;
-          }
-        }
-      }
+      p.x -= 30;
+      p.y -= 30;
     }
-
     return p;
+//    Pixel p = scanOneFast("diggy2.bmp", area, false);
+//    if (p != null) {
+//      LOGGER.info("found diggy: " + p);
+//      p.x -= 12;
+//      p.y -= 45;
+//    } else {
+//      p = scanOneFast("diggy3.bmp", area, false);
+//      if (p != null) {
+//        LOGGER.info("found diggy happy: " + p);
+//      } else {
+//
+//        p = scanOneFast("diggy_tired.bmp", area, false);
+//
+//        if (p != null) {
+//          LOGGER.info("found diggy tired: " + p);
+//          p.x -= 11;
+//          p.y -= 45;
+//        } else {
+//          p = scanOne("bluepants.bmp", area, false);
+//          if (p != null) {
+//            LOGGER.info("found diggy almost tired: " + p);
+//            p.x -= 22;
+//            p.y -= 47;
+//          }
+//        }
+//      }
+//    }
+//
+//    return p;
   }
 
   public boolean isDiggyExactlyHere(Pixel p) throws IOException, AWTException, RobotInterruptedException {
-    Rectangle area = new Rectangle(p.x, p.y, 60, 60);
+    Rectangle area = new Rectangle(p.x-30, p.y-30, 120, 120);
     return findDiggy(area) != null;
   }
 

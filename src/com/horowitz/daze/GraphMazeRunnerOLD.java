@@ -37,7 +37,7 @@ import com.horowitz.commons.Pixel;
 import com.horowitz.commons.RobotInterruptedException;
 import com.horowitz.commons.SimilarityImageComparator;
 
-public class GraphMazeRunner {
+public class GraphMazeRunnerOLD {
 
   private boolean _popups = false;
   private boolean _gates = false;
@@ -149,9 +149,9 @@ public class GraphMazeRunner {
             return false;
           }
 
-//          if (_popups && checkPopups()) {
-//            _mouse.delay(250);
-//          }
+          if (_popups && checkPopups()) {
+            _mouse.delay(250);
+          }
 
           if (vertex._state == State.START) {
             vertex._state = State.VISITED;
@@ -574,11 +574,6 @@ public class GraphMazeRunner {
 
           ensureArea(neighborPos, 0, 0);
           neighborPos._state = State.CHECKED;
-          
-          //check is gate
-          //check is stone
-          //check is palm
-          //check is green
 
           if (lookForGreenHere(neighborPos._coords)) {
             neighborPos._state = State.GREEN;
@@ -631,7 +626,7 @@ public class GraphMazeRunner {
   private int _pauseTime = 2;
   public boolean done;
 
-  public GraphMazeRunner(ScreenScanner scanner) {
+  public GraphMazeRunnerOLD(ScreenScanner scanner) {
     super();
 
     _support = new PropertyChangeSupport(this);
@@ -888,33 +883,32 @@ public class GraphMazeRunner {
   }
 
   private boolean checkIsReady() throws IOException, AWTException, RobotInterruptedException {
-    return false;
-//    // LOGGER.info("sign popup...");
-//    long start = System.currentTimeMillis();
-//    Rectangle area = _scanner.generateWindowedArea(137, 325);
-//    // _scanner.writeArea(area, "cleared1Area.bmp");
-//    Pixel p = _scanner.scanOneFast("cleared.bmp", area, false);
-//    if (p != null) {
-//      _mouse.click(p.x + 42, p.y + 166);
-//      LOGGER.info("click congrats popup");
-//
-//      _mouse.delay(200);
-//    } else {
-//      // repeatable scenario
-//      area = _scanner.generateWindowedArea(479, 648);
-//      area.y = _scanner.getTopLeft().y + 187;
-//      area.height = 62;
-//      area.x += 100;
-//      area.width = 150;
-//      // _scanner.writeArea(area, "cleared2Area.bmp");
-//      p = _scanner.scanOne("clearedRep.bmp", area, false);
-//      if (p != null) {
-//        LOGGER.info("click congrats popup2");
-//        _mouse.click(p.x + 47, p.y + 248);// ok button could be elsewhere!!!
-//      }
-//    }
-//    LOGGER.info("time: " + (System.currentTimeMillis() - start));
-//    return p != null;
+    // LOGGER.info("sign popup...");
+    long start = System.currentTimeMillis();
+    Rectangle area = _scanner.generateWindowedArea(137, 325);
+    // _scanner.writeArea(area, "cleared1Area.bmp");
+    Pixel p = _scanner.scanOneFast("cleared.bmp", area, false);
+    if (p != null) {
+      _mouse.click(p.x + 42, p.y + 166);
+      LOGGER.info("click congrats popup");
+
+      _mouse.delay(200);
+    } else {
+      // repeatable scenario
+      area = _scanner.generateWindowedArea(479, 648);
+      area.y = _scanner.getTopLeft().y + 187;
+      area.height = 62;
+      area.x += 100;
+      area.width = 150;
+      // _scanner.writeArea(area, "cleared2Area.bmp");
+      p = _scanner.scanOne("clearedRep.bmp", area, false);
+      if (p != null) {
+        LOGGER.info("click congrats popup2");
+        _mouse.click(p.x + 47, p.y + 248);// ok button could be elsewhere!!!
+      }
+    }
+    LOGGER.info("time: " + (System.currentTimeMillis() - start));
+    return p != null;
   }
 
   private boolean checkPopup() throws IOException, AWTException, RobotInterruptedException {
@@ -957,18 +951,16 @@ public class GraphMazeRunner {
   }
 
   private boolean isGate(Pixel pp) throws RobotInterruptedException, AWTException, IOException {
-//    //
-//    // _mouse.mouseMove(pp.x + 30, pp.y + 30);
-//    // _mouse.delay(100);
-//    Rectangle area = new Rectangle(pp.x + 14, pp.y + 10, 17 + 10, 12 + 12);
-//    
-//    BufferedImage image2 = new Robot().createScreenCapture(area);
-//    image2 = filterGate2(image2);
-//    ImageData id = _scanner.getImageData("gate2.bmp");
-//    Pixel ppp = _comparator.findImage(id.getImage(), image2, id.getColorToBypass());
-//
-//    return (ppp != null);
-    return false;
+    //
+    // _mouse.mouseMove(pp.x + 30, pp.y + 30);
+    // _mouse.delay(100);
+    Rectangle area = new Rectangle(pp.x + 14, pp.y + 10, 17 + 10, 12 + 12);
+    BufferedImage image2 = new Robot().createScreenCapture(area);
+    image2 = filterGate2(image2);
+    ImageData id = _scanner.getImageData("gate2.bmp");
+    Pixel ppp = _comparator.findImage(id.getImage(), image2, id.getColorToBypass());
+
+    return (ppp != null);
   }
 
   private Position lookForGreen(Position pos) throws RobotInterruptedException, IOException, AWTException {
@@ -1131,56 +1123,37 @@ public class GraphMazeRunner {
   private boolean lookForGreenHere(Pixel pp) throws AWTException, RobotInterruptedException, IOException {
     // 10px more from all sides
     Rectangle area = new Rectangle(pp.x - 10, pp.y - 10, 60 + 20, 60 + 20);
-    //BufferedImage image1 = new Robot().createScreenCapture(area);
+    BufferedImage image1 = new Robot().createScreenCapture(area);
     _mouse.mouseMove(pp.x + 30, pp.y + 30);
-    _mouse.delay(100 + (isSlow() ? 200 : 0));
-    
+    _mouse.delay(100 + (isSlow() ? 600 : 0));
     BufferedImage image2 = new Robot().createScreenCapture(area);
-    
-    //_scanner.writeImageTS(image2, "green.png");
-    
-    FastBitmap fb = new FastBitmap(image2);
-    ColorFiltering cf = new ColorFiltering(new IntRange(71, 112), new IntRange(150, 185), new IntRange(32, 61));
-    cf.applyInPlace(fb);
-    //fb.saveAsPNG("green1g.png");
-    fb.toGrayscale();
-    Threshold ts = new Threshold(10);
-    ts.applyInPlace(fb);
-    fb.toRGB();
-    
-    Pixel p = _scanner.findMatch(_scanner.getImageData("images/greenSquare.png").getImage(), fb.toBufferedImage(), Color.red);
-    
-    return p != null;
-    
-    
-    
-//    List<Blob> blobs = new MotionDetector().detect(image1, image2, 5 * 50);
-//
-//    // for (Blob blob : blobs) {
-//    // FastBitmap fb2 = new FastBitmap(image2);
-//    //
-//    // Crop crop = new Crop(blob.getBoundingBox().x, blob.getBoundingBox().y,
-//    // blob.getBoundingBox().width,
-//    // blob.getBoundingBox().height);
-//    // crop.ApplyInPlace(fb2);
-//    // fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x +
-//    // "_" + System.currentTimeMillis() + ".png");
-//    // }
-//    if (blobs.size() > 0) {
-//      for (Blob blob : blobs) {
-//        if (blob.getHeight() > 35 && blob.getWidth() > 35)
-//          return true;
-//      }
-//
-//      // // we have movement, but let's see is it green
-//      // image2 = filterGreen(image2.getSubimage(0, 0, 25, 25));
-//      // ImageData id = _scanner.getImageData("greenTL.bmp");
-//      // Pixel ppp = _comparator.findImage(id.getImage(), image2,
-//      // id.getColorToBypass());
-//      // if (ppp != null)
-//      // return pp;
-//    }
-//    return false;
+    List<Blob> blobs = new MotionDetector().detect(image1, image2, 5 * 50);
+
+    // for (Blob blob : blobs) {
+    // FastBitmap fb2 = new FastBitmap(image2);
+    //
+    // Crop crop = new Crop(blob.getBoundingBox().x, blob.getBoundingBox().y,
+    // blob.getBoundingBox().width,
+    // blob.getBoundingBox().height);
+    // crop.ApplyInPlace(fb2);
+    // fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" + blob.getCenter().x +
+    // "_" + System.currentTimeMillis() + ".png");
+    // }
+    if (blobs.size() > 0) {
+      for (Blob blob : blobs) {
+        if (blob.getHeight() > 35 && blob.getWidth() > 35)
+          return true;
+      }
+
+      // // we have movement, but let's see is it green
+      // image2 = filterGreen(image2.getSubimage(0, 0, 25, 25));
+      // ImageData id = _scanner.getImageData("greenTL.bmp");
+      // Pixel ppp = _comparator.findImage(id.getImage(), image2,
+      // id.getColorToBypass());
+      // if (ppp != null)
+      // return pp;
+    }
+    return false;
   }
 
   private void setSearchSequence() {
