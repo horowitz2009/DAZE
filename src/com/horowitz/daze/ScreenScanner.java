@@ -505,8 +505,8 @@ public class ScreenScanner extends BaseScreenScanner {
    */
   public Pixel lookForDiggyAroundHere(Pixel pp, int cellRange)
       throws IOException, RobotInterruptedException, AWTException {
-    Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 * 2 + 60,
-        cellRange * 60 * 2 + 60);
+    Rectangle area = new Rectangle(pp.x - cellRange * 60 - 30, pp.y - cellRange * 90 - 30, cellRange * 60 * 2 + 120,
+        cellRange * 60 * 2 + 120);
     Pixel res = findDiggy(area);
     // LOGGER.info("Looking for diggy in " + pp + " " + res);
     return res;

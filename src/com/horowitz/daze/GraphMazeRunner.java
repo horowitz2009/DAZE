@@ -65,7 +65,7 @@ public class GraphMazeRunner {
         // LOGGER.info("STACKTRACE: " +
         // Thread.currentThread().getStackTrace().length);
         try {
-          ensureArea(vertex, 0, 0);
+          ensureArea(vertex, vertex);
           if (vertex._state == State.GREEN) {
             // //////////////////////
             Pixel coords = new Pixel(_start._coords.x + vertex._row * 60, _start._coords.y + vertex._col * 60);
@@ -310,19 +310,19 @@ public class GraphMazeRunner {
 
     private boolean isWalkable(Position vertex, BufferedImage preClick) throws AWTException, RobotInterruptedException {
       Pixel p = vertex._coords;
-
+      
       // first click
       _mouse.click(p.x + 30, p.y + 30);
-
-      int number = 15;
+      
+      int number = 20;
       List<BufferedImage> images = new ArrayList<>();
       images.add(preClick);
       //long start = System.currentTimeMillis();
-      _mouse.delay(60);
+      //_mouse.delay(30);
       for (int i = 0; i < number; i++) {
-        if (i == 3 || i == 5 || i == 10) {
-          _mouse.click(p.x + 30, p.y + 30);
-        }
+//        if (i == 3 || i == 5 || i == 10) {
+//          _mouse.click(p.x + 30, p.y + 30);
+//        }
         _mouse.delay(30);
         images.add(captureBlock(p));
       }
@@ -334,13 +334,13 @@ public class GraphMazeRunner {
           fb2.saveAsPNG("walking" + i + ".png");
         }
       }
-
-      List<Blob> blobs = new MotionDetector().detect(images.get(0), images.get(12), -1);
+      
+      List<Blob> blobs = new MotionDetector().detect(images.get(0), images.get(4), -1);
       boolean walkable = false;
-      if (examineBlobs(blobs, images.get(0))) {
+      if (examineBlobs(blobs, images.get(4))) {
         walkable = true;
       } else {
-
+        
         for (int i = 2; i < images.size(); i++) {
           BufferedImage image = images.get(i);
           blobs = new MotionDetector().detect(images.get(0), image, -1);
@@ -353,6 +353,19 @@ public class GraphMazeRunner {
       LOGGER.info("isWalkable: " + walkable);
       return walkable;
     }
+    private boolean isWalkableNEW(Position vertex, BufferedImage preClick) throws AWTException, RobotInterruptedException, IOException {
+      Pixel p = vertex._coords;
+
+      // first click
+      _mouse.click(p.x + 30, p.y + 30);
+      _mouse.delay(500);
+      Pixel pp = lookForDiggyExactlyHere(p, 1);
+      if (pp != null) {
+        //good
+        return true;
+      }
+      return false;
+    }
 
     private boolean examineBlobs(List<Blob> blobs, BufferedImage image) {
       for (Blob blob : blobs) {
@@ -360,9 +373,10 @@ public class GraphMazeRunner {
 
         int cnt = 0;
         for (IntPoint point : blob.getPoints()) {
-          if (fb2.getRed(point) == 151 && fb2.getGreen(point) == 235 && fb2.getBlue(point) == 81)
+          if (fb2.getRed(point) >= 109 && fb2.getRed(point) <= 151 && fb2.getGreen(point) >= 180
+              && fb2.getGreen(point) <= 235 && fb2.getBlue(point) >= 50 && fb2.getBlue(point) <= 81)
             cnt++;
-          if (cnt > 3) {
+          if (cnt > 2) {
             // BINGOOO
             // fb2.saveAsPNG("BLOB_" + blob.getCenter().y + "_" +
             // blob.getCenter().x + "_" + System.currentTimeMillis()
@@ -408,30 +422,30 @@ public class GraphMazeRunner {
       return neighbor._state != State.VISITED && neighbor._state != State.OBSTACLE;
     }
 
-    private void ensureArea(Position pos, int rowOffset, int colOffset)
+    private void ensureArea(Position pos, Position diggyPos)
         throws RobotInterruptedException, IOException, AWTException {
       pos._coords = new Pixel(_start._coords.x + pos._row * 60, _start._coords.y + pos._col * 60);
-      int xx = _start._coords.x + (pos._row + rowOffset) * 60;
-      int yy = _start._coords.y + (pos._col + colOffset) * 60;
+      int xx = _start._coords.x + (pos._row) * 60;
+      int yy = _start._coords.y + (pos._col) * 60;
       // LOGGER.info("" + pos);
       Rectangle area = _scanner.getScanArea();
       int eastBorder = area.x + area.width;
       int westBorder = area.x;
       int southBorder = area.y + area.height;
       int northBorder = area.y;
-
+      int min = 90;
       int xCorrection = 0;
       int yCorrection = 0;
-      if (rowOffset == 0 && colOffset == 0) {
+      if (true) {
         // it's a vertex, not neighbor
 
         // CHECKED FOR SMALL DISTANCES
         // check east
-        if (xx + 60 > eastBorder) {
+        if (xx + 60 >= eastBorder) {
           xCorrection = eastBorder - (xx + 60);// negative
         } else {
           // check west
-          if (xx < westBorder) {
+          if (xx <= westBorder) {
             xCorrection = westBorder - xx;
           }
         }
@@ -440,12 +454,17 @@ public class GraphMazeRunner {
 
         // CHECKED FOR SMALL DISTANCES
         // check south
-        if (yy + 60 > southBorder) {
+        if (yy + 60 >= southBorder) {
           yCorrection = southBorder - (yy + 60);// negative
+          if (yCorrection > -min)
+            yCorrection = -min;
         } else {
           // check north
-          if (yy < northBorder) {
+          if (yy <= northBorder) {
             yCorrection = northBorder - yy;
+            if (yCorrection < min) {
+              yCorrection = min;
+            }
           }
         }
         // if (yCorrection > 0)
@@ -494,12 +513,11 @@ public class GraphMazeRunner {
           theRest *= height;
           Pixel start;
           Pixel end;
+          start = new Pixel(diggyPos._coords.x + 30,diggyPos._coords.y + 30);
           if (yCorrection < 0) {
             // start from south -> go north
-            start = new Pixel(_scanner.getTopLeft().x + _scanner.getGameWidth() / 2, southBorder - 10);
             end = new Pixel(start.x, start.y - (int) height);
           } else {
-            start = new Pixel(_scanner.getTopLeft().x + _scanner.getGameWidth() / 2, northBorder + 10);
             end = new Pixel(start.x, start.y + (int) height);
           }
           for (int i = 0; i < n; ++i) {
@@ -508,16 +526,33 @@ public class GraphMazeRunner {
           }
           if (n != 0) {
             if ((int) theRest != 0) {
+              if (theRest > 0)
+                theRest+= min;
+              if (theRest < 0)
+                theRest -= min;
+              
               end = new Pixel(start.x, start.y + (int) theRest);
-              _mouse.drag3(start.x, start.y, end.x, end.y);
+              _mouse.drag4(start.x, start.y, end.x, end.y, false, false);
+              _mouse.delay(10);
+              _mouse.click(end);
             }
           } else {
             end = new Pixel(start.x, start.y + yCorrection);
-            _mouse.drag3(start.x, start.y, end.x, end.y);
+
+            _mouse.drag4(start.x, start.y, end.x, end.y, false, false);
+            _mouse.delay(10);
+            _mouse.click(end);
           }
         }
         _start._coords.x += xCorrection;
         _start._coords.y += yCorrection;
+        _mouse.delay(1000);
+        Pixel pp = _scanner.lookForDiggyAroundHere(_start._coords, 2);
+        if (pp != null) {
+          LOGGER.info("DIGGY: " + pp);
+          LOGGER.info("COORDS: " + _start._coords);
+          _start._coords = pp;
+        }
         pos._coords = new Pixel(_start._coords.x + pos._row * 60, _start._coords.y + pos._col * 60);
 
         int totalXCorrection = xCorrection;
@@ -572,7 +607,7 @@ public class GraphMazeRunner {
 
         if (graph.canBeVisited(neighborPos, this)) {
 
-          ensureArea(neighborPos, 0, 0);
+          ensureArea(neighborPos, vertex);
           neighborPos._state = State.CHECKED;
           
           //check is gate
@@ -615,6 +650,8 @@ public class GraphMazeRunner {
         }
       }
     }
+
+
   }
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
@@ -1039,6 +1076,14 @@ public class GraphMazeRunner {
       throws IOException, RobotInterruptedException, AWTException {
     Rectangle area = new Rectangle(pp.x - cellRange * 60, pp.y - cellRange * 60, cellRange * 60 + 120 + 60,
         cellRange * 60 + 120 + 60);
+    Pixel res = _scanner.findDiggy(area);
+    LOGGER.info("Looking for diggy in " + pp + " " + res);
+    return res;
+  }
+  
+  private Pixel lookForDiggyExactlyHere(Pixel pp, int cellRange)
+      throws IOException, RobotInterruptedException, AWTException {
+    Rectangle area = new Rectangle(pp.x - 30, pp.y - 30, 120, 120);
     Pixel res = _scanner.findDiggy(area);
     LOGGER.info("Looking for diggy in " + pp + " " + res);
     return res;

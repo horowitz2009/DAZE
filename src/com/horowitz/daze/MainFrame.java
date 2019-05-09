@@ -1536,10 +1536,10 @@ public class MainFrame extends JFrame {
         }
       };
 
-      // toolbar.add(action);
+      //toolbar.add(action);
     }
     {
-      Action action = new AbstractAction("run") {
+      Action action = new AbstractAction("run2") {
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -1573,7 +1573,7 @@ public class MainFrame extends JFrame {
 
               if (_scanner.isOptimized()) {
                 // DO THE JOB
-                // ////test();
+                //test();
               } else {
                 LOGGER.info("I need to know where the game is!");
               }
@@ -1880,7 +1880,7 @@ public class MainFrame extends JFrame {
     // ping();
     // }
 
-    _mouse.checkUserMovement();
+    //_mouse.checkUserMovement();
 
     // 2. DO TASKS
     // long now = System.currentTimeMillis();
@@ -1888,9 +1888,9 @@ public class MainFrame extends JFrame {
     for (Task task : _tasks) {
       if (task.isEnabled()) {
         try {
-          _mouse.checkUserMovement();
+          //_mouse.checkUserMovement();
           task.preExecute();
-          _mouse.checkUserMovement();
+          //_mouse.checkUserMovement();
           task.execute();
         } catch (AWTException e) {
           LOGGER.info("FAILED TO execute task: " + task.getName());

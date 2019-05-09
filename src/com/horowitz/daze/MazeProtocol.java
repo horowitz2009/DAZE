@@ -50,23 +50,23 @@ public class MazeProtocol implements GameProtocol {
 
     boolean failure = false;
 
-    try {
-      Pixel p = _scanner.scanOne("greenArrow.bmp", _scanner._lastLocationButtonArea, false);
-      if (p != null) {
-        // not in location
-        _mouse.click(p);
-        LOGGER.info("Go to last location ...");
-        LOGGER.info("Wait 10s ...");
-        _mouse.delay(10000);
-        p = _scanner.scanOne("greenArrow.bmp", _scanner._lastLocationButtonArea, false);
-        if (p != null) {
-          failure = true;
-        }
-      }
-    } catch (IOException | AWTException e) {
-      e.printStackTrace();
-      failure = true;
-    }
+//    try {
+//      Pixel p = _scanner.scanOne("greenArrow.bmp", _scanner._lastLocationButtonArea, false);
+//      if (p != null) {
+//        // not in location
+//        _mouse.click(p);
+//        LOGGER.info("Go to last location ...");
+//        LOGGER.info("Wait 10s ...");
+//        _mouse.delay(10000);
+//        p = _scanner.scanOne("greenArrow.bmp", _scanner._lastLocationButtonArea, false);
+//        if (p != null) {
+//          failure = true;
+//        }
+//      }
+//    } catch (IOException | AWTException e) {
+//      e.printStackTrace();
+//      failure = true;
+//    }
 
     if (failure) {
       LOGGER.info("Failed to initialize Maze protocol!");

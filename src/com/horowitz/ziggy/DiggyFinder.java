@@ -76,6 +76,11 @@ public class DiggyFinder {
     for (Pixel p : matches) {
 
       try {
+        if (p.x - 16 < 0 || p.y - 60 < 0) {
+          //skip
+          continue;
+        }
+          
         BufferedImage helmetImage = fb.toBufferedImage().getSubimage(p.x - 16, p.y - 60, 55, 45);
 
         FastBitmap fb1 = new FastBitmap(helmetImage);
