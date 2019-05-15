@@ -153,7 +153,7 @@ public class GraphMazeRunner {
 //          }
 
           if (vertex._state == State.START) {
-            vertex._state = State.VISITED;
+            //vertex._state = State.VISITED; //it will be checked again, because it could be gate
             _support.firePropertyChange("TOTAL_MATRIX", null, _explored);
             _support.firePropertyChange("DIGGY", State.START, vertex);
             // _support.firePropertyChange("STATE_CHANGED", State.START,
@@ -960,33 +960,35 @@ public class GraphMazeRunner {
   }
 
   private boolean checkIsReady() throws IOException, AWTException, RobotInterruptedException {
+    Rectangle area = _scanner._popupArea;
+    Pixel p = _scanner.scanOneFast("images/titleLocationCleared.png", area, false);
+    if (p != null) {
+      //look for 2x button
+      LOGGER.info("LOCATION CLEARED...");
+      Pixel pp = _scanner.scanOneFast("images/buttonGet2x.png", area, true);
+      if (pp != null)  {
+        LOGGER.info("Wait 45 seconds...");
+        _mouse.delay(45000);
+        area = _scanner.generateWindowedArea(710, 452);
+        area.y = _scanner._tl.y - 90;
+        area.height = 200;
+        pp = _scanner.scanOneFast("images/claimReward.png", area, false);
+        if (pp != null) {
+          //close the window
+          _mouse.click(pp.x + 481, pp.y + 17);
+          _mouse.delay(1000);
+        }
+      }
+      area = _scanner._popupArea;
+      _scanner.writeAreaTS(area, "locationCleared.png");
+      pp = _scanner.scanOneFast("images/buttonOK.png", area, true);
+      if (pp == null) {
+        //TODO uh oh
+      }
+      return true;
+    }
+
     return false;
-//    // LOGGER.info("sign popup...");
-//    long start = System.currentTimeMillis();
-//    Rectangle area = _scanner.generateWindowedArea(137, 325);
-//    // _scanner.writeArea(area, "cleared1Area.bmp");
-//    Pixel p = _scanner.scanOneFast("cleared.bmp", area, false);
-//    if (p != null) {
-//      _mouse.click(p.x + 42, p.y + 166);
-//      LOGGER.info("click congrats popup");
-//
-//      _mouse.delay(200);
-//    } else {
-//      // repeatable scenario
-//      area = _scanner.generateWindowedArea(479, 648);
-//      area.y = _scanner.getTopLeft().y + 187;
-//      area.height = 62;
-//      area.x += 100;
-//      area.width = 150;
-//      // _scanner.writeArea(area, "cleared2Area.bmp");
-//      p = _scanner.scanOne("clearedRep.bmp", area, false);
-//      if (p != null) {
-//        LOGGER.info("click congrats popup2");
-//        _mouse.click(p.x + 47, p.y + 248);// ok button could be elsewhere!!!
-//      }
-//    }
-//    LOGGER.info("time: " + (System.currentTimeMillis() - start));
-//    return p != null;
   }
 
   private boolean checkPopup() throws IOException, AWTException, RobotInterruptedException {
@@ -1236,7 +1238,7 @@ public class GraphMazeRunner {
   private void analyze(Position pos) throws AWTException, RobotInterruptedException, IOException {
     // 10px more from all sides
     Pixel pp = pos._coords;
-    Rectangle area = new Rectangle(pp.x - 10, pp.y - 10, 60 + 20, 60 + 20);
+    Rectangle area = new Rectangle(pp.x - 20, pp.y - 20, 60 + 40, 60 + 40);
     //BufferedImage image1 = new Robot().createScreenCapture(area);
     _mouse.mouseMove(pp.x + 30, pp.y + 30);
     _mouse.delay(100 + (isSlow() ? 200 : 0));

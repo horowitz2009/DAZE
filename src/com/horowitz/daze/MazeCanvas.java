@@ -134,6 +134,8 @@ public class MazeCanvas extends JPanel {
       }
       if (pos._state == State.GREEN) {
         c = Color.green;
+      } else if (pos._state == State.START) {
+          c = Color.orange;
       } else if (pos._state == State.CHECKED) {
         c = Color.lightGray;
       }

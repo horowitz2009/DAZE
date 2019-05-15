@@ -2069,8 +2069,8 @@ public class MainFrame extends JFrame {
                 // check is still in map mode
                 boolean b = _scanner.checkIsStillInMap();
                 LOGGER.info("still in map? " + b);
-                long howLong = _scanner.checkIsLoading();
-                LOGGER.info("loading? " + howLong);
+                //long howLong = _scanner.checkIsLoading();
+                //LOGGER.info("loading? " + howLong);
                 _mouse.delay(500);
                 if (_pingToggle.isSelected())
                   captureScreen(null);// ping
@@ -2120,7 +2120,7 @@ public class MainFrame extends JFrame {
 
   private void doCampOnce() throws RobotInterruptedException, IOException, AWTException {
     if (_caravanToggle.isSelected() || _kitchenToggle.isSelected() || _foundryToggle.isSelected()) {
-      handlePopups(false);
+      // handlePopups(false);
       // goto camp and ensure visibility
       boolean camp = mapManager.gotoCamp();
       if (!camp) {
@@ -2263,16 +2263,16 @@ public class MainFrame extends JFrame {
     try {
       LOGGER.info("Popups...");
 
-      boolean found = false;
-      Pixel p = null;
-      Rectangle area = _scanner.generateWindowedArea(290, 648);// was 486
+      //boolean found = false;
+      //Pixel p = null;
+      //Rectangle area = _scanner.generateWindowedArea(290, 648);// was 486
       if (_scanner.isOptimized()) {
         _mouse.mouseMove(_scanner.getParkingPoint());
         _mouse.delay(300);
       } else {
         wide = true;
       }
-
+      _scanner.handlePopups();
 //      _scanner.handleFBMessages(true);
 //
 //      long start = System.currentTimeMillis();

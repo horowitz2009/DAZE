@@ -131,7 +131,7 @@ public class ScreenScanner extends BaseScreenScanner {
     int southOffset = _settings.getInt("scanArea.southOffset", 85);
     _scanArea = new Rectangle(_tl.x + westOffset, _tl.y + northOffset, getGameWidth() - westOffset - eastOffset,
         getGameHeight() - northOffset - southOffset);
-
+    _scampArea = new Rectangle(_tl.x + 100, _br.y - 100, getGameWidth() - 200, 100);
     area = new Rectangle(_tl.x + 255, _br.y - 90, getGameWidth() - 255 - 338, 90);
     getImageData("images/campAnchor.png", area, 0, 0);
 
@@ -142,6 +142,8 @@ public class ScreenScanner extends BaseScreenScanner {
     Rectangle worldButtonArea = new Rectangle(_tl.x + 174, _tl.y + 62, (getGameWidth() / 2) - 174, 150);
     getImageData("images/EG_small.png", worldButtonArea, 11, 13);
     getImageData("images/EG_big.png", worldButtonArea, 12, 16);
+
+    getImageData("images/mapBlack.png", _scampArea, 0, 0);
 
     // _lastMatZone = new Rectangle(_br.x - 148, _tl.y + 87, 148, 32);
     //
@@ -157,9 +159,16 @@ public class ScreenScanner extends BaseScreenScanner {
     // xx = (getGameWidth() - 140) / 2;
     // _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
     //
-    // _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144 - (_wide ? 200 :
-    // 0), _tl.y,
-    // 400 - 144 + (_wide ? 400 : 0), getGameHeight() / 2 + 50);
+    
+    _popupArea = generateWindowedArea(976, getGameHeight() - 120);
+    _popupArea.y -= 50;
+    
+    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 100, _tl.y, getGameWidth() - 300,
+        getGameHeight() / 2 + 50);
+    getImageData("images/x.png", _popupAreaX, 17, 19);
+    getImageData("images/buttonGet2x.png", _popupArea, 45, 5);
+    getImageData("images/buttonCollectEnergy.png", _popupArea, 80, 18);
+    getImageData("images/buttonRestartAll.png", _popupArea, 50, 5);
     // _diggyCaveArea = new Rectangle(_tl.x + getGameWidth() / 2 - 114, _tl.y + 53,
     // 228, 171);
     //
@@ -181,7 +190,6 @@ public class ScreenScanner extends BaseScreenScanner {
     //
     // getImageData("greenArrow.bmp", _lastLocationButtonArea, 17, 22);
     //
-    // getImageData("map/diggyCave.bmp", _diggyCaveArea, -186, 49);
     // getImageData("map/placeEntry.bmp", _scanArea, 28, 20);
   }
 
@@ -314,6 +322,8 @@ public class ScreenScanner extends BaseScreenScanner {
   }
 
   private Pixel _kitchen;
+  private Pixel _caravan;
+  private Pixel _foundry;
 
   public Pixel ensureAreaInGame(Rectangle area) throws RobotInterruptedException {
     Rectangle gameArea = new Rectangle(_tl.x, _tl.y, getGameHeight(), getGameHeight());
@@ -431,24 +441,16 @@ public class ScreenScanner extends BaseScreenScanner {
 
   public boolean handlePopups() throws IOException, AWTException, RobotInterruptedException {
     boolean found = false;
-    int xx;
-    Rectangle area;
-    Pixel p = scanOneFast("greenX.bmp", null, true);
-    found = p != null;
-    if (!found) {
-
-      // red x - wide popup
-      xx = (getGameWidth() - 624) / 2;
-      area = new Rectangle(_tl.x + xx + 624 - 30, _tl.y + 71, 60, 42);
-      found = scanOneFast("redX.bmp", area, true) != null;
-
-      // red x - tiny popup
-      xx = (getGameWidth() - 282) / 2;
-      area = new Rectangle(_tl.x + xx + 282, _tl.y + 71, 40, 40);
-      found = found || scanOneFast("redX.bmp", area, true) != null;
-
+    
+    Pixel p = scanOneFast("images/buttonCollectEnergy.png", null, true);
+    if (p != null) {
+      _mouse.delay(400);
+      found = true;
     }
-
+    p = scanOneFast("images/x.png", null, true);
+    found = p != null;
+    LOGGER.info("popups done");
+    
     return found;
   }
 
@@ -549,20 +551,26 @@ public class ScreenScanner extends BaseScreenScanner {
         _mouse.delay(1000);
         // try again now
         p = scanOneFast("images/campAnchor.png", null, false);
-        if (p != null) {
-          // good
-          return true;
-        } else {
+        if (p == null) {
           // try again
           return gotoCamp(tries - 1);
         }
       } else {
         // try with map
         pp = scanOneFast("images/mapButton.png", null, true);
+        if (pp == null) {
+          handlePopups();
+        }
         _mouse.mouseMove(_safePoint);
         _mouse.delay(1500);
         return gotoCamp(tries - 1);
       }
+    }
+    if (p != null) {
+      _kitchen = new Pixel(p.x + 393, p.y - 241);
+      _caravan = new Pixel(p.x - 381, p.y - 241);
+      _foundry = new Pixel(p.x + 688, p.y - 241);
+      return true;
     }
 
     return false;
@@ -596,14 +604,15 @@ public class ScreenScanner extends BaseScreenScanner {
   }
 
   public boolean checkIsStillInMap() throws RobotInterruptedException, IOException, AWTException {
-    boolean mapMode = false;
     int tries = 0;
+    Pixel p;
     do {
       tries++;
       _mouse.delay(300);
-      mapMode = scanForMapButtons();
-    } while (mapMode && tries < 15);
-    return mapMode;
+      p = scanOneFast("images/mapBlack.png", null, false);
+      System.err.println("map balck: " + p);
+    } while (p != null && tries < 15);
+    return p != null;
   }
 
   public long checkIsLoading() throws RobotInterruptedException, IOException, AWTException {
@@ -666,30 +675,31 @@ public class ScreenScanner extends BaseScreenScanner {
       p.y += 72 * slot;
       _mouse.click(p);
       _mouse.delay(2000);
-      
+
       LOGGER.info("goto " + map.getName());
       _mouse.click(p.x + map.getCoords().x, p.y + map.getCoords().y);
       _mouse.delay(2000);
-      
+
+      return true;
+
     }
 
     return false;
   }
 
-  public Pixel findCamp() throws RobotInterruptedException, IOException, AWTException {
+  public Pixel findCamp(DMap map) throws RobotInterruptedException, IOException, AWTException {
     // dragMapToRight();
-    Pixel p = scanOne("map/scamp.bmp", _scampArea, false);
+    Pixel p = scanOne(map.getAnchorImage(), _scampArea, false);
     if (p == null) {
       int tries = 0;
       do {
-        dragMapToRight();
+        //dragMapToRight();
         _mouse.mouseMove(_safePoint);
         _mouse.delay(1000);
-        p = scanOne("map/scamp.bmp", _scampArea, false);
+        p = scanOne(map.getAnchorImage(), _scampArea, false);
         tries++;
       } while (p == null && tries < 5);
     }
-    // p = scanOne("map/scamp.bmp", _scampArea, false);
     return p;
   }
 
@@ -711,5 +721,13 @@ public class ScreenScanner extends BaseScreenScanner {
   public void reset() {
     _imageDataCache.clear();
     super.reset();
+  }
+
+  public Pixel getCaravan() {
+    return _caravan;
+  }
+
+  public Pixel getFoundry() {
+    return _foundry;
   }
 }

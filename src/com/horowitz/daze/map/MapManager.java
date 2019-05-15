@@ -49,7 +49,7 @@ public class MapManager {
           e.printStackTrace();
         }
       }
-      
+
       System.out.println("Total " + _maps.size() + " maps loaded.");
       LOGGER.info("Total " + _maps.size() + " maps loaded.");
     }
@@ -67,8 +67,8 @@ public class MapManager {
     return mapNames;
   }
 
-  public boolean gotoMap(DMap map) throws RobotInterruptedException, IOException, AWTException,
-      PlaceUnreachableException {
+  public boolean gotoMap(DMap map)
+      throws RobotInterruptedException, IOException, AWTException, PlaceUnreachableException {
     boolean success = false;
     if (map != null) {
       success = _scanner.gotoMap(map);
@@ -90,12 +90,12 @@ public class MapManager {
     return null;
   }
 
-  public Pixel findCamp() throws RobotInterruptedException, IOException, AWTException {
-    return _scanner.findCamp();
+  public Pixel findCamp(DMap map) throws RobotInterruptedException, IOException, AWTException {
+    return _scanner.findCamp(map);
   }
 
-  public boolean gotoPlace(String worldName, String mapName, String placeName) throws RobotInterruptedException,
-      IOException, AWTException, PlaceUnreachableException {
+  public boolean gotoPlace(String worldName, String mapName, String placeName)
+      throws RobotInterruptedException, IOException, AWTException, PlaceUnreachableException {
     boolean success = false;
     DMap map = getMap(worldName, mapName);
 
@@ -110,13 +110,19 @@ public class MapManager {
     if (success) {
       _mouse.mouseMove(_scanner.getSafePoint());
       _mouse.delay(1500);
-      //map.getAnchorImage()
-      Pixel p = findCamp();
+      // map.getAnchorImage()
+      Pixel p = findCamp(map);
       if (p != null) {
         LOGGER.info("CAMP COORDS: " + p);
         p.x += place.getCoords().x;
         p.y += place.getCoords().y;
         ensurePlace(p);
+        Pixel pp = findCamp(map);
+        if (pp != null) {
+          p = pp;
+          p.x += place.getCoords().x;
+          p.y += place.getCoords().y;
+        }
         success = checkPlaceIsPlayable(p);
 
       } else {
@@ -168,7 +174,7 @@ public class MapManager {
       }
       _mouse.drag(x1, y, x2, y);
 
-      _mouse.delay(1000);
+      _mouse.delay(3000);
     }
 
   }
@@ -177,45 +183,24 @@ public class MapManager {
     _mouse.mouseMove(_scanner.getSafePoint());
     _mouse.delay(100);
 
-    Rectangle area = new Rectangle(p.x + -35, p.y - 35, 70, 70);
-    Pixel pd = _scanner.scanOne("map/placeDone.bmp", area, false);
+    Rectangle area = new Rectangle(p.x - 35, p.y - 60, 111, 90);
+    Pixel pd = _scanner.scanOne("images/placeDone.png", area, false);
     if (pd != null) {
       LOGGER.info("Place done! Moving forward...");
       return false;
     } else {
-      _mouse.click(p);
-      _mouse.delay(10);
-      _mouse.mouseMove(_scanner.getSafePoint());
-      _mouse.delay(1000);
-      // _scanner.writeArea(_scanner._diggyCaveArea, "diggyCave.png");
-      Pixel pc = _scanner.scanOne("map/diggyCave.bmp", null, false);
-      if (pc != null) {
-        area = new Rectangle(pc.x + 421, pc.y + 131, 57, 36);
-        // Pixel pp = _scanner.scanOne("map/progressFull.bmp", area, false);
-        // if (pp != null) {
-        // LOGGER.info("This place is done! Moving forward...");
-        // _mouse.click(pc.x + 456, pc.y + 6);
-        // _mouse.delay(1000);
-        // return false;
-        // }
-        // LOGGER.info("hmm");
-        // find the entry
-        Rectangle area2 = new Rectangle(pc.x + 193, pc.y + 155, 100, 280);
-        Pixel pp = _scanner.scanOne("map/placeEntry2.bmp", area2, true);// CLICK!!!
-        // if (pp == null) {
-        // area2 = new Rectangle(pc.x +193, pc.y+365, 100, 60);
-        // pp = _scanner.scanOne("map/placeEntry.bmp", area2, true);//CLICK!!!
-        // }
-        if (pp == null) {
-          LOGGER.info("UH OH...");
-          _mouse.click(pc.x + 456, pc.y + 6);
-          _mouse.delay(1000);
-          return false;
-        }
-        return pp != null;
+      area = new Rectangle(p.x - 80, p.y, 125, 94);
+      pd = _scanner.scanOne("images/placeClock.png", area, false);
+      if (pd != null) {
+        LOGGER.info("Repeatable not yet available! Moving forward...");
+        return false;
+      } else {
+        LOGGER.info("Entering...");
+        _mouse.click(p);
+        _mouse.delay(100);
+        return true;
       }
     }
-    return false;
   }
 
   public boolean gotoCamp() throws RobotInterruptedException, IOException, AWTException {
@@ -225,44 +210,30 @@ public class MapManager {
   public void doKitchen() throws RobotInterruptedException, IOException, AWTException {
     _mouse.click(_scanner.getKitchen());
     _mouse.delay(_settings.getInt("camp.delay", 850));
-    doMenu("camp/egypt/restartC.png");
+    _scanner.scanOneFast("images/buttonRestartAll.png", null, true);
+    _mouse.delay(300);
+    _scanner.scanOneFast("images/x.png", null, true);
+    _mouse.delay(300);
     LOGGER.info("Kitchen done.");
   }
 
   public void doCaravans() throws RobotInterruptedException, IOException, AWTException {
-    Pixel p = _scanner.getKitchen();
-    p.x -= 750;
-    _mouse.click(p);
+    _mouse.click(_scanner.getCaravan());
     _mouse.delay(_settings.getInt("camp.delay", 850));
-    doMenu("camp/" +_scanner.campLayout +  "/restartC.png");
+    _scanner.scanOneFast("images/buttonRestartAll.png", null, true);
+    _mouse.delay(300);
+    _scanner.scanOneFast("images/x.png", null, true);
+    _mouse.delay(300);
     LOGGER.info("Caravans done.");
   }
 
   public void doFoundry() throws RobotInterruptedException, IOException, AWTException {
-    Pixel p = _scanner.getKitchen();
-    int xOff = _scanner.campLayout.equals("greece") ? 183 : 127;
-    int yOff = _scanner.campLayout.equals("greece") ? 25 : 55;
-    p.x += xOff;
-    p.y += yOff;
-    int xlim = _scanner.getBottomRight().x - 98;
-    if (p.x > xlim) {
-      int y = p.y + 205;
-      int dist = p.x - xlim;
-      int x1 = p.x - 211;
-      _mouse.drag(x1, y, x1 - dist, y);
-      _mouse.delay(200);
-      _scanner.gotoCamp(2);
-      p = _scanner.getKitchen();
-      p.x += xOff;
-      p.y += yOff;
-    }
-    _mouse.click(p);
-    _mouse.delay(100);
-    _mouse.click(p);
+    _mouse.click(_scanner.getFoundry());
     _mouse.delay(_settings.getInt("camp.delay", 850));
-    doMenu("camp/restartF2.bmp");
-    // doMenu("camp/restartF.bmp");
-
+    _scanner.scanOneFast("images/buttonRestartAll.png", null, true);
+    _mouse.delay(300);
+    _scanner.scanOneFast("images/x.png", null, true);
+    _mouse.delay(300);
     LOGGER.info("Foundry done.");
   }
 
