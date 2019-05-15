@@ -674,7 +674,7 @@ public class ScreenScanner extends BaseScreenScanner {
 
       p.y += 72 * slot;
       _mouse.click(p);
-      _mouse.delay(2000);
+      _mouse.delay(500);
 
       LOGGER.info("goto " + map.getName());
       _mouse.click(p.x + map.getCoords().x, p.y + map.getCoords().y);
@@ -689,7 +689,8 @@ public class ScreenScanner extends BaseScreenScanner {
 
   public Pixel findCamp(DMap map) throws RobotInterruptedException, IOException, AWTException {
     // dragMapToRight();
-    Pixel p = scanOne(map.getAnchorImage(), _scampArea, false);
+    long start = System.currentTimeMillis();
+    Pixel p = scanOneFast(map.getAnchorImage(), _scampArea, false);
     if (p == null) {
       int tries = 0;
       do {
@@ -700,6 +701,7 @@ public class ScreenScanner extends BaseScreenScanner {
         tries++;
       } while (p == null && tries < 5);
     }
+    LOGGER.info("camp: " + p + " in " +(System.currentTimeMillis() - start));
     return p;
   }
 

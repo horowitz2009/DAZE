@@ -775,6 +775,7 @@ public class MainFrame extends JFrame {
       AbstractAction action = new AbstractAction("Run") {
         public void actionPerformed(ActionEvent e) {
           _mazeRunner.setDirections(Direction.buildDirections("news"));
+          testAgenda = false;
           runMagic();
         }
 
@@ -786,6 +787,7 @@ public class MainFrame extends JFrame {
     {
       AbstractAction action = new AbstractAction("Agenda") {
         public void actionPerformed(ActionEvent e) {
+          testAgenda = false;
           doAgenda(true);
         }
 
@@ -795,6 +797,7 @@ public class MainFrame extends JFrame {
     {
       AbstractAction action = new AbstractAction("Cont") {
         public void actionPerformed(ActionEvent e) {
+          testAgenda = false;
           doAgenda(false);
         }
 
@@ -878,6 +881,22 @@ public class MainFrame extends JFrame {
           t.start();
         }
 
+      };
+      //mainToolbar1.add(action);
+    }
+    // TEST agenda
+    {
+      AbstractAction action = new AbstractAction("TA") {
+        public void actionPerformed(ActionEvent e) {
+          Thread t = new Thread(new Runnable() {
+            public void run() {
+              testAgenda = true;
+              doAgenda(false);
+            }
+          });
+          t.start();
+        }
+        
       };
       mainToolbar1.add(action);
     }
@@ -1914,6 +1933,8 @@ public class MainFrame extends JFrame {
 
   private int lastAgendaEntry = 0;
 
+  protected boolean testAgenda = false;
+
   private void doAgenda(boolean startover) {
     if (startover) {
       lastAgendaEntry = 0;
@@ -1971,9 +1992,11 @@ public class MainFrame extends JFrame {
 
               if (_pingToggle.isSelected())
                 captureScreen(null);// ping
-
-              runMazeThread(directions);
-
+              if (testAgenda ) {
+                _mouse.delay(10);
+              } else {
+                runMazeThread(directions);
+              }
               // sleep
               int turn = 0;
               do {

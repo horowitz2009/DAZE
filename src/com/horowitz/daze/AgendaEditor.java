@@ -514,7 +514,12 @@ public class AgendaEditor extends JPanel {
   }
   
   public int getEntryIndex() {
-    return Integer.parseInt(_entryIndexTF.getText());
+    try {
+      return Integer.parseInt(_entryIndexTF.getText());
+    } catch (NumberFormatException e) {
+      _entryIndexTF.setText("0");
+      return 0;
+    }
   }
 
 }

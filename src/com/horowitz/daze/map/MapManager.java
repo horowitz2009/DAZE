@@ -109,11 +109,10 @@ public class MapManager {
     success = place != null && gotoMap(map);
     if (success) {
       _mouse.mouseMove(_scanner.getSafePoint());
-      _mouse.delay(1500);
+      _mouse.delay(100);
       // map.getAnchorImage()
       Pixel p = findCamp(map);
       if (p != null) {
-        LOGGER.info("CAMP COORDS: " + p);
         p.x += place.getCoords().x;
         p.y += place.getCoords().y;
         ensurePlace(p);
