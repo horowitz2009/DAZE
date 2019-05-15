@@ -110,6 +110,7 @@ public class MapManager {
     if (success) {
       _mouse.mouseMove(_scanner.getSafePoint());
       _mouse.delay(1500);
+      //map.getAnchorImage()
       Pixel p = findCamp();
       if (p != null) {
         LOGGER.info("CAMP COORDS: " + p);
@@ -218,7 +219,7 @@ public class MapManager {
   }
 
   public boolean gotoCamp() throws RobotInterruptedException, IOException, AWTException {
-    return _scanner.gotoCamp();
+    return _scanner.gotoCamp(2);
   }
 
   public void doKitchen() throws RobotInterruptedException, IOException, AWTException {
@@ -250,7 +251,7 @@ public class MapManager {
       int x1 = p.x - 211;
       _mouse.drag(x1, y, x1 - dist, y);
       _mouse.delay(200);
-      _scanner.gotoCamp();
+      _scanner.gotoCamp(2);
       p = _scanner.getKitchen();
       p.x += xOff;
       p.y += yOff;

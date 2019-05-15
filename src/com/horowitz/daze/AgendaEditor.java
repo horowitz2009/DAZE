@@ -108,7 +108,7 @@ public class AgendaEditor extends JPanel {
     });
     mainRoot.setMinimumSize(new Dimension(50, 100));
     // mainRoot.setMaximumSize(new Dimension(100, 800));
-    mainRoot.setPreferredSize(new Dimension(90, 480));
+    mainRoot.setPreferredSize(new Dimension(90, 420));
 
     _box.setMinimumSize(new Dimension(100, 20));
     // _box.setMaximumSize(new Dimension(200, 800));

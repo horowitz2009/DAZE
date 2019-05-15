@@ -80,6 +80,9 @@ public class DiggyFinder {
           //skip
           continue;
         }
+        if (p.x -16 + 55 > fb.toBufferedImage().getWidth() || p.y - 60 + 45 > fb.toBufferedImage().getHeight()) {
+          continue;
+        }
           
         BufferedImage helmetImage = fb.toBufferedImage().getSubimage(p.x - 16, p.y - 60, 55, 45);
 

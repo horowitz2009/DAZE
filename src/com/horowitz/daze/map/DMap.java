@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.horowitz.commons.Deserializable;
 import com.horowitz.commons.Deserializer;
+import com.horowitz.commons.Pixel;
 
 public class DMap implements Cloneable, Serializable, Deserializable {
   private static final long serialVersionUID = 5684617885487400700L;
@@ -13,6 +14,8 @@ public class DMap implements Cloneable, Serializable, Deserializable {
   private String world;
   private int priority;
   private int position;
+  private Pixel coords;
+  private String anchorImage;
 
   public DMap(String name) {
     super();
@@ -116,6 +119,22 @@ public class DMap implements Cloneable, Serializable, Deserializable {
     } else if (!world.equals(other.world))
       return false;
     return true;
+  }
+
+  public Pixel getCoords() {
+    return coords;
+  }
+
+  public void setCoords(Pixel coords) {
+    this.coords = coords;
+  }
+
+  public String getAnchorImage() {
+    return anchorImage;
+  }
+
+  public void setAnchorImage(String anchorImage) {
+    this.anchorImage = anchorImage;
   }
 
 }

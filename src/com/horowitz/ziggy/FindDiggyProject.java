@@ -34,8 +34,9 @@ public class FindDiggyProject {
     // hmm();
 
     // hmmm();
-    //helmet();
-    test1();
+    // helmet();
+    //test1();
+    stone();
     // ScreenScanner scanner = new
     // ScreenScanner(Settings.createSettings("daze.properties"));
 
@@ -54,7 +55,7 @@ public class FindDiggyProject {
       fb.saveAsPNG("DIGGY/d" + i + "-BLUE.png");
     }
   }
-  
+
   private static void helmet() {
     ColorFiltering cfy = new ColorFiltering(new IntRange(164, 242), new IntRange(142, 233), new IntRange(53, 116));
     ColorFiltering cfw = new ColorFiltering(new IntRange(198, 246), new IntRange(205, 249), new IntRange(211, 255));
@@ -80,8 +81,8 @@ public class FindDiggyProject {
       fb1.saveAsPNG("DIGGY/d" + i + "-YWBT.png");
       BlobDetection bd = new BlobDetection(BlobDetection.Algorithm.EightWay);
       bd.setFilterBlob(true);
-      bd.setMinArea(10*10);
-      bd.setMaxArea(22*22);
+      bd.setMinArea(10 * 10);
+      bd.setMaxArea(22 * 22);
       List<Blob> blobs = bd.ProcessImage(fb1);
       System.err.println("blobs:" + blobs.size());
       System.err.println(bd.getIdBiggestBlob());
@@ -89,6 +90,55 @@ public class FindDiggyProject {
         System.err.println(blob.getCenter());
       }
     }
+
+  }
+
+  
+  
+  
+  
+  
+  
+  private static void stone() {
+    ColorFiltering cfy = new ColorFiltering(new IntRange(44, 190), new IntRange(89, 255), new IntRange(0, 65));
+    Threshold t = new Threshold(122);
+    FastBitmap fb1 = new FastBitmap("images/stone1.png");
+    cfy.applyInPlace(fb1);
+    fb1.toGrayscale();
+    t.applyInPlace(fb1);
+    fb1.toRGB();
+    fb1.saveAsPNG("images/stone1GR.png");
+    
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  private static void gate() {
+    ColorFiltering cfy = new ColorFiltering(new IntRange(44, 150), new IntRange(89, 255), new IntRange(0, 30));
+    Threshold t = new Threshold(122);
+    FastBitmap fb1 = new FastBitmap("images/gate1.png");
+    cfy.applyInPlace(fb1);
+    fb1.toGrayscale();
+    t.applyInPlace(fb1);
+    fb1.toRGB();
+    fb1.saveAsPNG("images/gate1GR.png");
 
   }
 
@@ -168,11 +218,6 @@ public class FindDiggyProject {
     end = System.currentTimeMillis();
     System.err.println("time: " + (end - start));
     System.err.println("matches: " + matches);
-    
-    
-    
-    
-    
 
     fb.saveAsPNG("DIGGY/test-TS.png");
   }
@@ -184,10 +229,10 @@ public class FindDiggyProject {
     Threshold t = new Threshold(75);
 
     List<Pixel> good = new ArrayList<>(3);
-    
+
     for (Pixel p : matches) {
-      BufferedImage helmetImage = fb.toBufferedImage().getSubimage(p.x - 16, p.y-60, 55, 45);
-      
+      BufferedImage helmetImage = fb.toBufferedImage().getSubimage(p.x - 16, p.y - 60, 55, 45);
+
       FastBitmap fb1 = new FastBitmap(helmetImage);
       cfy.applyInPlace(fb1);
       fb1.toGrayscale();
@@ -203,8 +248,8 @@ public class FindDiggyProject {
       t.applyInPlace(fb1);
       BlobDetection bd = new BlobDetection(BlobDetection.Algorithm.EightWay);
       bd.setFilterBlob(true);
-      bd.setMinArea(10*10);
-      bd.setMaxArea(22*22);
+      bd.setMinArea(10 * 10);
+      bd.setMaxArea(22 * 22);
       List<Blob> blobs = bd.ProcessImage(fb1);
       System.err.println("blobs:" + blobs.size());
       System.err.println(bd.getIdBiggestBlob());
@@ -213,10 +258,10 @@ public class FindDiggyProject {
       }
 
       if (blobs.size() > 0) {
-        //good we have helmet
+        // good we have helmet
         good.add(p);
       }
-      
+
     }
     return good;
   }
@@ -240,7 +285,7 @@ public class FindDiggyProject {
       FastBitmap image = new FastBitmap("images/diggyPants.png");
       List<Pixel> matches = scanner.findMatches(image.toBufferedImage(), screen.toBufferedImage(), Color.red);
       removeClosest(matches);
-      
+
       System.err.print(i + ": " + matches);
       if (!matches.isEmpty()) {
         Pixel p = matches.get(0);

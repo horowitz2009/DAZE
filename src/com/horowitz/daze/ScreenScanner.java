@@ -100,9 +100,9 @@ public class ScreenScanner extends BaseScreenScanner {
   public Pixel[] getShipLocations() {
     return _shipLocations;
   }
-  
+
   private DiggyFinder diggyFinder;
-  
+
   public ScreenScanner(Settings settings) {
     super(settings);
     _popupAreaX = new Rectangle(650, 150, 760, 400);
@@ -129,41 +129,60 @@ public class ScreenScanner extends BaseScreenScanner {
     int eastOffset = _settings.getInt("scanArea.eastOffset", 85);
     int northOffset = _settings.getInt("scanArea.northOffset", 76);
     int southOffset = _settings.getInt("scanArea.southOffset", 85);
-    _scanArea = new Rectangle(_tl.x + westOffset, _tl.y + northOffset, getGameWidth() - westOffset - eastOffset, getGameHeight() - northOffset - southOffset);
-//    _lastMatZone = new Rectangle(_br.x - 148, _tl.y + 87, 148, 32);
-//    
-//    _ping2Area = new Rectangle(_tl.x + 120, _tl.y + 19, getGameWidth() - 120 - 120, getGameHeight() - 85 - 19);
-//    _energyArea = new Rectangle(_tl.x + getGameWidth() / 2 - 100, _tl.y + 19, 300, 22);
-//
-//    _scampArea = new Rectangle(_scanArea.x + 25, _scanArea.y + 415, getGameWidth() / 2, 65);
-//    // writeArea(_scanArea, "scanArea.png");
-//
-//    xx = (getGameWidth() - 140) / 2;
-//    _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
-//
-//    _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144 - (_wide ? 200 : 0), _tl.y,
-//        400 - 144 + (_wide ? 400 : 0), getGameHeight() / 2 + 50);
-//    _diggyCaveArea = new Rectangle(_tl.x + getGameWidth() / 2 - 114, _tl.y + 53, 228, 171);
-//
-//    _buttonArea = generateWindowedArea(576, 600);
-//    _buttonArea.y = _tl.y + getGameHeight() / 2;
-//    _buttonArea.height = getGameHeight() / 2;
-//    getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
-//    getImageData("claim.bmp", _buttonArea, 36, 13);
-//    getImageData("claim2.bmp", _buttonArea, 36, 13);
-//    // getImageData("camp/restartC.png", null, 22, 15);
-//
-//    // _safePoint = new Pixel(_br.x - 15, _br.y - 15);
-//    // _parkingPoint = new Pixel(_br);
-//
-//    _lastLocationButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 38, 60, 36);
-//    _mapButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 75, 60, 36);
-//    _campButtonArea = new Rectangle(_menuBR.x - 169, _menuBR.y - 75, 60, 36);
-//
-//    getImageData("greenArrow.bmp", _lastLocationButtonArea, 17, 22);
-//
-//    getImageData("map/diggyCave.bmp", _diggyCaveArea, -186, 49);
-//    getImageData("map/placeEntry.bmp", _scanArea, 28, 20);
+    _scanArea = new Rectangle(_tl.x + westOffset, _tl.y + northOffset, getGameWidth() - westOffset - eastOffset,
+        getGameHeight() - northOffset - southOffset);
+
+    area = new Rectangle(_tl.x + 255, _br.y - 90, getGameWidth() - 255 - 338, 90);
+    getImageData("images/campAnchor.png", area, 0, 0);
+
+    Rectangle westButtonArea = new Rectangle(_tl.x, _br.y - 90, 300, 90);
+
+    getImageData("images/campButton.png", westButtonArea, 9, 32);
+    getImageData("images/mapButton.png", westButtonArea, 14, 19);
+    Rectangle worldButtonArea = new Rectangle(_tl.x + 174, _tl.y + 62, (getGameWidth() / 2) - 174, 150);
+    getImageData("images/EG_small.png", worldButtonArea, 11, 13);
+    getImageData("images/EG_big.png", worldButtonArea, 12, 16);
+
+    // _lastMatZone = new Rectangle(_br.x - 148, _tl.y + 87, 148, 32);
+    //
+    // _ping2Area = new Rectangle(_tl.x + 120, _tl.y + 19, getGameWidth() - 120 -
+    // 120, getGameHeight() - 85 - 19);
+    // _energyArea = new Rectangle(_tl.x + getGameWidth() / 2 - 100, _tl.y + 19,
+    // 300, 22);
+    //
+    // _scampArea = new Rectangle(_scanArea.x + 25, _scanArea.y + 415,
+    // getGameWidth() / 2, 65);
+    // // writeArea(_scanArea, "scanArea.png");
+    //
+    // xx = (getGameWidth() - 140) / 2;
+    // _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
+    //
+    // _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 144 - (_wide ? 200 :
+    // 0), _tl.y,
+    // 400 - 144 + (_wide ? 400 : 0), getGameHeight() / 2 + 50);
+    // _diggyCaveArea = new Rectangle(_tl.x + getGameWidth() / 2 - 114, _tl.y + 53,
+    // 228, 171);
+    //
+    // _buttonArea = generateWindowedArea(576, 600);
+    // _buttonArea.y = _tl.y + getGameHeight() / 2;
+    // _buttonArea.height = getGameHeight() / 2;
+    // getImageData("diggyOnMap.bmp", _scanArea, 20, 19);
+    // getImageData("claim.bmp", _buttonArea, 36, 13);
+    // getImageData("claim2.bmp", _buttonArea, 36, 13);
+    // // getImageData("camp/restartC.png", null, 22, 15);
+    //
+    // // _safePoint = new Pixel(_br.x - 15, _br.y - 15);
+    // // _parkingPoint = new Pixel(_br);
+    //
+    // _lastLocationButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 38, 60,
+    // 36);
+    // _mapButtonArea = new Rectangle(_menuBR.x - 108, _menuBR.y - 75, 60, 36);
+    // _campButtonArea = new Rectangle(_menuBR.x - 169, _menuBR.y - 75, 60, 36);
+    //
+    // getImageData("greenArrow.bmp", _lastLocationButtonArea, 17, 22);
+    //
+    // getImageData("map/diggyCave.bmp", _diggyCaveArea, -186, 49);
+    // getImageData("map/placeEntry.bmp", _scanArea, 28, 20);
   }
 
   public boolean scanForMapButtons() throws RobotInterruptedException, IOException, AWTException {
@@ -232,7 +251,7 @@ public class ScreenScanner extends BaseScreenScanner {
       return imageData;
     }
   }
-  
+
   public boolean locateGameAreaNew(boolean fullScreen) throws AWTException, IOException, RobotInterruptedException {
     boolean found = _gameLocator.locateGameArea(null, getImageData("images/shopAnchor.png", null, 60, 54), false);
     if (found) {
@@ -245,11 +264,11 @@ public class ScreenScanner extends BaseScreenScanner {
         setKeyAreas();
         return true;
       }
-    }    
-    
-    return false;  
+    }
+
+    return false;
   }
-  
+
   public boolean locateGameArea(boolean fullScreen) throws AWTException, IOException, RobotInterruptedException {
     LOGGER.fine("Locating game area ... ");
 
@@ -452,39 +471,39 @@ public class ScreenScanner extends BaseScreenScanner {
       p.y -= 30;
     }
     return p;
-//    Pixel p = scanOneFast("diggy2.bmp", area, false);
-//    if (p != null) {
-//      LOGGER.info("found diggy: " + p);
-//      p.x -= 12;
-//      p.y -= 45;
-//    } else {
-//      p = scanOneFast("diggy3.bmp", area, false);
-//      if (p != null) {
-//        LOGGER.info("found diggy happy: " + p);
-//      } else {
-//
-//        p = scanOneFast("diggy_tired.bmp", area, false);
-//
-//        if (p != null) {
-//          LOGGER.info("found diggy tired: " + p);
-//          p.x -= 11;
-//          p.y -= 45;
-//        } else {
-//          p = scanOne("bluepants.bmp", area, false);
-//          if (p != null) {
-//            LOGGER.info("found diggy almost tired: " + p);
-//            p.x -= 22;
-//            p.y -= 47;
-//          }
-//        }
-//      }
-//    }
-//
-//    return p;
+    // Pixel p = scanOneFast("diggy2.bmp", area, false);
+    // if (p != null) {
+    // LOGGER.info("found diggy: " + p);
+    // p.x -= 12;
+    // p.y -= 45;
+    // } else {
+    // p = scanOneFast("diggy3.bmp", area, false);
+    // if (p != null) {
+    // LOGGER.info("found diggy happy: " + p);
+    // } else {
+    //
+    // p = scanOneFast("diggy_tired.bmp", area, false);
+    //
+    // if (p != null) {
+    // LOGGER.info("found diggy tired: " + p);
+    // p.x -= 11;
+    // p.y -= 45;
+    // } else {
+    // p = scanOne("bluepants.bmp", area, false);
+    // if (p != null) {
+    // LOGGER.info("found diggy almost tired: " + p);
+    // p.x -= 22;
+    // p.y -= 47;
+    // }
+    // }
+    // }
+    // }
+    //
+    // return p;
   }
 
   public boolean isDiggyExactlyHere(Pixel p) throws IOException, AWTException, RobotInterruptedException {
-    Rectangle area = new Rectangle(p.x-30, p.y-30, 120, 120);
+    Rectangle area = new Rectangle(p.x - 30, p.y - 30, 120, 120);
     return findDiggy(area) != null;
   }
 
@@ -512,30 +531,50 @@ public class ScreenScanner extends BaseScreenScanner {
     return res;
   }
 
-  public boolean gotoCamp() throws RobotInterruptedException, IOException, AWTException {
-    Rectangle area = new Rectangle(_br.x - 777, _tl.y + 64, 777, 422);
-    int tries = 0;
-    do {
-      tries++;
-      _mouse.click(_campButtonArea.x + 32, _mapButtonArea.y + 20);
+  public boolean gotoCamp(int tries) throws RobotInterruptedException, IOException, AWTException {
+    if (tries <= 0)
+      return false;
 
-      _kitchen = scanOneFast("camp/" + campLayout + "/kitchen.png", area, false);
-      LOGGER.info("kitchen... " + tries);
-      if (_kitchen == null) {
-        _mouse.delay(100);
-        handlePopups();
+    Pixel p = scanOneFast("images/campAnchor.png", null, false);
+    if (p != null) {
+      // we are in the camp already
+      LOGGER.info("already in camp...");
+    } else {
+      /// looking for camp icon
+      Pixel pp = scanOneFast("images/campButton.png", null, false);
+      if (pp != null) {
+        LOGGER.info("click camp button...");
+        _mouse.click(pp);
+        _mouse.mouseMove(_safePoint);
+        _mouse.delay(1000);
+        // try again now
+        p = scanOneFast("images/campAnchor.png", null, false);
+        if (p != null) {
+          // good
+          return true;
+        } else {
+          // try again
+          return gotoCamp(tries - 1);
+        }
+      } else {
+        // try with map
+        pp = scanOneFast("images/mapButton.png", null, true);
+        _mouse.mouseMove(_safePoint);
+        _mouse.delay(1500);
+        return gotoCamp(tries - 1);
       }
-    } while (_kitchen == null && tries < 8);
-    return _kitchen != null;
+    }
+
+    return false;
   }
 
   public int checkCamp() throws AWTException, RobotInterruptedException, IOException {
-    //LOGGER.info("checkCamp...");
+    // LOGGER.info("checkCamp...");
     Rectangle carea = new Rectangle(_campButtonArea);
     carea.width -= 30;
     carea.x += 35;
-    //writeArea(carea, "camparea.png");
-    
+    // writeArea(carea, "camparea.png");
+
     Pixel p = findImage("camp/camp1.png", carea, null);
     if (p != null)
       return 1;
@@ -548,8 +587,7 @@ public class ScreenScanner extends BaseScreenScanner {
     p = findImage("camp/camp4.png", carea, null);
     if (p != null)
       return 4;
-    
-    
+
     return 0;
   }
 
@@ -589,86 +627,50 @@ public class ScreenScanner extends BaseScreenScanner {
   }
 
   public boolean gotoMap(DMap map) throws RobotInterruptedException, IOException, AWTException {
-    int position = map.getPosition();
-    int tries = 0;
-    boolean mapMode = false;
-    do {
-      tries++;
-      _mouse.click(_mapButtonArea.x + 32, _mapButtonArea.y + 20);
+
+    gotoCamp(2);
+
+    // now go to main map
+
+    scanOneFast("images/mapButton.png", null, true);
+    _mouse.delay(1000);
+    Pixel p = scanOneFast("images/EG_small.png", null, false);
+    if (p == null) {
+      p = scanOneFast("images/EG_big.png", null, false);
+    }
+    LOGGER.info("EGYPT: " + p);
+    if (p != null) {
+
+      // HARDCODED 6 worlds. I'm too lazy to make it right
+      int slot = 0;
+      String w = map.getWorld();
+      if (w == null)
+        w = "temp";
+      w = w.toLowerCase();
+
+      if (w.startsWith("eg")) {
+        slot = 0;
+      } else if (w.startsWith("sc")) {
+        slot = 1;
+      } else if (w.startsWith("ch")) {
+        slot = 2;
+      } else if (w.startsWith("at")) {
+        slot = 3;
+      } else if (w.startsWith("gr")) {
+        slot = 4;
+      } else if (w.startsWith("nw")) {
+        slot = 5;
+      } else
+        slot = 6;// the stories aka temp world
+
+      p.y += 72 * slot;
+      _mouse.click(p);
       _mouse.delay(2000);
-      mapMode = scanForMapButtons();
-      if (!mapMode)
-        _mouse.delay(5000);
-    } while (!mapMode && tries < 4);
-    if (mapMode) {
-      // GOOD
-      LOGGER.info("MAP MODE! " + tries);
-
-      if (position >= 0) {
-        // ensure world
-        // HARDCODED 4 worlds. I'm too lazy to make it right
-        int y = 282;
-        int slot = 0;
-        String w = map.getWorld();
-        if (w == null)
-          w = "temp";
-        w = w.toLowerCase();
-
-        if (w.startsWith("eg")) {
-          slot = 0;
-        } else if (w.startsWith("sc")) {
-          slot = 1;
-        } else if (w.startsWith("ch")) {
-          slot = 2;
-        } else if (w.startsWith("at")) {
-          slot = 3;
-        } else
-          slot = 4;
-        _mouse.click(_br.x - 37, _tl.y + y + 36 * slot);
-        _mouse.delay(2000);
-      }
-
-      // click << button
-      if (position > 90) {
-        _mouse.click(_eastButtons.x + 12, _eastButtons.y + 63);
-        _mouse.delay(1750);
-        int pos = 100 - position;
-        Pixel p = new Pixel(_eastButtons.x - 44, _eastButtons.y + 42);
-        p.x = p.x - pos * 84;
-        _mouse.click(p);
-        _mouse.delay(2000);
-        return true;
-      } else {
-
-        _mouse.click(_westButtons.x + 12, _westButtons.y + 42);
-        _mouse.delay(1750);
-
-        // look for main map
-        Rectangle area = new Rectangle(_westButtons.x + 26, _westButtons.y - 18, _eastButtons.x - _westButtons.x - 26,
-            _menuBR.y - _eastButtons.y + 18);
-        // writeArea(area, "mapsArea.jpg");
-        Pixel p = scanOne("map/mainMap.bmp", area, false);
-        if (p != null) {
-          p.x -= 23;
-          LOGGER.info("Found main map...");
-          int pos = position;
-          int cnt = area.width / 84;
-          int pp = p.x + pos * 84 + 42;
-          while (pp > _eastButtons.x) {
-            // click >> button
-            _mouse.click(_eastButtons.x + 12, _eastButtons.y + 42);
-            _mouse.delay(1750);
-            pos -= cnt;
-            pp = p.x + pos * 84 + 42;
-          }
-          assert pp < _eastButtons.x;
-          _mouse.click(pp, _eastButtons.y + 42);
-          _mouse.delay(2000);
-          return true;
-        }
-      }
-    } else {
-      LOGGER.warning("Not sure I'm in maps screen!");
+      
+      LOGGER.info("goto " + map.getName());
+      _mouse.click(p.x + map.getCoords().x, p.y + map.getCoords().y);
+      _mouse.delay(2000);
+      
     }
 
     return false;

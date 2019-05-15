@@ -84,7 +84,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Daze v0.01";
+  private static String APP_TITLE = "Ziggy v0.1";
 
   private Settings _settings;
   private Stats _stats;
@@ -444,8 +444,8 @@ public class MainFrame extends JFrame {
     rootPanel.add(north, BorderLayout.NORTH);
 
     _mazeCanvas = new MazeCanvas();
-    _mazeCanvas.setMinimumSize(new Dimension(200, 150));
-    _mazeCanvas.setPreferredSize(new Dimension(200, 150));
+    _mazeCanvas.setMinimumSize(new Dimension(200, 100));
+    _mazeCanvas.setPreferredSize(new Dimension(200, 100));
 
     rootPanel.add(new JScrollPane(_mazeCanvas), BorderLayout.SOUTH);
 
@@ -527,7 +527,7 @@ public class MainFrame extends JFrame {
   private JToggleButton _foundryToggle;
 
   private Container buildConsole() {
-    final JTextArea outputConsole = new JTextArea(8, 14);
+    final JTextArea outputConsole = new JTextArea(10, 14);
 
     Handler handler = new Handler() {
 
@@ -774,6 +774,7 @@ public class MainFrame extends JFrame {
     {
       AbstractAction action = new AbstractAction("Run") {
         public void actionPerformed(ActionEvent e) {
+          _mazeRunner.setDirections(Direction.buildDirections("news"));
           runMagic();
         }
 
@@ -1563,6 +1564,7 @@ public class MainFrame extends JFrame {
                   //p.y -= 30;
                   _mouse.mouseMove(p);
 
+                  
                   //_mazeRunner.traverse(p);
                 } else
                   LOGGER.info("CAN'T FIND DIGGY!");
@@ -2037,7 +2039,7 @@ public class MainFrame extends JFrame {
             }
           } catch (PlaceUnreachableException e) {
             LOGGER.warning(e.getMessage());
-            refresh(false);
+            /////////refresh(false);
           }
         }
 
@@ -2271,76 +2273,74 @@ public class MainFrame extends JFrame {
         wide = true;
       }
 
-      _scanner.handleFBMessages(true);
-
-      long start = System.currentTimeMillis();
-      area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
-
-      if (wide) {
-        area = _scanner.generateWindowedArea(800, _scanner.getGameHeight());
-      }
-
-      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
-      if (p != null) {
-        _mouse.click(p.x + 16, p.y + 16);
-        _mouse.delay(200);
-      }
-      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
-      if (p != null) {
-        _mouse.click(p.x + 16, p.y + 16);
-        _mouse.delay(200);
-      }
-
-      // p = _scanner.scanOneFast("awesome.bmp", area, false);
-      // if (p != null) {
-      // _mouse.click(p.x + 40, p.y + 7);
-      // _mouse.delay(300);
-      // p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
-      // if (p != null) {
-      // _mouse.click(p.x + 16, p.y + 16);
-      // _mouse.delay(200);
-      // }
-      // }
-
-      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
-      if (p != null) {
-        _mouse.click(p.x + 16, p.y + 16);
-        _mouse.delay(200);
-      }
-
-      // CLAIM
-      area = _scanner.generateWindowedArea(800, _scanner.getGameHeight());
-      area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
-      area.height = _scanner.getGameHeight() / 2;
-      p = _scanner.scanOneFast("claim2.bmp", area, false);
-      if (p != null) {
-        LOGGER.info("claim1...");
-        _mouse.click(p.x + 34, p.y + 11);
-        _mouse.delay(2200);
-      }
-
-      p = _scanner.scanOneFast("share.bmp", area, false);
-      if (p != null) {
-        _mouse.click(p.x + 34, p.y + 11);
-        _mouse.delay(200);
-      }
-
-      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
-      if (p != null) {
-        _mouse.click(p.x + 16, p.y + 16);
-        _mouse.delay(200);
-      } else {
-        p = _scanner.scanOneFast("claim2.bmp", null, false);
-        if (p != null) {
-          LOGGER.info("claim2...");
-          _mouse.click(p);
-          _mouse.delay(3200);
-          handlePopups(wide);
-        }
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (AWTException e) {
+//      _scanner.handleFBMessages(true);
+//
+//      long start = System.currentTimeMillis();
+//      area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
+//
+//      if (wide) {
+//        area = _scanner.generateWindowedArea(800, _scanner.getGameHeight());
+//      }
+//
+//      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+//      if (p != null) {
+//        _mouse.click(p.x + 16, p.y + 16);
+//        _mouse.delay(200);
+//      }
+//      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+//      if (p != null) {
+//        _mouse.click(p.x + 16, p.y + 16);
+//        _mouse.delay(200);
+//      }
+//
+//      // p = _scanner.scanOneFast("awesome.bmp", area, false);
+//      // if (p != null) {
+//      // _mouse.click(p.x + 40, p.y + 7);
+//      // _mouse.delay(300);
+//      // p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+//      // if (p != null) {
+//      // _mouse.click(p.x + 16, p.y + 16);
+//      // _mouse.delay(200);
+//      // }
+//      // }
+//
+//      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+//      if (p != null) {
+//        _mouse.click(p.x + 16, p.y + 16);
+//        _mouse.delay(200);
+//      }
+//
+//      // CLAIM
+//      area = _scanner.generateWindowedArea(800, _scanner.getGameHeight());
+//      area.y = _scanner.getTopLeft().y + _scanner.getGameHeight() / 2;
+//      area.height = _scanner.getGameHeight() / 2;
+//      p = _scanner.scanOneFast("claim2.bmp", area, false);
+//      if (p != null) {
+//        LOGGER.info("claim1...");
+//        _mouse.click(p.x + 34, p.y + 11);
+//        _mouse.delay(2200);
+//      }
+//
+//      p = _scanner.scanOneFast("share.bmp", area, false);
+//      if (p != null) {
+//        _mouse.click(p.x + 34, p.y + 11);
+//        _mouse.delay(200);
+//      }
+//
+//      p = _scanner.scanOneFast("X.bmp", _scanner._popupAreaX, false);
+//      if (p != null) {
+//        _mouse.click(p.x + 16, p.y + 16);
+//        _mouse.delay(200);
+//      } else {
+//        p = _scanner.scanOneFast("claim2.bmp", null, false);
+//        if (p != null) {
+//          LOGGER.info("claim2...");
+//          _mouse.click(p);
+//          _mouse.delay(3200);
+//          handlePopups(wide);
+//        }
+//      }
+    } catch (Exception e) {
       e.printStackTrace();
     }
 

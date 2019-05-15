@@ -75,12 +75,11 @@ public class GraphMazeRunner {
             Pixel p;
             int tries = 0;
             do {
-              p = _scanner.lookForDiggyAroundHere(coords, 1);
+              p = _scanner.lookForDiggyAroundHere(coords, 2);
               if (p == null)
                 _mouse.delay(200);
             } while (!_stopIt && p == null && ++tries < 7);
 
-            // THE CLICK
             _mouse.mouseMove(coords.x + 30, coords.y + 30);
             _mouse.delay(100);
             _support.firePropertyChange("CAPTURE", null, vertex);
@@ -176,6 +175,38 @@ public class GraphMazeRunner {
                 // wait until diggy arrives
                 int tries = 0;
                 boolean diggyHere = false;
+                // TEMP
+                Pixel p;
+                do {
+                  p = _scanner.lookForDiggyAroundHere(vertex._coords, 2);
+                  if (p == null)
+                    _mouse.delay(200);
+                } while (!_stopIt && p == null && ++tries < 7);
+                
+                if (p != null) {
+                  LOGGER.info("DIGGY: " + p);
+                  LOGGER.info("COORDS: " + vertex._coords);
+                  if (Math.abs(p.x - vertex._coords.x) > 5 && Math.abs(p.x - vertex._coords.x) < 32) {
+                    int d = p.x - vertex._coords.x;
+                    LOGGER.info("correction needed on x: " + d);
+                    _start._coords.x += d;
+                    for (Position pos : _explored) {
+                      if (pos._coords != null)
+                        pos._coords.x += d;
+                    }
+                  }
+                  if (Math.abs(p.y - vertex._coords.y) > 5 && Math.abs(p.y - vertex._coords.y) < 32) {
+                    int d = p.y - vertex._coords.y;
+                    LOGGER.info("correction needed on y: " + d);
+                    _start._coords.y += d;
+                    for (Position pos : _explored) {
+                      if (pos._coords != null)
+                        pos._coords.y += d;
+                    }
+                  }
+                }
+                tries = 0;
+                
                 do {
                   _mouse.delay(250);
                   if (tries++ > 5 && tries % 4 == 0)
@@ -422,24 +453,21 @@ public class GraphMazeRunner {
       return neighbor._state != State.VISITED && neighbor._state != State.OBSTACLE;
     }
 
-    private void ensureArea(Position pos, Position diggyPos)
+    private void ensureArea(Position pos, Position prevPos)
         throws RobotInterruptedException, IOException, AWTException {
       pos._coords = new Pixel(_start._coords.x + pos._row * 60, _start._coords.y + pos._col * 60);
       int xx = _start._coords.x + (pos._row) * 60;
       int yy = _start._coords.y + (pos._col) * 60;
-      // LOGGER.info("" + pos);
       Rectangle area = _scanner.getScanArea();
       int eastBorder = area.x + area.width;
       int westBorder = area.x;
       int southBorder = area.y + area.height;
       int northBorder = area.y;
-      int min = 90;
       int xCorrection = 0;
       int yCorrection = 0;
       if (true) {
         // it's a vertex, not neighbor
 
-        // CHECKED FOR SMALL DISTANCES
         // check east
         if (xx + 60 >= eastBorder) {
           xCorrection = eastBorder - (xx + 60);// negative
@@ -449,71 +477,97 @@ public class GraphMazeRunner {
             xCorrection = westBorder - xx;
           }
         }
-        // if (xCorrection > 0)
-        // xCorrection = Math.min(60, xCorrection);
 
-        // CHECKED FOR SMALL DISTANCES
         // check south
         if (yy + 60 >= southBorder) {
           yCorrection = southBorder - (yy + 60);// negative
-          if (yCorrection > -min)
-            yCorrection = -min;
         } else {
           // check north
           if (yy <= northBorder) {
             yCorrection = northBorder - yy;
-            if (yCorrection < min) {
-              yCorrection = min;
-            }
           }
         }
-        // if (yCorrection > 0)
-        // yCorrection = Math.min(60, yCorrection);
-        // ////////////// ALL /////////////////
       }
 
-      // CHECKED
       if (xCorrection != 0 || yCorrection != 0) {
+        int extraMove = 33;
         if (xCorrection != 0) {
           // HORIZONTAL
           double width = _scanner.getScanArea().getWidth() - 20;
           int n = (int) ((xCorrection) / width);
           double theRest = (xCorrection / width) - n;
           theRest *= width;
-          Pixel start;
+          Pixel start = new Pixel(prevPos._coords.x + 30,prevPos._coords.y + 30);
+          
+          // ensure start point be in scan area
+          if (start.y + 5 >= southBorder) {
+            start.y = southBorder - 5;// negative
+          } else {
+            // check north
+            if (start.y <= northBorder) {
+              start.y = northBorder + 5;
+            }
+          }
+          if (start.x + 5 >= eastBorder) {
+            start.x = eastBorder - 5;// negative
+          } else {
+            // check west
+            if (start.x <= westBorder) {
+              start.x = westBorder + 5;
+            }
+          }
+
           Pixel end;
           if (xCorrection < 0) {
-            start = new Pixel(eastBorder - 10, _scanner.getTopLeft().y + _scanner.getGameHeight() / 2);
             end = new Pixel(start.x - (int) width, start.y);
           } else {
-            start = new Pixel(westBorder + 10, _scanner.getTopLeft().y + _scanner.getGameHeight() / 2);
             end = new Pixel(start.x + (int) width, start.y);
           }
           for (int i = 0; i < n; ++i) {
-            _mouse.drag3(start.x, start.y, end.x, end.y);
-            _mouse.delay(100);
+            //_mouse.drag3(start.x, start.y, end.x, end.y);
+            _mouse.dragWGL(start.x, start.y, end.x, end.y, 5, extraMove, 70, 1200);
+            //_mouse.delay(100);
           }
           if (n != 0) {
             if ((int) theRest != 0) {
               end = new Pixel(start.x + (int) theRest, start.y);
-              _mouse.drag3(start.x, start.y, end.x, end.y);
+              //_mouse.drag3(start.x, start.y, end.x, end.y);
+              _mouse.dragWGL(start.x, start.y, end.x, end.y, 5, extraMove, 70, 1200);
             }
           } else {
             end = new Pixel(start.x + xCorrection, start.y);
-            _mouse.drag3(start.x, start.y, end.x, end.y);
+            //_mouse.drag3(start.x, start.y, end.x, end.y);
+            _mouse.dragWGL(start.x, start.y, end.x, end.y, 5, extraMove, 70, 1200);
           }
         }
 
-        // CHECKED
         if (yCorrection != 0) {
           // VERTICAL
           double height = _scanner.getScanArea().getHeight() - 20;
           int n = (int) ((yCorrection) / height);
           double theRest = (yCorrection / height) - n;
           theRest *= height;
-          Pixel start;
+          Pixel start = new Pixel(prevPos._coords.x + 30,prevPos._coords.y + 30);
+          
+          // ensure start point be in scan area
+          if (start.y + 5 >= southBorder) {
+            start.y = southBorder - 5;// negative
+          } else {
+            // check north
+            if (start.y <= northBorder) {
+              start.y = northBorder + 5;
+            }
+          }
+          if (start.x + 5 >= eastBorder) {
+            start.x = eastBorder - 5;// negative
+          } else {
+            // check west
+            if (start.x <= westBorder) {
+              start.x = westBorder + 5;
+            }
+          }
+          
           Pixel end;
-          start = new Pixel(diggyPos._coords.x + 30,diggyPos._coords.y + 30);
           if (yCorrection < 0) {
             // start from south -> go north
             end = new Pixel(start.x, start.y - (int) height);
@@ -521,38 +575,29 @@ public class GraphMazeRunner {
             end = new Pixel(start.x, start.y + (int) height);
           }
           for (int i = 0; i < n; ++i) {
-            _mouse.drag3(start.x, start.y, end.x, end.y);
-            _mouse.delay(100);
+            _mouse.dragWGL(start.x, start.y, end.x, end.y, 5, extraMove, 70, 1200);
           }
           if (n != 0) {
             if ((int) theRest != 0) {
-              if (theRest > 0)
-                theRest+= min;
-              if (theRest < 0)
-                theRest -= min;
-              
               end = new Pixel(start.x, start.y + (int) theRest);
-              _mouse.drag4(start.x, start.y, end.x, end.y, false, false);
-              _mouse.delay(10);
-              _mouse.click(end);
+              _mouse.dragWGL(start.x, start.y, end.x, end.y, 5, extraMove, 70, 1200);
             }
           } else {
             end = new Pixel(start.x, start.y + yCorrection);
 
-            _mouse.drag4(start.x, start.y, end.x, end.y, false, false);
-            _mouse.delay(10);
-            _mouse.click(end);
+            _mouse.dragWGL(start.x, start.y, end.x, end.y, 5, extraMove, 70, 1200);
           }
         }
         _start._coords.x += xCorrection;
         _start._coords.y += yCorrection;
         _mouse.delay(1000);
-        Pixel pp = _scanner.lookForDiggyAroundHere(_start._coords, 2);
-        if (pp != null) {
-          LOGGER.info("DIGGY: " + pp);
-          LOGGER.info("COORDS: " + _start._coords);
-          _start._coords = pp;
-        }
+//        Pixel pp = _scanner.lookForDiggyAroundHere(_start._coords, 2);
+//        if (pp != null) {
+//          LOGGER.info(pos.toString());
+//          LOGGER.info("DIGGY: " + pp);
+//          LOGGER.info("COORDS: " + _start._coords);
+//          _start._coords = new Pixel(pp.x - pos._row * 60, pp.y - pos._col * 60);
+//        }
         pos._coords = new Pixel(_start._coords.x + pos._row * 60, _start._coords.y + pos._col * 60);
 
         int totalXCorrection = xCorrection;
@@ -615,23 +660,13 @@ public class GraphMazeRunner {
           //check is palm
           //check is green
 
-          if (lookForGreenHere(neighborPos._coords)) {
-            neighborPos._state = State.GREEN;
+          analyze(neighborPos);
+          
+          if (neighborPos._state == State.GREEN) {
             LOGGER.fine("GREEN " + neighborPos);
-            _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
-            // if (isGate(p)) { // TODO not reliable! to be improved
-            // LOGGER.info("It is gate!!!");
-            // neighborPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
-            // _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
-            // }
           }
+          _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
 
-          if (isGate(neighborPos._coords)) { // TODO not reliable! to be
-                                             // improved
-            LOGGER.info("It's a gate!!!");
-            neighborPos._state = State.OBSTACLE;// FOR NOW GATE IS OBSTACLE
-            _support.firePropertyChange("STATE_CHANGED", null, neighborPos);
-          }
           boolean contains = false;
           for (Position npos : graph.getNeighbors(vertex)) {
             if (npos.same(neighborPos)) {
@@ -977,15 +1012,15 @@ public class GraphMazeRunner {
   private boolean checkNoEnergy() throws IOException, AWTException, RobotInterruptedException {
     // LOGGER.info("energy popup...");
     long start = System.currentTimeMillis();
-    Rectangle area = _scanner.generateWindowedArea(458 + 10, 464 + 10);
-    area.x = area.x + 90;
-    area.y = area.y + 56;
-    area.width = 150;
-    area.height = 90;
+    Rectangle area = _scanner.generateWindowedArea(535, 331);
+    area.x = area.x + 18;
+    area.y = area.y + 8;
+    area.width = 325 + 20;
+    area.height = 80;
 
-    Pixel p = _scanner.scanOneFast("noEnergyPopup.bmp", area, false);
+    Pixel p = _scanner.scanOneFast("images/noEnergyPopup.png", area, false);
     if (p != null) {
-      _mouse.click(p.x + 333, p.y - 35);
+      _mouse.click(p.x + 464, p.y - 18);
       LOGGER.info("click checkNoEnergy");
       _mouse.delay(200);
     }
@@ -994,6 +1029,31 @@ public class GraphMazeRunner {
   }
 
   private boolean isGate(Pixel pp) throws RobotInterruptedException, AWTException, IOException {
+    // 10px more from all sides
+    Rectangle area = new Rectangle(pp.x - 10, pp.y - 10, 60 + 20, 60 + 20);
+    //BufferedImage image1 = new Robot().createScreenCapture(area);
+    _mouse.mouseMove(pp.x + 30, pp.y + 30);
+    _mouse.delay(100 + (isSlow() ? 200 : 0));
+    
+    BufferedImage image2 = new Robot().createScreenCapture(area);
+    
+    //_scanner.writeImageTS(image2, "green.png");
+    
+    FastBitmap fb = new FastBitmap(image2);
+    
+    ColorFiltering cf = new ColorFiltering(new IntRange(44, 150), new IntRange(89, 255), new IntRange(0, 30));
+    cf.applyInPlace(fb);
+    Threshold ts = new Threshold(122);
+    fb.toGrayscale();
+    ts.applyInPlace(fb);
+    fb.toRGB();
+    
+    Pixel p = _scanner.findMatch(_scanner.getImageData("images/gate2.png").getImage(), fb.toBufferedImage(), Color.red);
+    
+    return p != null;
+    
+    
+    
 //    //
 //    // _mouse.mouseMove(pp.x + 30, pp.y + 30);
 //    // _mouse.delay(100);
@@ -1005,14 +1065,14 @@ public class GraphMazeRunner {
 //    Pixel ppp = _comparator.findImage(id.getImage(), image2, id.getColorToBypass());
 //
 //    return (ppp != null);
-    return false;
+//    return false;
   }
 
   private Position lookForGreen(Position pos) throws RobotInterruptedException, IOException, AWTException {
     LOGGER.info("looking for greens...");
     for (Position position : _searchSequence) {
       Pixel pp = new Pixel(pos._coords.x + position._row * 60, pos._coords.y + position._col * 60);
-      if (lookForGreenHere(pp)) {
+      if (lookForGreenHereOLD(pp)) {
         Position newPos = new Position(position._row, position._col, pos, State.GREEN);
         newPos._coords = pp;
         LOGGER.info("Found one..." + newPos);
@@ -1173,7 +1233,70 @@ public class GraphMazeRunner {
     return fb1.toBufferedImage();
   }
 
-  private boolean lookForGreenHere(Pixel pp) throws AWTException, RobotInterruptedException, IOException {
+  private void analyze(Position pos) throws AWTException, RobotInterruptedException, IOException {
+    // 10px more from all sides
+    Pixel pp = pos._coords;
+    Rectangle area = new Rectangle(pp.x - 10, pp.y - 10, 60 + 20, 60 + 20);
+    //BufferedImage image1 = new Robot().createScreenCapture(area);
+    _mouse.mouseMove(pp.x + 30, pp.y + 30);
+    _mouse.delay(100 + (isSlow() ? 200 : 0));
+    
+    BufferedImage image2 = new Robot().createScreenCapture(area);
+    
+    //_scanner.writeImageTS(image2, "green.png");
+    
+    FastBitmap fb = new FastBitmap(image2);
+    
+    //GREEN
+    ColorFiltering cf = new ColorFiltering(new IntRange(71, 112), new IntRange(150, 185), new IntRange(32, 61));
+    cf.applyInPlace(fb);
+    //fb.saveAsPNG("green1g.png");
+    fb.toGrayscale();
+    Threshold ts = new Threshold(10);
+    ts.applyInPlace(fb);
+    fb.toRGB();
+    
+    Pixel p = _scanner.findMatch(_scanner.getImageData("images/greenSquare.png").getImage(), fb.toBufferedImage(), Color.red);
+    if (p != null) {
+      pos._state = State.GREEN;
+      return;
+    }
+    
+    //GATE
+    fb = new FastBitmap(image2);
+    cf = new ColorFiltering(new IntRange(44, 150), new IntRange(89, 255), new IntRange(0, 30));
+    cf.applyInPlace(fb);
+    ts = new Threshold(122);
+    fb.toGrayscale();
+    ts.applyInPlace(fb);
+    fb.toRGB();
+    
+    p = _scanner.findMatch(_scanner.getImageData("images/gate2.png").getImage(), fb.toBufferedImage(), Color.red);
+    if (p != null) {
+      pos._state = State.OBSTACLE;
+      return;
+    }
+    
+    //STONE
+    //TODO
+    cf = new ColorFiltering(new IntRange(44, 190), new IntRange(89, 255), new IntRange(0, 65));
+    //it'same ts = new Threshold(122);
+    
+    fb = new FastBitmap(image2);
+    cf.applyInPlace(fb);
+    fb.toGrayscale();
+    ts.applyInPlace(fb);
+    fb.toRGB();
+    
+    p = _scanner.findMatch(_scanner.getImageData("images/stone2.png").getImage(), fb.toBufferedImage(), Color.red);
+    if (p != null) {
+      pos._state = State.OBSTACLE;
+      return;
+    }
+  }
+  
+  
+  private boolean lookForGreenHereOLD(Pixel pp) throws AWTException, RobotInterruptedException, IOException {
     // 10px more from all sides
     Rectangle area = new Rectangle(pp.x - 10, pp.y - 10, 60 + 20, 60 + 20);
     //BufferedImage image1 = new Robot().createScreenCapture(area);
