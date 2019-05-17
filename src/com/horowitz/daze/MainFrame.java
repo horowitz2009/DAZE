@@ -54,7 +54,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -73,7 +72,6 @@ import com.horowitz.daze.map.Agenda;
 import com.horowitz.daze.map.AgendaEntry;
 import com.horowitz.daze.map.MapManager;
 import com.horowitz.daze.map.PlaceUnreachableException;
-import com.horowitz.daze.ocr.OCREnergy;
 import com.horowitz.daze.scan.EnhancedScanner;
 import com.horowitz.ocr.OCRB;
 import com.horowitz.ziggy.DiggyFinder;
@@ -84,7 +82,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger("MAIN");
 
-  private static String APP_TITLE = "Ziggy v0.1";
+  private static String APP_TITLE = "Ziggy v0.2";
 
   private Settings _settings;
   private Stats _stats;
@@ -1754,7 +1752,7 @@ public class MainFrame extends JFrame {
       LOGGER.info("Scanning...");
       setTitle(APP_TITLE + " ...");
 
-      boolean found = _scanner.locateGameAreaNew(false);
+      boolean found = _scanner.locateGameArea(false);
       if (found) {
         // _scanner.checkAndAdjustRock();
         // _mapManager.update();

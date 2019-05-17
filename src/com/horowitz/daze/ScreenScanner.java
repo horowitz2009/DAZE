@@ -159,10 +159,10 @@ public class ScreenScanner extends BaseScreenScanner {
     // xx = (getGameWidth() - 140) / 2;
     // _logoArea = new Rectangle(_tl.x + xx, _tl.y + 75, 140, 170);
     //
-    
+
     _popupArea = generateWindowedArea(976, getGameHeight() - 120);
     _popupArea.y -= 50;
-    
+
     _popupAreaX = new Rectangle(_tl.x + getGameWidth() / 2 + 100, _tl.y, getGameWidth() - 300,
         getGameHeight() / 2 + 50);
     getImageData("images/x.png", _popupAreaX, 17, 19);
@@ -260,7 +260,7 @@ public class ScreenScanner extends BaseScreenScanner {
     }
   }
 
-  public boolean locateGameAreaNew(boolean fullScreen) throws AWTException, IOException, RobotInterruptedException {
+  public boolean locateGameArea(boolean fullScreen) throws AWTException, IOException, RobotInterruptedException {
     boolean found = _gameLocator.locateGameArea(null, getImageData("images/shopAnchor.png", null, 60, 54), false);
     if (found) {
       _tl = _gameLocator.getTopLeft();
@@ -274,50 +274,6 @@ public class ScreenScanner extends BaseScreenScanner {
       }
     }
 
-    return false;
-  }
-
-  public boolean locateGameArea(boolean fullScreen) throws AWTException, IOException, RobotInterruptedException {
-    LOGGER.fine("Locating game area ... ");
-
-    final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    boolean notReally = false;
-    if (fullScreen) {
-      _tl = new Pixel(0, 0);
-      _br = new Pixel(screenSize.width - 3, screenSize.height - 130);
-      // use default
-      setKeyAreas();
-      return true;
-    } else {
-      boolean found = _gameLocator.locateGameArea(null, new ImageData("camp.bmp", null, _comparator, 25, 48), false);
-      notReally = true;
-      if (found) {
-        _tl = _gameLocator.getTopLeft();
-        _br = _gameLocator.getBottomRight();
-        _menuBR = new Pixel(_br.x, _br.y);
-        Rectangle area = new Rectangle(_br.x, _tl.y, screenSize.width - _br.x, getGameHeight() / 2);
-        BufferedImage screen = new Robot().createScreenCapture(area);
-
-        ImageData id = getImageData("gems.bmp");
-        Pixel p = _comparator.findImage(id.getImage(), screen, id.getColorToBypass());
-        if (p != null) {
-          _br.x = _br.x + p.x + 41;
-          if (notReally) {
-            _tl.y = p.y - 43 - 12;
-          }
-          _wide = false;
-        } else {
-          LOGGER.warning("GEMS not found!");
-          _br.x = screenSize.width - _tl.x - 1;
-          _wide = true;
-        }
-        // _br.y += 48;
-        LOGGER.fine("FINAL GAME COORDINATES: " + _tl + " - " + _br);
-
-        setKeyAreas();
-        return true;
-      }
-    }
     return false;
   }
 
@@ -441,7 +397,7 @@ public class ScreenScanner extends BaseScreenScanner {
 
   public boolean handlePopups() throws IOException, AWTException, RobotInterruptedException {
     boolean found = false;
-    
+
     Pixel p = scanOneFast("images/buttonCollectEnergy.png", null, true);
     if (p != null) {
       _mouse.delay(400);
@@ -450,7 +406,7 @@ public class ScreenScanner extends BaseScreenScanner {
     p = scanOneFast("images/x.png", null, true);
     found = p != null;
     LOGGER.info("popups done");
-    
+
     return found;
   }
 
@@ -694,14 +650,14 @@ public class ScreenScanner extends BaseScreenScanner {
     if (p == null) {
       int tries = 0;
       do {
-        //dragMapToRight();
+        // dragMapToRight();
         _mouse.mouseMove(_safePoint);
         _mouse.delay(1000);
         p = scanOne(map.getAnchorImage(), _scampArea, false);
         tries++;
       } while (p == null && tries < 5);
     }
-    LOGGER.info("camp: " + p + " in " +(System.currentTimeMillis() - start));
+    LOGGER.info("camp: " + p + " in " + (System.currentTimeMillis() - start));
     return p;
   }
 
